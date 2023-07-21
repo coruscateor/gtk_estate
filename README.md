@@ -1,12 +1,12 @@
 # GTK Estate
 
-GTK Estate is a state asscocation library using the excellent [GTK 4](https://crates.io/crates/gtk4) and [libadwaita](https://crates.io/crates/libadwaita) libraries.
+GTK Estate is a state association library using the excellent [GTK 4](https://crates.io/crates/gtk4) and [libadwaita](https://crates.io/crates/libadwaita) libraries.
 
-The core of what GTK Estate does is assocate user-defined state objects with GTK and libadwaita container widgets and windows. It also contains objects and functions such as TimeOut that make working with GTK and libadwaita a bit easier.
+The core of what GTK Estate does is associate user-defined state objects with GTK and libadwaita container widgets and windows. It also contains objects and functions such as TimeOut that make working with GTK and libadwaita a bit easier.
 
-It basically helps you to build dynmaic GUIs based on GTK in Rust.
+It basically helps you to build dynamic GUIs based on GTK in Rust.
 
-The StateContainers struct contains widget and window state association hashmaps and is a singleton that needs to be initalised before it is used:
+The StateContainers struct contains widget and window state association hashmaps and is a singleton that needs to be initialised before it is used:
 
 </br>
 
