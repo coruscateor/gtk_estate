@@ -1,9 +1,10 @@
 [package]
 name = "gtk_estate"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A GTK and libadwaita state association library"
+readme = "README.md"
 repository = "https://github.com/coruscateor/gtk_estate"
 homepage = "https://coruscateor.com/projects/gtk_estate"
 keywords = ["GUI", "state", "widget", "GTK", "libadwaita"]
