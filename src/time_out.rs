@@ -6,7 +6,9 @@ use std::cell::{Cell, RefCell};
 
 use gtk4 as gtk;
 
-use gtk::{glib::source::{timeout_add_local, SourceId}, prelude::Continue};
+use gtk::{glib::source::{timeout_add_local, SourceId}}; //, prelude::Continue};
+
+use gtk::{glib::ControlFlow};
 
 use corlib::events::{ListEvent, SenderEventFunc};
 
@@ -250,7 +252,9 @@ impl TimeOut
                     if this.get_reoccurs() //reoccurs
                     {
 
-                        Continue(true)
+                        //Continue(true)
+
+                        ControlFlow::Continue
 
                     }
                     else
@@ -262,7 +266,9 @@ impl TimeOut
 
                         this.fields.borrow_mut().source_id = None;
 
-                        Continue(false)
+                        //Continue(false)
+
+                        ControlFlow::Break
 
                     }
 
@@ -272,7 +278,9 @@ impl TimeOut
                 else
                 {
 
-                    Continue(false)
+                    //Continue(false)
+
+                    ControlFlow::Break
 
                 }
             

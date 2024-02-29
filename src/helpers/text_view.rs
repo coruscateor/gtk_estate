@@ -1,6 +1,6 @@
 use gtk4 as gtk;
 
-use gtk::{TextView, traits::{TextViewExt, TextBufferExt}};
+use gtk::{TextView, prelude::{TextViewExt, TextBufferExt}};
 
 pub fn get_text_view_string(tv: &TextView) -> String
 {

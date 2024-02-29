@@ -1,6 +1,6 @@
 use gtk4 as gtk;
 
-use gtk::{Widget, Paned, prelude::IsA, traits::WidgetExt};
+use gtk::{Widget, Paned, prelude::IsA, prelude::WidgetExt};
 
 
 //pub fn set_hvexpand<T: WidgetExt>(widget: &T, expand: bool) // IsA<Widget>>

@@ -6,7 +6,9 @@ use std::cell::{Cell, RefCell, Ref};
 
 use gtk4 as gtk;
 
-use gtk::{glib::source::{timeout_add_local, SourceId}, prelude::Continue};
+use gtk::{glib::source::{timeout_add_local, SourceId}}; //, prelude::Continue};
+
+use gtk::{glib::ControlFlow};
 
 use corlib::events::{ListEvent, SenderEventFunc};
 
@@ -272,7 +274,9 @@ impl SimpleTimeOut //<F>
                         if function(&this) //if (this.fields.borrow().function)(&this)
                         {
 
-                            Continue(true)
+                            //Continue(true)
+
+                            ControlFlow::Continue
 
                         }
                         else
@@ -282,7 +286,9 @@ impl SimpleTimeOut //<F>
 
                             this.fields.borrow_mut().source_id = None;
 
-                            Continue(false)
+                            //Continue(false)
+
+                            ControlFlow::Break
 
                         }
 
@@ -290,15 +296,19 @@ impl SimpleTimeOut //<F>
                     else
                     {
 
-                        Continue(false)
+                        //Continue(false)
                         
+                        ControlFlow::Break
+
                     }
 
                 }
                 else
                 {
 
-                    Continue(false)
+                    //Continue(false)
+
+                    ControlFlow::Break
 
                 }
             
