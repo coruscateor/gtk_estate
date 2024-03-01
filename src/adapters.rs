@@ -10,15 +10,21 @@ use gtk::gio::prelude::ApplicationExt;
 
 use gtk::prelude::WidgetExt;
 
-use crate::StateContainers;
+use crate::{StateContainers, WidgetStateContainer};
+
+use std::hash::{Hash, Hasher};
+
+use corlib::collections::DynHash;
 
 pub trait ApplicationObject : Any  //: Deref //Any + ApplicationExt +
 {
 
 }
 
-pub trait WidgetObject : Any  //: WidgetExt + Deref
+pub trait WidgetObject : Any //+ DynHash //+ Eq //Hash  //: WidgetExt + Deref
 {
+
+    fn widget_as_any(&self) -> &dyn Any;
 
     //fn connect_destroy<F: Fn(&Self) + 'static>(&self, f: F);
 
@@ -73,20 +79,22 @@ impl<T: ApplicationExt> ApplicationObject for ApplicationAdapter<T>
 pub struct WidgetAdapter<T: WidgetExt>
 {
 
-    object: T
+    object: T,
+    parent: Weak<dyn WidgetStateContainer>
 
 }
 
 impl<T: WidgetExt> WidgetAdapter<T>
 {
 
-    pub fn new(object: T) -> Self
+    pub fn new(object: T, parent: &Weak<dyn WidgetStateContainer>) -> Self
     {
 
         Self
         {
 
-            object
+            object,
+            parent: parent.clone()
 
         }
 
@@ -102,13 +110,72 @@ impl<T: WidgetExt> WidgetAdapter<T>
 }
 
 
-impl<T: WidgetExt> WidgetObject for WidgetAdapter<T>
+impl<T: WidgetExt + Hash> WidgetObject for WidgetAdapter<T>
 {
+
+    fn widget_as_any(&self) -> &dyn Any
+    {
+
+        &self.object    
+    
+    }
 
     fn connect_destroy(&self, sc: Weak<StateContainers>)
     {
 
-        todo!()
+        let parent = self.parent.clone();
+
+        self.object.connect_destroy(move |_widget|
+        {
+
+            if let Some(rc_sc) = &sc.upgrade()
+            {
+                
+                if let Some(rc_parent) = &parent.upgrade()
+                {
+
+                    rc_sc.remove(&rc_parent);
+
+                }
+
+            }
+
+        });
+
+        /*
+        if let Some(rc_sc) = sc.upgrade()
+        {
+
+            if let Some(parent) = self.parent.upgrade()
+            {
+
+                self.object.connect_destroy(move |_widget|
+                {
+    
+                    rc_sc.remove(&parent);
+        
+                });
+
+            }
+
+        }
+        */
+
+    }
+
+}
+
+impl<T: WidgetExt + Hash> DynHash for WidgetAdapter<T>
+{
+
+    //+ ?Sized
+
+    fn dyn_hash(&self, mut state: &mut dyn Hasher)
+    { 
+        
+        self.object.hash(&mut state) //Not completely sure how this works
+    
+        //Seems like the &mut dyn is cast into a &mut
 
     }
 
