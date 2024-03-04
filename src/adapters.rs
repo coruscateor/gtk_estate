@@ -19,12 +19,14 @@ use corlib::collections::DynHash;
 pub trait ApplicationObject : Any  //: Deref //Any + ApplicationExt +
 {
 
+    fn dyn_application(&self) -> &dyn Any;
+
 }
 
 pub trait WidgetObject : Any //+ DynHash //+ Eq //Hash  //: WidgetExt + Deref
 {
 
-    fn widget_as_any(&self) -> &dyn Any;
+    fn dyn_widget(&self) -> &dyn Any; //_as_any
 
     //fn connect_destroy<F: Fn(&Self) + 'static>(&self, f: F);
 
@@ -70,7 +72,12 @@ impl<T: ApplicationExt> ApplicationAdapter<T>
 impl<T: ApplicationExt> ApplicationObject for ApplicationAdapter<T>
 {
 
+    fn dyn_application(&self) -> &dyn Any
+    {
 
+        &self.object
+        
+    }
 
 }
 
@@ -113,7 +120,7 @@ impl<T: WidgetExt> WidgetAdapter<T>
 impl<T: WidgetExt + Hash> WidgetObject for WidgetAdapter<T>
 {
 
-    fn widget_as_any(&self) -> &dyn Any
+    fn dyn_widget(&self) -> &dyn Any //_as_any
     {
 
         &self.object    
@@ -134,7 +141,9 @@ impl<T: WidgetExt + Hash> WidgetObject for WidgetAdapter<T>
                 if let Some(rc_parent) = &parent.upgrade()
                 {
 
-                    rc_sc.remove(&rc_parent);
+                    //Don't remove right now but soon.
+
+                    rc_sc.delyed_removal(&rc_parent); //remove(&rc_parent);
 
                 }
 

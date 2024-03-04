@@ -226,8 +226,8 @@ impl TimeOut
     {
 
         let mut fields_mut = self.fields.borrow_mut();
-
-        if let None = fields_mut.source_id
+        
+        if fields_mut.source_id.is_none() //let None = fields_mut.source_id
         {
 
             let weak_self = self.weak_self.borrow().get_ref().clone();

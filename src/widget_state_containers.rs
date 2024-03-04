@@ -57,7 +57,7 @@ impl WidgetStateContainers
 
         let wt_id = sc.widget().type_id();
 
-        let rbp_sc = RcByPtr::new(sc.clone()); //: RcByPtr<dyn WidgetStateContainer>
+        let rbp_sc = RcByPtr::new(sc); //: RcByPtr<dyn WidgetStateContainer>
 
         /*
             the method `clone` exists for struct `RcByPtr<dyn WidgetStateContainer>`, but its trait bounds were not satisfied
@@ -119,7 +119,7 @@ impl WidgetStateContainers
     pub fn remove(&mut self, sc: &Rc<dyn WidgetStateContainer>) -> bool
     {
 
-        let rbp_sc = RcByPtr::new(sc.clone());
+        let rbp_sc = RcByPtr::new(sc);
 
         let wt_id = rbp_sc.contents().widget().type_id();
 
@@ -134,10 +134,26 @@ impl WidgetStateContainers
 
     }
 
+    pub fn remove_by_rc_by_ptr(&mut self, rbp_sc: &RcByPtr<dyn WidgetStateContainer>) -> bool
+    {
+
+        let wt_id = rbp_sc.contents().widget().type_id();
+
+        if let Some(wsc_set) = self.widget_state.get_mut(&wt_id)
+        {
+
+            return wsc_set.remove(rbp_sc);
+
+        }
+
+        false
+
+    }
+
     pub fn contains(&self, sc: &Rc<dyn WidgetStateContainer>) -> bool
     {
 
-        let rbp_sc = RcByPtr::new(sc.clone());
+        let rbp_sc = RcByPtr::new(sc);
 
         let wt_id = rbp_sc.contents().widget().type_id();
 

@@ -253,7 +253,7 @@ impl SimpleTimeOut //<F>
 
         let mut fields_mut = self.fields.borrow_mut();
 
-        if let None = fields_mut.source_id //&& fields_mut.opt_function.is_some()
+        if fields_mut.source_id.is_none() //let None = fields_mut.source_id //&& fields_mut.opt_function.is_some()
         {
 
             /*

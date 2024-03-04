@@ -34,6 +34,7 @@ pub use state_containers::*;
 
 pub extern crate gtk4;
 
+#[cfg(feature="adw")]
 pub extern crate adw;
 
 pub extern crate corlib;
