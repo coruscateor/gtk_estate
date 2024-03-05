@@ -328,5 +328,31 @@ impl StateContainers //<'a>
 
     impl_rfc_borrow_and_mut!(widget_state, WidgetStateContainers);
 
+    pub fn find_widget_state<T: WidgetExt + Eq>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>>
+    {
+
+        {
+
+            let ws = self.widget_state.borrow();
+
+            ws.find_state(widget)
+
+        }
+
+    }
+
+    pub fn has_widget_state<T: WidgetExt + Eq>(&self, widget: &T) -> bool
+    {
+
+        {
+
+            let ws = self.widget_state.borrow();
+
+            ws.has_state(widget)
+
+        }
+
+    }
+
 }
 

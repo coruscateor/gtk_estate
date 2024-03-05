@@ -225,4 +225,68 @@ impl WidgetStateContainers
 
     }
 
+    pub fn find_state(&self, widget: &dyn Any) -> Option<Rc<dyn WidgetStateContainer>>
+    {
+
+        let wt_id = widget.type_id();
+
+        //Lookup ther bucket
+
+        if let Some(wsc_set) = self.widget_state.get(&wt_id)
+        {
+
+            //Iterate through the values trying find the state with the widget
+
+            for ws in wsc_set.iter()
+            {
+
+                let contents = ws.contents();
+
+                if contents.widget().dyn_has(widget)
+                {
+
+                    return Some(contents.clone());
+
+                }
+
+            }
+
+        }
+
+        None
+
+    }
+
+    pub fn has_state(&self, widget: &dyn Any) -> bool
+    {
+
+        let wt_id = widget.type_id();
+
+        //Lookup ther bucket
+
+        if let Some(wsc_set) = self.widget_state.get(&wt_id)
+        {
+
+            //Iterate through the values trying find the state with the widget
+
+            for ws in wsc_set.iter()
+            {
+
+                let contents = ws.contents();
+
+                if contents.widget().dyn_has(widget)
+                {
+
+                    return true;
+
+                }
+
+            }
+
+        }
+
+        false
+
+    }
+
 }
