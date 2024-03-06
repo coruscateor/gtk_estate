@@ -6,40 +6,45 @@ use std::rc::{Rc, Weak};
 
 use corlib::RcByPtr;
 
-use crate::{StateContainers, WidgetObject, WidgetStateContainer};
+use gtk::glib::object::ObjectExt;
+use gtk4 as gtk;
+
+use gtk::glib::Type;
+
+use crate::{StateContainers, LookupWidgetObject, StoredWidgetObject, WidgetStateContainer};
 
 pub struct WidgetStateContainers
 {
 
-    widget_state: HashMap<TypeId, HashSet<RcByPtr<dyn WidgetStateContainer>>>,
-    weak_self: Weak<StateContainers>
+    widget_state: HashMap<Type, HashSet<RcByPtr<dyn WidgetStateContainer>>>,
+    weak_parent: Weak<StateContainers>
 
 }
 
 impl WidgetStateContainers
 {
 
-    pub fn new(weak_self: &Weak<StateContainers>) -> Self
+    pub fn new(weak_parent: &Weak<StateContainers>) -> Self
     {
 
         Self
         {
 
             widget_state: HashMap::new(),
-            weak_self: weak_self.clone()
+            weak_parent: weak_parent.clone()
 
         }
 
     }
 
-    pub fn with_capacity(weak_self: &Weak<StateContainers>, capacity: usize) -> Self
+    pub fn with_capacity(weak_parent: &Weak<StateContainers>, capacity: usize) -> Self
     {
 
         Self
         {
 
             widget_state: HashMap::with_capacity(capacity),
-            weak_self: weak_self.clone()
+            weak_parent: weak_parent.clone()
 
         }
 
@@ -55,7 +60,9 @@ impl WidgetStateContainers
     pub fn add(&mut self, sc: &Rc<dyn WidgetStateContainer>) -> bool
     {
 
-        let wt_id = sc.widget().type_id();
+        //let wt_id = sc.widget().type_id();
+
+        let glt = sc.widget().glib_type();
 
         let rbp_sc = RcByPtr::new(sc); //: RcByPtr<dyn WidgetStateContainer>
 
@@ -69,7 +76,7 @@ impl WidgetStateContainers
 
          */
 
-        if let Some(wsc_set) = self.widget_state.get_mut(&wt_id) // !self.widget_state.contains_key(&wt_id)
+        if let Some(wsc_set) = self.widget_state.get_mut(&glt) //(&wt_id) // !self.widget_state.contains_key(&wt_id)
         {
 
             let rbp_sc_2: RcByPtr<dyn WidgetStateContainer> = rbp_sc.clone();
@@ -97,7 +104,7 @@ impl WidgetStateContainers
 
             hs.insert(rbp_sc);
 
-            self.widget_state.insert(wt_id, hs);
+            self.widget_state.insert(glt, hs); //wt_id, hs);
 
             return true;
 
@@ -112,7 +119,7 @@ impl WidgetStateContainers
 
         //Make sure the added state gets removed when its widget gets destroyed.
 
-        rbp_sc.contents().widget().connect_destroy(self.weak_self.clone());
+        rbp_sc.contents().widget().connect_destroy(self.weak_parent.clone());
 
     }
 
@@ -121,9 +128,9 @@ impl WidgetStateContainers
 
         let rbp_sc = RcByPtr::new(sc);
 
-        let wt_id = rbp_sc.contents().widget().type_id();
+        let glt = rbp_sc.contents().widget().glib_type(); //.type_id();
 
-        if let Some(wsc_set) = self.widget_state.get_mut(&wt_id)
+        if let Some(wsc_set) = self.widget_state.get_mut(&glt) //(&wt_id)
         {
 
             return wsc_set.remove(&rbp_sc);
@@ -137,9 +144,9 @@ impl WidgetStateContainers
     pub fn remove_by_rc_by_ptr(&mut self, rbp_sc: &RcByPtr<dyn WidgetStateContainer>) -> bool
     {
 
-        let wt_id = rbp_sc.contents().widget().type_id();
+        let glt = rbp_sc.contents().widget().glib_type(); //.type_id();
 
-        if let Some(wsc_set) = self.widget_state.get_mut(&wt_id)
+        if let Some(wsc_set) = self.widget_state.get_mut(&glt) //wt_id)
         {
 
             return wsc_set.remove(rbp_sc);
@@ -155,9 +162,9 @@ impl WidgetStateContainers
 
         let rbp_sc = RcByPtr::new(sc);
 
-        let wt_id = rbp_sc.contents().widget().type_id();
+        let glt = rbp_sc.contents().widget().glib_type(); //.type_id();
 
-        if let Some(wsc_set) = self.widget_state.get(&wt_id)
+        if let Some(wsc_set) = self.widget_state.get(&glt)
         {
 
             return wsc_set.contains(&rbp_sc);
@@ -168,21 +175,21 @@ impl WidgetStateContainers
 
     }
 
-    pub fn contains_widget_type(&self, wo: &(dyn WidgetObject)) -> bool
+    pub fn contains_widget_type(&self, wo: &(dyn LookupWidgetObject)) -> bool
     {
 
-        let wt_id = wo.type_id();
+        let glt = wo.glib_type(); //.type_id();
 
-        self.widget_state.contains_key(&wt_id)
+        self.widget_state.contains_key(&glt) //wt_id)
 
     }
 
     pub fn contains_widget_type_in(&self, sc: &Rc<dyn WidgetStateContainer>) -> bool
     {
 
-        let wt_id = sc.widget().type_id();
+        let glt = sc.widget().glib_type(); //.type_id();
 
-        self.widget_state.contains_key(&wt_id)
+        self.widget_state.contains_key(&glt) //wt_id)
 
     }
 
@@ -209,7 +216,7 @@ impl WidgetStateContainers
 
     }
 
-    pub fn individual_counts_of_bucket_lens(&self) -> HashMap<TypeId, usize>
+    pub fn individual_counts_of_bucket_lens(&self) -> HashMap<Type, usize>
     {
 
         let mut lens = HashMap::with_capacity(self.widget_state.len());
@@ -225,14 +232,14 @@ impl WidgetStateContainers
 
     }
 
-    pub fn find_state(&self, widget: &dyn Any) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn dyn_find_state(&self, widget: &dyn LookupWidgetObject) -> Option<Rc<dyn WidgetStateContainer>>
     {
 
-        let wt_id = widget.type_id();
+        let glt = widget.glib_type(); //.type_(); //.type_id();
 
         //Lookup ther bucket
 
-        if let Some(wsc_set) = self.widget_state.get(&wt_id)
+        if let Some(wsc_set) = self.widget_state.get(&glt) //wt_id)
         {
 
             //Iterate through the values trying find the state with the widget
@@ -242,7 +249,7 @@ impl WidgetStateContainers
 
                 let contents = ws.contents();
 
-                if contents.widget().dyn_has(widget)
+                if contents.widget().dyn_has(widget.dyn_widget())
                 {
 
                     return Some(contents.clone());
@@ -257,14 +264,14 @@ impl WidgetStateContainers
 
     }
 
-    pub fn has_state(&self, widget: &dyn Any) -> bool
+    pub fn dyn_has_state(&self, widget: &dyn LookupWidgetObject) -> bool
     {
 
-        let wt_id = widget.type_id();
+        let glt = widget.glib_type(); //type_(); //.type_id();
 
         //Lookup ther bucket
 
-        if let Some(wsc_set) = self.widget_state.get(&wt_id)
+        if let Some(wsc_set) = self.widget_state.get(&glt)
         {
 
             //Iterate through the values trying find the state with the widget
@@ -274,7 +281,7 @@ impl WidgetStateContainers
 
                 let contents = ws.contents();
 
-                if contents.widget().dyn_has(widget)
+                if contents.widget().dyn_has(widget.dyn_widget())
                 {
 
                     return true;

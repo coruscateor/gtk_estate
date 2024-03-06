@@ -1,11 +1,13 @@
 use std::any::TypeId;
 
 use std::time::Duration;
+
 use std::{rc::*, any::Any};
 
 use std::cell::{RefCell, Ref, RefMut};
 
-use corlib::impl_rfc_borrow_call;
+use corlib::{impl_rfc_borrow_call, AsAny};
+
 use gtk::gio::prelude::ApplicationExt;
 
 use gtk::prelude::WidgetExt;
@@ -37,19 +39,25 @@ only auto traits can be used as additional traits in a trait object
 consider creating a new trait with all of these as supertraits and using that trait here instead: `trait NewTrait: std::any::Any + ApplicationExt {}`
 */
 
-pub trait ApplicationStateContainer : Any //<'a>
+///
+/// Indicates that the implementing object stores application related data.
+/// 
+pub trait ApplicationStateContainer : AsAny + Any //<'a>
 {
 
     //fn application() -> &'a (dyn Any + ApplicationExt);
 
-    fn application(&self) -> &(dyn ApplicationObject); //'a //Any +
+    fn application(&self) -> &(dyn StoredApplicationObject); //'a //Any +
 
 }
 
-pub trait WidgetStateContainer : Any //<'a>
+///
+/// Indicates that the implementing object stores widget related data.
+/// 
+pub trait WidgetStateContainer : AsAny + Any //<'a>
 {
 
-    fn widget(&self) -> &(dyn WidgetObject); //'a  //Any + WidgetExt
+    fn widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
 
 }
 
@@ -328,27 +336,31 @@ impl StateContainers //<'a>
 
     impl_rfc_borrow_and_mut!(widget_state, WidgetStateContainers);
 
-    pub fn find_widget_state<T: WidgetExt + Eq>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone>(&self, widget: &T) -> bool
     {
+
+        let lwa = LookupWidgetAdapter::new(widget);
 
         {
 
             let ws = self.widget_state.borrow();
 
-            ws.find_state(widget)
+            ws.dyn_has_state(&lwa)
 
         }
 
     }
 
-    pub fn has_widget_state<T: WidgetExt + Eq>(&self, widget: &T) -> bool
+    pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>>
     {
+
+        let lwa = LookupWidgetAdapter::new(widget);
 
         {
 
             let ws = self.widget_state.borrow();
 
-            ws.has_state(widget)
+            ws.dyn_find_state(&lwa)
 
         }
 

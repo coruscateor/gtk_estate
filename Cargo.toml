@@ -26,3 +26,30 @@ version = "0.6.*" #"0.4.*" #"0.2.1"
 optional = true
 #version = "0.2.0-alpha.2"
 
+[features]
+
+#GTK
+
+gtk_v4_14 = ["gtk4/v4_14"]
+gtk_v4_12 = ["gtk4/v4_12"]
+gtk_v4_10 = ["gtk4/v4_10"]
+gtk_v4_8 = ["gtk4/v4_8"]
+gtk_v4_6 = ["gtk4/v4_6"]
+gtk_v4_4 = ["gtk4/v4_4"]
+gtk_v4_2 = ["gtk4/v4_2"]
+gtk_gnome_45 = ["gtk4/gnome_45"]
+gtk_gnome_44 = ["gtk4/gnome_44"]
+gtk_gnome_43 = ["gtk4/gnome_43"]
+gtk_gnome_42 = ["gtk4/gnome_42"]
+gtk_unsafe-assume-initialized = ["gtk4/unsafe-assume-initialized"]
+gtk_xml_validation = ["gtk4/xml_validation"]
+gtk_blueprint = ["gtk4/blueprint"]
+
+#ADW
+
+adw = ["dep:adw"]
+adw_v1_2 = ["adw/v1_2"]
+adw_v1_3 = ["adw/v1_3"]
+adw_v1_4 = ["adw/v1_4"]
+adw_v1_5 = ["adw/v1_5"]
+
