@@ -6,7 +6,7 @@ use std::{rc::*, any::Any};
 
 use std::cell::{RefCell, Ref, RefMut};
 
-use corlib::{impl_rfc_borrow_call, AsAny};
+use corlib::{impl_rfc_borrow_call, impl_rfc_borrow_mut_call, AsAny};
 
 use gtk::gio::prelude::ApplicationExt;
 
@@ -29,7 +29,7 @@ use corlib::
 
 use gtk4 as gtk;
 
-use gtk::{glib::object::ObjectExt};
+use gtk::glib::object::ObjectExt;
 
 use crate::{adapters::*, RcSimpleTimeOut, WidgetStateContainers, SimpleTimeOut};
 
@@ -261,10 +261,37 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn set_application_state(&mut self, state: &Rc<dyn ApplicationStateContainer>)
+    pub fn set_application_state(&mut self, state: &Rc<dyn ApplicationStateContainer>) -> bool
     {
 
-        self.nc_internals.borrow_mut().application_state.set(state.clone());
+        {
+
+            let mut nc_internals_mut = self.nc_internals.borrow_mut();
+            
+            if nc_internals_mut.application_state.is_valid()
+            {
+
+                return false;
+
+            }
+
+            nc_internals_mut.application_state.set(state.clone());
+
+        }
+
+        true
+
+    }
+
+    pub fn set_application_state_or_panic(&mut self, state: &Rc<dyn ApplicationStateContainer>)
+    {
+
+        if !self.set_application_state(state)
+        {
+
+            panic!("GTK Estate: Error: Cound not set applicaton state!")
+
+        }
 
     }
 
@@ -333,6 +360,10 @@ impl StateContainers //<'a>
         self.widget_state.borrow_mut().remove_by_rc_by_ptr(rbp_sc)
 
     }
+
+    //Fix:
+
+    //impl_rfc_borrow_mut_call!(widget_state, remove_by_rc_by_ptr, rbp_sc: &RcByPtr<dyn WidgetStateContainer>);
 
     impl_rfc_borrow_and_mut!(widget_state, WidgetStateContainers);
 

@@ -14,7 +14,7 @@ use crate::{ApplicationStateContainer, StateContainers, WidgetStateContainer};
 
 use std::hash::{Hash, Hasher};
 
-use corlib::collections::DynHash;
+//use corlib::collections::DynHash;
 
 use corlib::AsAny; //{AsAny, impl_as_any};
 
@@ -82,23 +82,23 @@ pub trait StoredWidgetObject : LookupWidgetObject + Any
 
 //ApplicationAdapter
 
-pub struct ApplicationAdapter<T: ApplicationExt + Eq + ObjectExt>
+pub struct ApplicationAdapter<T: ApplicationExt + Eq + ObjectExt + Clone>
 {
 
     object: T
 
 }
 
-impl<T: ApplicationExt + Eq + ObjectExt> ApplicationAdapter<T>
+impl<T: ApplicationExt + Eq + ObjectExt + Clon> ApplicationAdapter<T>
 {
 
-    pub fn new(object: T) -> Self
+    pub fn new(object: &T) -> Self
     {
 
         Self
         {
 
-            object
+            object: object.clone()
 
         }
 

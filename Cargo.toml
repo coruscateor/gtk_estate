@@ -48,6 +48,12 @@ gtk_blueprint = ["gtk4/blueprint"]
 #ADW
 
 adw = ["dep:adw"]
+adw_gtk_v4_2 = ["adw/gtk_v4_2"]
+adw_gtk_v4_4 = ["adw/gtk_v4_4"]
+adw_gtk_v4_6 = ["adw/gtk_v4_6"]
+adw_gtk_v4_8 = ["adw/gtk_v4_8"]
+adw_gtk_v4_10 = ["adw/gtk_v4_10"]
+adw_gtk_v4_12 = ["adw/gtk_v4_12"]
 adw_v1_2 = ["adw/v1_2"]
 adw_v1_3 = ["adw/v1_3"]
 adw_v1_4 = ["adw/v1_4"]
