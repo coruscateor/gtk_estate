@@ -1,3 +1,4 @@
+use gtk::Widget;
 use gtk4 as gtk;
 
 use std::any::Any;
@@ -18,9 +19,11 @@ use std::hash::{Hash, Hasher};
 
 use corlib::AsAny; //{AsAny, impl_as_any};
 
-use gtk::glib::object::ObjectExt;
+use gtk::glib::object::{IsA, MayDowncastTo, ObjectExt};
 
 use gtk::glib::Type;
+
+use gtk::glib::object::Cast;
 
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
@@ -66,6 +69,8 @@ pub trait LookupWidgetObject : AsAny + Any //+ DynHash //+ Eq //Hash  //: Widget
 
     fn glib_type(&self) -> Type;
 
+    fn widget(&self) -> Widget;
+
 }
 
 ///
@@ -85,20 +90,23 @@ pub trait StoredWidgetObject : LookupWidgetObject + Any
 pub struct ApplicationAdapter<T: ApplicationExt + Eq + ObjectExt + Clone>
 {
 
-    object: T
+    object: T,
+    parent: Weak<dyn ApplicationStateContainer>
+
 
 }
 
-impl<T: ApplicationExt + Eq + ObjectExt + Clon> ApplicationAdapter<T>
+impl<T: ApplicationExt + Eq + ObjectExt + Clone> ApplicationAdapter<T>
 {
 
-    pub fn new(object: &T) -> Self
+    pub fn new(object: &T, parent: &Weak<dyn ApplicationStateContainer>) -> Self
     {
 
         Self
         {
 
-            object: object.clone()
+            object: object.clone(),
+            parent: parent.clone()
 
         }
 
@@ -122,6 +130,18 @@ impl<T: ApplicationExt + Eq + ObjectExt + Clon> ApplicationAdapter<T>
     {
         
         self.object == *application
+
+    }
+
+}
+
+impl<T: ApplicationExt + Eq + ObjectExt> StoredApplicationObject for ApplicationAdapter<T>
+{
+
+    fn parent(&self) -> &Weak<dyn ApplicationStateContainer>
+    {
+
+        &self.parent
 
     }
 
@@ -203,7 +223,8 @@ impl<T: ApplicationExt> AsAny for ApplicationAdapter<T>
 
 //WidgetAdapter
 
-pub struct WidgetAdapter<T: WidgetExt + Eq + ObjectExt>
+#[derive(Clone)]
+pub struct WidgetAdapter<T: WidgetExt + Eq + ObjectExt + Clone>
 {
 
     object: T,
@@ -211,10 +232,11 @@ pub struct WidgetAdapter<T: WidgetExt + Eq + ObjectExt>
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt> WidgetAdapter<T>
+impl<T: WidgetExt + Eq + ObjectExt + Clone> WidgetAdapter<T>
 {
 
-    pub fn new(object: T, parent: &Weak<dyn WidgetStateContainer>) -> Self
+    /*
+    pub fn dyn_new(object: T, parent: &Weak<dyn WidgetStateContainer>) -> Self
     {
 
         Self
@@ -222,6 +244,25 @@ impl<T: WidgetExt + Eq + ObjectExt> WidgetAdapter<T>
 
             object,
             parent: parent.clone()
+
+        }
+
+    }
+    */
+
+    pub fn new<WSC>(object: T, parent: &Weak<WSC>) -> Self //Weak<dyn WidgetStateContainer>
+        where WSC: WidgetStateContainer
+    {
+
+        let any_wsc: &dyn Any = parent;
+
+        let casted_wsc = any_wsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().expect("GTK Estate - Error: Weak<dyn WidgetStateContainer> cast failed.");
+
+        Self
+        {
+
+            object,
+            parent: casted_wsc.clone()
 
         }
 
@@ -250,7 +291,7 @@ impl<T: WidgetExt + Eq + ObjectExt> WidgetAdapter<T>
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt> StoredWidgetObject for WidgetAdapter<T>
+impl<T: WidgetExt + Eq + ObjectExt + MayDowncastTo<Widget>> StoredWidgetObject for WidgetAdapter<T>
 {
 
     fn parent(&self) -> &Weak<dyn WidgetStateContainer>
@@ -311,7 +352,7 @@ impl<T: WidgetExt + Eq + ObjectExt> StoredWidgetObject for WidgetAdapter<T>
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt> LookupWidgetObject for WidgetAdapter<T>
+impl<T: WidgetExt + Eq + ObjectExt + Clone + MayDowncastTo<Widget>> LookupWidgetObject for WidgetAdapter<T>
 {
 
     fn dyn_widget(&self) -> &dyn Any
@@ -369,6 +410,13 @@ impl<T: WidgetExt + Eq + ObjectExt> LookupWidgetObject for WidgetAdapter<T>
 
         self.object.type_()
 
+    }
+    
+    fn widget(&self) -> Widget
+    {
+
+        self.object.downcast_ref::<Widget>().expect("GTK Estate - Error: Downcast to Widget failed.").clone()
+        
     }
 
 }
@@ -451,8 +499,10 @@ impl<T: WidgetExt + Eq + ObjectExt + Clone> LookupWidgetAdapter<T>
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt> LookupWidgetObject for LookupWidgetAdapter<T>
+impl<T: WidgetExt + Eq + ObjectExt + MayDowncastTo<Widget> /*+ Cast*/> LookupWidgetObject for LookupWidgetAdapter<T>
 {
+
+    //IsA<Widget> + 
 
     fn dyn_widget(&self) -> &dyn Any
     {
@@ -490,6 +540,13 @@ impl<T: WidgetExt + Eq + ObjectExt> LookupWidgetObject for LookupWidgetAdapter<T
 
         self.object.type_()
 
+    }
+    
+    fn widget(&self) -> Widget
+    {
+
+        self.object.downcast_ref::<Widget>().expect("GTK Estate - Error: Downcast to Widget failed.").clone()
+        
     }
 
 }

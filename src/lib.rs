@@ -67,6 +67,22 @@ mod widget_state_containers;
 
 pub use widget_state_containers::*;
 
+mod gtk_window_state;
+
+pub use gtk_window_state::*;
+
+#[cfg(feature="adw")]
+mod adw_window_state;
+
+#[cfg(feature="adw")]
+pub use adw_window_state::*;
+
+#[cfg(feature="adw")]
+mod adw_application_window_state;
+
+#[cfg(feature="adw")]
+pub use adw_application_window_state::*;
+
 //mod hash_by_widget;
 
 //pub use hash_by_widget::*;

@@ -12,6 +12,7 @@ use gtk::gio::prelude::ApplicationExt;
 
 use gtk::prelude::WidgetExt;
 
+use gtk::Widget;
 use paste::paste;
 
 use std::collections::{HashMap, HashSet};
@@ -29,7 +30,7 @@ use corlib::
 
 use gtk4 as gtk;
 
-use gtk::glib::object::ObjectExt;
+use gtk::glib::object::{MayDowncastTo, ObjectExt};
 
 use crate::{adapters::*, RcSimpleTimeOut, WidgetStateContainers, SimpleTimeOut};
 
@@ -261,7 +262,7 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn set_application_state(&mut self, state: &Rc<dyn ApplicationStateContainer>) -> bool
+    pub fn set_application_state(&self, state: &Rc<dyn ApplicationStateContainer>) -> bool
     {
 
         {
@@ -283,7 +284,7 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn set_application_state_or_panic(&mut self, state: &Rc<dyn ApplicationStateContainer>)
+    pub fn set_application_state_or_panic(&self, state: &Rc<dyn ApplicationStateContainer>)
     {
 
         if !self.set_application_state(state)
@@ -367,7 +368,7 @@ impl StateContainers //<'a>
 
     impl_rfc_borrow_and_mut!(widget_state, WidgetStateContainers);
 
-    pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone>(&self, widget: &T) -> bool
+    pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + MayDowncastTo<Widget>>(&self, widget: &T) -> bool
     {
 
         let lwa = LookupWidgetAdapter::new(widget);
@@ -382,7 +383,7 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + MayDowncastTo<Widget>>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>>
     {
 
         let lwa = LookupWidgetAdapter::new(widget);
