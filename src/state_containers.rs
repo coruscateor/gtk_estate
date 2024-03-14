@@ -30,7 +30,7 @@ use corlib::
 
 use gtk4 as gtk;
 
-use gtk::glib::object::{MayDowncastTo, ObjectExt};
+use gtk::glib::object::{IsA, MayDowncastTo, ObjectExt};
 
 use crate::{adapters::*, RcSimpleTimeOut, WidgetStateContainers, SimpleTimeOut};
 
@@ -255,7 +255,7 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn my_weak_self(&self) -> Weak<StateContainers>
+    pub fn weak_self(&self) -> Weak<StateContainers>
     {
 
         self.nc_internals.borrow().weak_self.clone()
@@ -310,10 +310,22 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn add(&self, sc: &Rc<dyn WidgetStateContainer>)
+    pub fn dyn_add(&self, sc: &Rc<dyn WidgetStateContainer>)
     {
 
         self.widget_state.borrow_mut().add(sc);
+        
+    }
+
+    pub fn add<WSC>(&self, sc: &Rc<WSC>)
+        where WSC: WidgetStateContainer
+    {
+
+        let any_sc: &dyn Any = sc;
+
+        let wsc = any_sc.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
+
+        self.widget_state.borrow_mut().add(wsc);
         
     }
 
@@ -368,7 +380,7 @@ impl StateContainers //<'a>
 
     impl_rfc_borrow_and_mut!(widget_state, WidgetStateContainers);
 
-    pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + MayDowncastTo<Widget>>(&self, widget: &T) -> bool
+    pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T> + MayDowncastTo<Widget>>(&self, widget: &T) -> bool
     {
 
         let lwa = LookupWidgetAdapter::new(widget);
@@ -383,7 +395,7 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + MayDowncastTo<Widget>>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T> + MayDowncastTo<Widget>>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>>
     {
 
         let lwa = LookupWidgetAdapter::new(widget);

@@ -18,7 +18,7 @@ use crate::corlib::{NonOption, rc_self_rfc_setup};
 
 //use crate::window_contents_state::WindowContentsState;
 
-use adw::builders::ApplicationWindowBuilder;
+use adw::builders::{ApplicationWindowBuilder, WindowBuilder};
 use adw::ffi::AdwApplicationWindow;
 use adw::ApplicationWindow;
 use corlib::AsAny;
@@ -29,7 +29,7 @@ use gtk::Widget;
 use adw::prelude::AdwApplicationWindowExt;
 
 pub struct AdwApplcationWindowState<T>
-    where T: GtkWindowExt + WidgetExt + AdwApplicationWindowExt + IsA<ApplicationWindow>
+    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget> //+ IsA<ApplicationWindow> //+ WidgetExt 
 {
 
     weak_self: Weak<Self>,
@@ -37,7 +37,7 @@ pub struct AdwApplcationWindowState<T>
 }
 
 impl<T> AdwApplcationWindowState<T>
-    where T: GtkWindowExt + WidgetExt + MayDowncastTo<Widget> + AdwApplicationWindowExt + IsA<ApplicationWindow> //+ IsA<Widget>
+    where T: GtkWindowExt + MayDowncastTo<Widget> + AdwApplicationWindowExt + IsA<Widget> //+ IsA<ApplicationWindow>  // + WidgetExt 
 {
 
     pub fn weak_self(&self) -> Weak<Self>
@@ -68,7 +68,7 @@ impl<T> AdwApplcationWindowState<T>
 
     }
 
-    pub fn set_content(&self, child_state: Option<&Rc<dyn WidgetStateContainer>>)
+    pub fn dyn_set_content(&self, child_state: Option<&Rc<dyn WidgetStateContainer>>)
     {
 
         if let Some(state) = child_state
@@ -79,43 +79,66 @@ impl<T> AdwApplcationWindowState<T>
         }
 
     }
+
+    pub fn set_content<WSC: WidgetStateContainer>(&self, child_state: Option<&Rc<WSC>>)
+    {
+
+        if let Some(state) = child_state
+        {
+
+            self.window.widget().set_content(Some(&state.widget().widget()))
+            
+        }
+
+    }
+
+
 }
 
 
 impl<T> AdwApplcationWindowState<T>
-    where T: GtkWindowExt + WidgetExt + AdwApplicationWindowExt + MayDowncastTo<Widget> // + IsA<ApplicationWindow> //+ IsA<Widget>
+    where T: GtkWindowExt + AdwApplicationWindowExt + MayDowncastTo<Widget> + IsA<Widget> //IsA<T> +  //WidgetExt + 
 {
 
-    pub fn new<F>(window_fn: F) -> Rc<Self> //app: &Application
+    pub fn new<F>(window_fn: F) -> Rc<Self>
         where F: FnOnce()-> T
     {
 
         let aws = Rc::new_cyclic(|weak_self|
         {
 
-            //let wsc = weak_self.clone();
-
-            //let wwsc: &Weak<dyn WidgetStateContainer> = weak_self;
-
-            //let wwsc: &dyn Any = weak_self;
-
             Self
             {
 
                 weak_self: weak_self.clone(),
-                window: WidgetAdapter::new(window_fn(), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
+                window: WidgetAdapter::new(window_fn(), weak_self)
 
             }
 
         });
 
-        let any_this: &dyn Any = &aws;
+        //let any_this: &dyn Any = &aws;
 
-        let wsc = any_this.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
+        //let wsc = any_this.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
 
-        StateContainers::get().add(wsc);
+        //StateContainers::get().add(wsc);
+
+        StateContainers::get().add(&aws);
 
         aws
+
+    }
+
+    pub fn with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
+        where F: FnOnce()-> T,
+            WSC: WidgetStateContainer
+    {
+
+        let sc = Self::new(window_fn);
+
+        sc.set_content(Some(content_state));
+
+        sc
 
     }
 
@@ -137,20 +160,33 @@ impl<T> AdwApplcationWindowState<T>
 
         });
 
-        let any_this: &dyn Any = &aws;
+        //let any_this: &dyn Any = &aws;
 
-        let wsc = any_this.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
+        //let wsc = any_this.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
 
-        StateContainers::get().add(wsc);
+        StateContainers::get().add(&aws);//wsc);
 
         aws
 
     }
 
+    pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
+        where F: FnOnce(ApplicationWindowBuilder)-> T,
+            WSC: WidgetStateContainer
+    {
+
+        let sc = Self::builder(window_fn);
+
+        sc.set_content(Some(content_state));
+
+        sc
+
+    }
+    
 }
 
 impl<T> AsAny for AdwApplcationWindowState<T>
-    where T: GtkWindowExt + WidgetExt + AdwApplicationWindowExt
+    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget> //WidgetExt + 
 {
 
     fn as_any(&self) -> &dyn std::any::Any
@@ -163,7 +199,7 @@ impl<T> AsAny for AdwApplcationWindowState<T>
 }
 
 impl<T> WidgetStateContainer for AdwApplcationWindowState<T>
-    where T: GtkWindowExt + WidgetExt + MayDowncastTo<Widget> + AdwApplicationWindowExt
+    where T: GtkWindowExt + MayDowncastTo<Widget> + AdwApplicationWindowExt + IsA<Widget>  //IsA<T> + //WidgetExt + 
 {
 
     fn widget(&self) -> &(dyn crate::StoredWidgetObject)

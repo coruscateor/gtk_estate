@@ -83,7 +83,7 @@ impl<T> GtkWindowState<T>
 
 
 impl<T> GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + MayDowncastTo<Widget>,
+    where T: GtkWindowExt + WidgetExt + IsA<T> + MayDowncastTo<Widget>,
 {
 
     pub fn new<F>(window_fn: F) -> Rc<Self> //app: &Application
@@ -127,7 +127,7 @@ impl<T> AsAny for GtkWindowState<T>
 }
 
 impl<T> WidgetStateContainer for GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + MayDowncastTo<Widget>
+    where T: GtkWindowExt + WidgetExt + IsA<T> + MayDowncastTo<Widget>
 {
 
     fn widget(&self) -> &(dyn crate::StoredWidgetObject)

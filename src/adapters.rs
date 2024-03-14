@@ -19,11 +19,11 @@ use std::hash::{Hash, Hasher};
 
 use corlib::AsAny; //{AsAny, impl_as_any};
 
-use gtk::glib::object::{IsA, MayDowncastTo, ObjectExt};
+//use gtk::glib::object::{IsA, MayDowncastTo, ObjectExt};
 
 use gtk::glib::Type;
 
-use gtk::glib::object::Cast;
+use gtk::glib::object::{Cast, IsA, MayDowncastTo, ObjectExt};
 
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
@@ -224,7 +224,7 @@ impl<T: ApplicationExt> AsAny for ApplicationAdapter<T>
 //WidgetAdapter
 
 #[derive(Clone)]
-pub struct WidgetAdapter<T: WidgetExt + Eq + ObjectExt + Clone>
+pub struct WidgetAdapter<T: Eq + ObjectExt + Clone + IsA<Widget>> //WidgetExt + 
 {
 
     object: T,
@@ -232,7 +232,7 @@ pub struct WidgetAdapter<T: WidgetExt + Eq + ObjectExt + Clone>
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt + Clone> WidgetAdapter<T>
+impl<T: Eq + ObjectExt + Clone + IsA<Widget>> WidgetAdapter<T> //WidgetExt + 
 {
 
     /*
@@ -291,7 +291,7 @@ impl<T: WidgetExt + Eq + ObjectExt + Clone> WidgetAdapter<T>
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt + MayDowncastTo<Widget>> StoredWidgetObject for WidgetAdapter<T>
+impl<T: Eq + ObjectExt + Cast + MayDowncastTo<Widget> + IsA<Widget> + WidgetExt> StoredWidgetObject for WidgetAdapter<T> //MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
 {
 
     fn parent(&self) -> &Weak<dyn WidgetStateContainer>
@@ -352,7 +352,7 @@ impl<T: WidgetExt + Eq + ObjectExt + MayDowncastTo<Widget>> StoredWidgetObject f
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt + Clone + MayDowncastTo<Widget>> LookupWidgetObject for WidgetAdapter<T>
+impl<T: Eq + ObjectExt + Clone + Cast + MayDowncastTo<Widget> + IsA<Widget>> LookupWidgetObject for WidgetAdapter<T> //MayDowncastTo<Widget> + //IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
 {
 
     fn dyn_widget(&self) -> &dyn Any
@@ -439,7 +439,7 @@ impl<T: WidgetExt + Hash> DynHash for WidgetAdapter<T>
 }
 */
 
-impl<T: WidgetExt> AsAny for WidgetAdapter<T>
+impl<T: IsA<Widget>> AsAny for WidgetAdapter<T> //WidgetExt
 {
 
     fn as_any(&self) -> &dyn Any
@@ -454,14 +454,14 @@ impl<T: WidgetExt> AsAny for WidgetAdapter<T>
 ///
 ///A WidgetAdapter for checking on the existance of state objects.
 ///
-pub struct LookupWidgetAdapter<T: WidgetExt + Eq + ObjectExt + Clone>
+pub struct LookupWidgetAdapter<T: Eq + ObjectExt + Clone + IsA<Widget>> //WidgetExt + 
 {
 
     object: T
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt + Clone> LookupWidgetAdapter<T>
+impl<T: Eq + ObjectExt + Clone + IsA<Widget>> LookupWidgetAdapter<T> //WidgetExt + 
 {
 
     pub fn new(object: &T) -> Self
@@ -499,7 +499,7 @@ impl<T: WidgetExt + Eq + ObjectExt + Clone> LookupWidgetAdapter<T>
 
 }
 
-impl<T: WidgetExt + Eq + ObjectExt + MayDowncastTo<Widget> /*+ Cast*/> LookupWidgetObject for LookupWidgetAdapter<T>
+impl<T: Eq + ObjectExt + Cast + MayDowncastTo<Widget> + IsA<Widget>> LookupWidgetObject for LookupWidgetAdapter<T> //IsA<T> + //WidgetExt + //MayDowncastTo<Widget> 
 {
 
     //IsA<Widget> + 
@@ -551,7 +551,7 @@ impl<T: WidgetExt + Eq + ObjectExt + MayDowncastTo<Widget> /*+ Cast*/> LookupWid
 
 }
 
-impl<T: WidgetExt> AsAny for LookupWidgetAdapter<T>
+impl<T: IsA<Widget>> AsAny for LookupWidgetAdapter<T> //WidgetExt
 {
 
     fn as_any(&self) -> &dyn Any
