@@ -23,7 +23,7 @@ use corlib::AsAny; //{AsAny, impl_as_any};
 
 use gtk::glib::Type;
 
-use gtk::glib::object::{Cast, IsA, MayDowncastTo, ObjectExt};
+use gtk::glib::object::{Cast, IsA, MayDowncastTo, ObjectExt, ObjectType};
 
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
@@ -69,9 +69,46 @@ pub trait LookupWidgetObject : AsAny + Any //+ DynHash //+ Eq //Hash  //: Widget
 
     fn glib_type(&self) -> Type;
 
-    fn widget(&self) -> Widget;
+    //fn widget(&self) -> Widget;
+
+    fn is(&self, widget: &Widget) -> bool;
+
+    //fn widget(&self) -> &dyn IsA<Widget>;
 
 }
+
+/*
+
+Turns out trying to cast a generic widget to Widget via Glib/GTK was a bas idea:
+
+error[E0277]: the trait bound `gtk_estate::gtk4::Widget: IsA<gtk_estate::libadwaita::ApplicationWindow>` is not satisfied
+   --> src/applicaion_state.rs:63:13
+    |
+63  |             AdwApplcationWindowState::builder(|builder| {
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `IsA<gtk_estate::libadwaita::ApplicationWindow>` is not implemented for `gtk_estate::gtk4::Widget`
+    |
+    = help: the following other types implement trait `IsA<T>`:
+              <gtk_estate::gtk4::Widget as IsA<gtk_estate::gtk4::glib::Object>>
+              <gtk_estate::gtk4::Widget as IsA<Accessible>>
+              <gtk_estate::gtk4::Widget as IsA<Buildable>>
+              <gtk_estate::gtk4::Widget as IsA<ConstraintTarget>>
+              <gtk_estate::gtk4::Widget as IsA<gtk_estate::gtk4::Widget>>
+    = note: required for `gtk_estate::libadwaita::ApplicationWindow` to implement `MayDowncastTo<gtk_estate::gtk4::Widget>`
+note: required by a bound in `AdwApplcationWindowState::<T>::builder`
+   --> /run/media/paul/Main Stuff/SoftwareProjects/Rust/gtk_estate/src/adw_application_window_state.rs:100:55
+    |
+100 |     where T: GtkWindowExt + AdwApplicationWindowExt + MayDowncastTo<Widget> + IsA<Widget> //IsA<T> +  //WidgetExt + 
+    |                                                       ^^^^^^^^^^^^^^^^^^^^^ required by this bound in `AdwApplcationWindowState::<T>::builder`
+...
+145 |     pub fn builder<F>(window_fn: F) -> Rc<Self>
+    |            ------- required by a bound in this associated function
+
+For more information about this error, try `rustc --explain E0277`.
+warning: `simple_unix_time_outputer` (bin "simple_unix_time_outputer") generated 8 warnings
+error: could not compile `simple_unix_time_outputer` (bin "simple_unix_time_outputer") due to 1 previous error; 8 warnings emitted
+
+*/
+
 
 ///
 /// Indicates that the LookupWidgetObject stored somewhere, perhaps in a Hashmap.
@@ -224,7 +261,7 @@ impl<T: ApplicationExt> AsAny for ApplicationAdapter<T>
 //WidgetAdapter
 
 #[derive(Clone)]
-pub struct WidgetAdapter<T: Eq + ObjectExt + Clone + IsA<Widget>> //WidgetExt + 
+pub struct WidgetAdapter<T: Eq + ObjectExt + Clone> // + IsA<Widget> //WidgetExt + 
 {
 
     object: T,
@@ -232,7 +269,7 @@ pub struct WidgetAdapter<T: Eq + ObjectExt + Clone + IsA<Widget>> //WidgetExt +
 
 }
 
-impl<T: Eq + ObjectExt + Clone + IsA<Widget>> WidgetAdapter<T> //WidgetExt + 
+impl<T: Eq + ObjectExt + Clone> WidgetAdapter<T> // + IsA<Widget> //WidgetExt + 
 {
 
     /*
@@ -291,7 +328,7 @@ impl<T: Eq + ObjectExt + Clone + IsA<Widget>> WidgetAdapter<T> //WidgetExt +
 
 }
 
-impl<T: Eq + ObjectExt + Cast + MayDowncastTo<Widget> + IsA<Widget> + WidgetExt> StoredWidgetObject for WidgetAdapter<T> //MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
+impl<T: Eq + ObjectExt + WidgetExt> StoredWidgetObject for WidgetAdapter<T> //Cast + MayDowncastTo<Widget> + IsA<Widget> + /MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
 {
 
     fn parent(&self) -> &Weak<dyn WidgetStateContainer>
@@ -352,7 +389,7 @@ impl<T: Eq + ObjectExt + Cast + MayDowncastTo<Widget> + IsA<Widget> + WidgetExt>
 
 }
 
-impl<T: Eq + ObjectExt + Clone + Cast + MayDowncastTo<Widget> + IsA<Widget>> LookupWidgetObject for WidgetAdapter<T> //MayDowncastTo<Widget> + //IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
+impl<T: Eq + ObjectExt + Clone + WidgetExt> LookupWidgetObject for WidgetAdapter<T> //+ Cast + MayDowncastTo<Widget> + IsA<Widget> //MayDowncastTo<Widget> + //IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
 {
 
     fn dyn_widget(&self) -> &dyn Any
@@ -412,12 +449,23 @@ impl<T: Eq + ObjectExt + Clone + Cast + MayDowncastTo<Widget> + IsA<Widget>> Loo
 
     }
     
+    fn is(&self, widget: &Widget) -> bool
+    {
+
+        //self.object == widget 
+
+        *widget == self.object
+
+    }
+
+    /*
     fn widget(&self) -> Widget
     {
 
         self.object.downcast_ref::<Widget>().expect("GTK Estate - Error: Downcast to Widget failed.").clone()
         
     }
+    */
 
 }
 
@@ -454,14 +502,14 @@ impl<T: IsA<Widget>> AsAny for WidgetAdapter<T> //WidgetExt
 ///
 ///A WidgetAdapter for checking on the existance of state objects.
 ///
-pub struct LookupWidgetAdapter<T: Eq + ObjectExt + Clone + IsA<Widget>> //WidgetExt + 
+pub struct LookupWidgetAdapter<T: Eq + ObjectExt + Clone> // + IsA<Widget> //WidgetExt + 
 {
 
     object: T
 
 }
 
-impl<T: Eq + ObjectExt + Clone + IsA<Widget>> LookupWidgetAdapter<T> //WidgetExt + 
+impl<T: Eq + ObjectExt + Clone> LookupWidgetAdapter<T> // + IsA<Widget> //WidgetExt + 
 {
 
     pub fn new(object: &T) -> Self
@@ -499,7 +547,7 @@ impl<T: Eq + ObjectExt + Clone + IsA<Widget>> LookupWidgetAdapter<T> //WidgetExt
 
 }
 
-impl<T: Eq + ObjectExt + Cast + MayDowncastTo<Widget> + IsA<Widget>> LookupWidgetObject for LookupWidgetAdapter<T> //IsA<T> + //WidgetExt + //MayDowncastTo<Widget> 
+impl<T: Eq + ObjectExt + WidgetExt> LookupWidgetObject for LookupWidgetAdapter<T> // + PartialEq<T> // + Cast + MayDowncastTo<Widget> + IsA<Widget> //IsA<T> + //WidgetExt + //MayDowncastTo<Widget> 
 {
 
     //IsA<Widget> + 
@@ -542,11 +590,22 @@ impl<T: Eq + ObjectExt + Cast + MayDowncastTo<Widget> + IsA<Widget>> LookupWidge
 
     }
     
+    /*
     fn widget(&self) -> Widget
     {
 
         self.object.downcast_ref::<Widget>().expect("GTK Estate - Error: Downcast to Widget failed.").clone()
         
+    }
+    */
+
+    fn is(&self, widget: &Widget) -> bool
+    {
+
+        //self.object == *widget 
+
+        *widget == self.object
+
     }
 
 }

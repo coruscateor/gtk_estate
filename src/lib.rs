@@ -83,6 +83,10 @@ mod adw_application_window_state;
 #[cfg(feature="adw")]
 pub use adw_application_window_state::*;
 
+mod container_widget_ref;
+
+pub use container_widget_ref::*;
+
 //mod hash_by_widget;
 
 //pub use hash_by_widget::*;

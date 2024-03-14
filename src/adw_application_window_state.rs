@@ -68,6 +68,7 @@ impl<T> AdwApplcationWindowState<T>
 
     }
 
+    /*
     pub fn dyn_set_content(&self, child_state: Option<&Rc<dyn WidgetStateContainer>>)
     {
 
@@ -79,6 +80,7 @@ impl<T> AdwApplcationWindowState<T>
         }
 
     }
+    */
 
     pub fn set_content<WSC: WidgetStateContainer>(&self, child_state: Option<&Rc<WSC>>)
     {
