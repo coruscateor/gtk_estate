@@ -39,9 +39,9 @@ pub extern crate adw;
 
 pub extern crate corlib;
 
-pub mod gtk_enums;
+//pub mod gtk_enums;
 
-pub mod adw_enums;
+//pub mod adw_enums;
 
 pub mod time_out;
 

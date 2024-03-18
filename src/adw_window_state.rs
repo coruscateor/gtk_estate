@@ -22,7 +22,7 @@ use adw::builders::WindowBuilder;
 use adw::prelude::{AdwWindowExt, AdwApplicationWindowExt};
 use adw::Window;
 use corlib::AsAny;
-use gtk::glib::object::{IsA, MayDowncastTo};
+use gtk::glib::object::IsA; //{IsA, MayDowncastTo};
 use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;
 
@@ -36,7 +36,7 @@ pub struct AdwWindowState<T>
 }
 
 impl<T> AdwWindowState<T>
-    where T: GtkWindowExt + WidgetExt + MayDowncastTo<Widget> + IsA<Widget> + AdwWindowExt
+    where T: GtkWindowExt + WidgetExt + IsA<Widget> + AdwWindowExt //MayDowncastTo<Widget> +
 {
 
     pub fn weak_self(&self) -> Weak<Self>
@@ -73,7 +73,7 @@ impl<T> AdwWindowState<T>
         if let Some(state) = child_state
         {
 
-            self.window.widget().set_content(Some(&state.widget().widget()))
+            self.window.widget().set_content(Some(&state.adapted_widget().widget()))
             
         }
 
@@ -85,7 +85,7 @@ impl<T> AdwWindowState<T>
         if let Some(state) = child_state
         {
 
-            self.window.widget().set_content(Some(&state.widget().widget()))
+            self.window.widget().set_content(Some(&state.adapted_widget().widget()))
             
         }
 
@@ -95,7 +95,7 @@ impl<T> AdwWindowState<T>
 
 
 impl<T> AdwWindowState<T>
-    where T: GtkWindowExt + WidgetExt + AdwWindowExt + IsA<T> + MayDowncastTo<Widget>,
+    where T: GtkWindowExt + WidgetExt + AdwWindowExt + IsA<T> //+ MayDowncastTo<Widget>,
 {
 
     pub fn new<F>(window_fn: F) -> Rc<Self>
@@ -109,7 +109,7 @@ impl<T> AdwWindowState<T>
             {
 
                 weak_self: weak_self.clone(),
-                window: WidgetAdapter::new(window_fn(), weak_self)
+                window: WidgetAdapter::new(&window_fn(), weak_self)
 
             }
 
@@ -152,7 +152,7 @@ impl<T> AdwWindowState<T>
             {
 
                 weak_self: weak_self.clone(),
-                window: WidgetAdapter::new(window_fn(builder), weak_self)
+                window: WidgetAdapter::new(&window_fn(builder), weak_self)
 
             }
 
@@ -234,10 +234,10 @@ impl<T> AsAny for AdwWindowState<T>
 }
 
 impl<T> WidgetStateContainer for AdwWindowState<T>
-    where T: GtkWindowExt + WidgetExt + MayDowncastTo<Widget> + IsA<T>
+    where T: GtkWindowExt + WidgetExt //+ MayDowncastTo<Widget> + IsA<T>
 {
 
-    fn widget(&self) -> &(dyn crate::StoredWidgetObject)
+    fn adapted_widget(&self) -> &(dyn crate::StoredWidgetObject)
     {
         
         &self.window

@@ -30,7 +30,7 @@ use corlib::
 
 use gtk4 as gtk;
 
-use gtk::glib::object::{IsA, MayDowncastTo, ObjectExt};
+use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo, 
 
 use crate::{adapters::*, RcSimpleTimeOut, WidgetStateContainers, SimpleTimeOut};
 
@@ -48,7 +48,7 @@ pub trait ApplicationStateContainer : AsAny + Any //<'a>
 
     //fn application() -> &'a (dyn Any + ApplicationExt);
 
-    fn application(&self) -> &(dyn StoredApplicationObject); //'a //Any +
+    fn adapted_application(&self) -> &(dyn StoredApplicationObject); //'a //Any +
 
 }
 
@@ -58,7 +58,7 @@ pub trait ApplicationStateContainer : AsAny + Any //<'a>
 pub trait WidgetStateContainer : AsAny + Any //<'a>
 {
 
-    fn widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
+    fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
 
 }
 
@@ -380,7 +380,7 @@ impl StateContainers //<'a>
 
     impl_rfc_borrow_and_mut!(widget_state, WidgetStateContainers);
 
-    pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T> + MayDowncastTo<Widget>>(&self, widget: &T) -> bool
+    pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> bool // + MayDowncastTo<Widget>
     {
 
         let lwa = LookupWidgetAdapter::new(widget);
@@ -395,7 +395,7 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T> + MayDowncastTo<Widget>>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>> // + MayDowncastTo<Widget>
     {
 
         let lwa = LookupWidgetAdapter::new(widget);

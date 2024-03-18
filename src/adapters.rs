@@ -23,7 +23,7 @@ use corlib::AsAny; //{AsAny, impl_as_any};
 
 use gtk::glib::Type;
 
-use gtk::glib::object::{Cast, IsA, MayDowncastTo, ObjectExt, ObjectType};
+use gtk::glib::object::{Cast, IsA, ObjectExt, ObjectType}; //MayDowncastTo, 
 
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
@@ -73,9 +73,11 @@ pub trait LookupWidgetObject : AsAny + Any //+ DynHash //+ Eq //Hash  //: Widget
 
     fn is(&self, widget: &Widget) -> bool;
 
-    //fn widget(&self) -> &dyn IsA<Widget>;
+    fn widget(&self) -> Widget; //&dyn IsA<Widget>;
 
 }
+
+//Oops - I tred to downcast when I should've been upcasting.
 
 /*
 
@@ -287,7 +289,7 @@ impl<T: Eq + ObjectExt + Clone> WidgetAdapter<T> // + IsA<Widget> //WidgetExt +
     }
     */
 
-    pub fn new<WSC>(object: T, parent: &Weak<WSC>) -> Self //Weak<dyn WidgetStateContainer>
+    pub fn new<WSC>(object: &T, parent: &Weak<WSC>) -> Self //Weak<dyn WidgetStateContainer>
         where WSC: WidgetStateContainer
     {
 
@@ -298,7 +300,7 @@ impl<T: Eq + ObjectExt + Clone> WidgetAdapter<T> // + IsA<Widget> //WidgetExt +
         Self
         {
 
-            object,
+            object: object.clone(),
             parent: casted_wsc.clone()
 
         }
@@ -467,6 +469,13 @@ impl<T: Eq + ObjectExt + Clone + WidgetExt> LookupWidgetObject for WidgetAdapter
     }
     */
 
+    fn widget(&self) -> Widget
+    {
+
+        self.object.upcast_ref::<Widget>().clone()
+        
+    }
+
 }
 
 /*
@@ -598,6 +607,13 @@ impl<T: Eq + ObjectExt + WidgetExt> LookupWidgetObject for LookupWidgetAdapter<T
         
     }
     */
+
+    fn widget(&self) -> Widget
+    {
+
+        self.object.upcast_ref::<Widget>().clone()
+        
+    }
 
     fn is(&self, widget: &Widget) -> bool
     {

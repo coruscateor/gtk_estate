@@ -19,7 +19,7 @@ use crate::corlib::{NonOption, rc_self_rfc_setup};
 //use crate::window_contents_state::WindowContentsState;
 
 use corlib::AsAny;
-use gtk::glib::object::{IsA, MayDowncastTo};
+use gtk::glib::object::IsA; //{IsA, MayDowncastTo};
 use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;
 
@@ -36,7 +36,7 @@ pub struct GtkWindowState<T>
 }
 
 impl<T> GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + MayDowncastTo<Widget> + IsA<Widget>,
+    where T: GtkWindowExt + WidgetExt + IsA<Widget> //MayDowncastTo<Widget> + 
 {
 
     pub fn weak_self(&self) -> Weak<Self>
@@ -73,7 +73,7 @@ impl<T> GtkWindowState<T>
         if let Some(state) = child_state
         {
 
-            self.window.widget().set_child(Some(&state.widget().widget()))
+            self.window.widget().set_child(Some(&state.adapted_widget().widget()))
             
         }
 
@@ -83,7 +83,7 @@ impl<T> GtkWindowState<T>
 
 
 impl<T> GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + IsA<T> + MayDowncastTo<Widget>,
+    where T: GtkWindowExt + WidgetExt + IsA<T> //+ MayDowncastTo<Widget>,
 {
 
     pub fn new<F>(window_fn: F) -> Rc<Self> //app: &Application
@@ -103,7 +103,7 @@ impl<T> GtkWindowState<T>
             {
 
                 weak_self: weak_self.clone(),
-                window: WidgetAdapter::new(window_fn(), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
+                window: WidgetAdapter::new(&window_fn(), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
 
             }
 
@@ -127,10 +127,10 @@ impl<T> AsAny for GtkWindowState<T>
 }
 
 impl<T> WidgetStateContainer for GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + IsA<T> + MayDowncastTo<Widget>
+    where T: GtkWindowExt + WidgetExt + IsA<T> //+ MayDowncastTo<Widget>
 {
 
-    fn widget(&self) -> &(dyn crate::StoredWidgetObject)
+    fn adapted_widget(&self) -> &(dyn crate::StoredWidgetObject)
     {
         
         &self.window
