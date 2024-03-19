@@ -23,12 +23,14 @@ use gtk::glib::object::IsA; //{IsA, MayDowncastTo};
 use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;
 
+#[derive(Clone)]
 pub struct GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt
+    where T: GtkWindowExt + WidgetExt,
+          //P: WidgetStateContainer
 {
 
     weak_self: Weak<Self>,
-    window: WidgetAdapter<T>
+    window: WidgetAdapter<T, GtkWindowState<T>>
     //window_title: WindowTitle,
     //hb: HeaderBar,
     //contents: Box 
@@ -36,7 +38,8 @@ pub struct GtkWindowState<T>
 }
 
 impl<T> GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + IsA<Widget> //MayDowncastTo<Widget> + 
+    where T: GtkWindowExt + WidgetExt + Clone //IsA<Widget>, //MayDowncastTo<Widget> +
+          //P: WidgetStateContainer + Clone
 {
 
     pub fn weak_self(&self) -> Weak<Self>
@@ -46,7 +49,7 @@ impl<T> GtkWindowState<T>
 
     }
 
-    pub fn window(&self) -> WidgetAdapter<T>
+    pub fn window(&self) -> WidgetAdapter<T, GtkWindowState<T>>
     {
 
         self.window.clone()
@@ -83,7 +86,8 @@ impl<T> GtkWindowState<T>
 
 
 impl<T> GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + IsA<T> //+ MayDowncastTo<Widget>,
+    where T: GtkWindowExt + WidgetExt + IsA<T>, //+ MayDowncastTo<Widget>,
+          //P: WidgetStateContainer
 {
 
     pub fn new<F>(window_fn: F) -> Rc<Self> //app: &Application
@@ -114,7 +118,8 @@ impl<T> GtkWindowState<T>
 }
 
 impl<T> AsAny for GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt
+    where T: GtkWindowExt + WidgetExt,
+          //P: WidgetStateContainer
 {
 
     fn as_any(&self) -> &dyn std::any::Any
@@ -127,7 +132,8 @@ impl<T> AsAny for GtkWindowState<T>
 }
 
 impl<T> WidgetStateContainer for GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + IsA<T> //+ MayDowncastTo<Widget>
+    where T: GtkWindowExt + WidgetExt //+ IsA<T>, //+ MayDowncastTo<Widget>
+          //P: WidgetStateContainer
 {
 
     fn adapted_widget(&self) -> &(dyn crate::StoredWidgetObject)

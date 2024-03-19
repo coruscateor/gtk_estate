@@ -87,6 +87,8 @@ mod container_widget_ref;
 
 pub use container_widget_ref::*;
 
+pub mod rc_conversions;
+
 //mod hash_by_widget;
 
 //pub use hash_by_widget::*;

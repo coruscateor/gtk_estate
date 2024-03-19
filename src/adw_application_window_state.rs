@@ -28,16 +28,19 @@ use gtk::Widget;
 
 use adw::prelude::AdwApplicationWindowExt;
 
+#[derive(Clone)]
 pub struct AdwApplcationWindowState<T>
-    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget> //+ IsA<ApplicationWindow> //+ WidgetExt 
+    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, //+ IsA<ApplicationWindow> //+ WidgetExt
+          //P: WidgetStateContainer
 {
 
     weak_self: Weak<Self>,
-    window: WidgetAdapter<T>
+    window: WidgetAdapter<T, AdwApplcationWindowState<T>>
 }
 
 impl<T> AdwApplcationWindowState<T>
-    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget> // + MayDowncastTo<Widget> //+ IsA<ApplicationWindow>  // + WidgetExt 
+    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, // + MayDowncastTo<Widget> //+ IsA<ApplicationWindow>  // + WidgetExt
+          //P: WidgetStateContainer + Clone
 {
 
     pub fn weak_self(&self) -> Weak<Self>
@@ -47,7 +50,7 @@ impl<T> AdwApplcationWindowState<T>
 
     }
 
-    pub fn window(&self) -> WidgetAdapter<T>
+    pub fn window(&self) -> WidgetAdapter<T, AdwApplcationWindowState<T>>
     {
 
         self.window.clone()
@@ -99,7 +102,8 @@ impl<T> AdwApplcationWindowState<T>
 
 
 impl<T> AdwApplcationWindowState<T>
-    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget> //MayDowncastTo<Widget> + //IsA<T> +  //WidgetExt + 
+    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, //MayDowncastTo<Widget> + //IsA<T> +  //WidgetExt +
+          //P: WidgetStateContainer
 {
 
     pub fn new<F>(window_fn: F) -> Rc<Self>
@@ -188,7 +192,8 @@ impl<T> AdwApplcationWindowState<T>
 }
 
 impl<T> AsAny for AdwApplcationWindowState<T>
-    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget> //WidgetExt + 
+    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, //WidgetExt +
+          //P: WidgetStateContainer
 {
 
     fn as_any(&self) -> &dyn std::any::Any
@@ -201,7 +206,8 @@ impl<T> AsAny for AdwApplcationWindowState<T>
 }
 
 impl<T> WidgetStateContainer for AdwApplcationWindowState<T>
-    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget> //MayDowncastTo<Widget> + //IsA<T> + //WidgetExt + 
+    where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, //MayDowncastTo<Widget> + //IsA<T> + //WidgetExt +
+          //P: WidgetStateContainer
 {
 
     fn adapted_widget(&self) -> &(dyn crate::StoredWidgetObject)

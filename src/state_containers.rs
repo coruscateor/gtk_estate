@@ -32,6 +32,7 @@ use gtk4 as gtk;
 
 use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo, 
 
+use crate::rc_conversions::to_rc_dyn_wsc;
 use crate::{adapters::*, RcSimpleTimeOut, WidgetStateContainers, SimpleTimeOut};
 
 /*
@@ -48,7 +49,7 @@ pub trait ApplicationStateContainer : AsAny + Any //<'a>
 
     //fn application() -> &'a (dyn Any + ApplicationExt);
 
-    fn adapted_application(&self) -> &(dyn StoredApplicationObject); //'a //Any +
+    //fn adapted_application(&self) -> &(dyn StoredApplicationObject); //'a //Any +
 
 }
 
@@ -321,11 +322,13 @@ impl StateContainers //<'a>
         where WSC: WidgetStateContainer
     {
 
-        let any_sc: &dyn Any = sc;
+        //let any_sc: &dyn Any = sc;
 
-        let wsc = any_sc.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
+        //let wsc = any_sc.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
 
-        self.widget_state.borrow_mut().add(wsc);
+        let wsc = to_rc_dyn_wsc(sc.clone());
+
+        self.widget_state.borrow_mut().add(&wsc);
         
     }
 

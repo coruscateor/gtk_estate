@@ -26,17 +26,20 @@ use gtk::glib::object::IsA; //{IsA, MayDowncastTo};
 use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;
 
+#[derive(Clone)]
 pub struct AdwWindowState<T>
-    where T: GtkWindowExt + WidgetExt
+    where T: GtkWindowExt + WidgetExt,
+          //P: WidgetStateContainer
 {
 
     weak_self: Weak<Self>,
-    window: WidgetAdapter<T>
+    window: WidgetAdapter<T, AdwWindowState<T>>
 
 }
 
 impl<T> AdwWindowState<T>
-    where T: GtkWindowExt + WidgetExt + IsA<Widget> + AdwWindowExt //MayDowncastTo<Widget> +
+    where T: GtkWindowExt + WidgetExt + IsA<Widget> + AdwWindowExt + IsA<Widget>, //MayDowncastTo<Widget> +
+          //P: WidgetStateContainer + Clone
 {
 
     pub fn weak_self(&self) -> Weak<Self>
@@ -46,9 +49,9 @@ impl<T> AdwWindowState<T>
 
     }
 
-    pub fn window(&self) -> WidgetAdapter<T>
+    pub fn window(&self) -> WidgetAdapter<T, AdwWindowState<T>>
     {
-
+        
         self.window.clone()
 
     }
@@ -76,7 +79,14 @@ impl<T> AdwWindowState<T>
             self.window.widget().set_content(Some(&state.adapted_widget().widget()))
             
         }
+        /*
+        else
+        {
 
+            self.window.widget().set_content(None); //Option::<&_>::None);
+
+        }
+        */
     }
 
     pub fn set_content<WSC: WidgetStateContainer>(&self, child_state: Option<&Rc<WSC>>)
@@ -88,6 +98,14 @@ impl<T> AdwWindowState<T>
             self.window.widget().set_content(Some(&state.adapted_widget().widget()))
             
         }
+        /*
+        else
+        {
+
+            self.window.widget().set_content(Option::None);
+
+        }
+        */
 
     }
 
@@ -95,7 +113,8 @@ impl<T> AdwWindowState<T>
 
 
 impl<T> AdwWindowState<T>
-    where T: GtkWindowExt + WidgetExt + AdwWindowExt + IsA<T> //+ MayDowncastTo<Widget>,
+    where T: GtkWindowExt + WidgetExt + AdwWindowExt, //+ IsA<T>, //+ MayDowncastTo<Widget>,
+          //P: WidgetStateContainer
 {
 
     pub fn new<F>(window_fn: F) -> Rc<Self>
@@ -221,7 +240,8 @@ impl<T> AdwWindowState<T>
 */
 
 impl<T> AsAny for AdwWindowState<T>
-    where T: GtkWindowExt + WidgetExt
+    where T: GtkWindowExt + WidgetExt,
+          //P: WidgetStateContainer
 {
 
     fn as_any(&self) -> &dyn std::any::Any
@@ -234,7 +254,8 @@ impl<T> AsAny for AdwWindowState<T>
 }
 
 impl<T> WidgetStateContainer for AdwWindowState<T>
-    where T: GtkWindowExt + WidgetExt //+ MayDowncastTo<Widget> + IsA<T>
+    where T: GtkWindowExt + WidgetExt, //+ MayDowncastTo<Widget> + IsA<T>
+          //P: WidgetStateContainer
 {
 
     fn adapted_widget(&self) -> &(dyn crate::StoredWidgetObject)

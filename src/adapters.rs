@@ -5,12 +5,13 @@ use std::any::Any;
 
 use std::ops::Deref;
 
-use std::rc::Weak;
+use std::rc::{Rc, Weak};
 
 use gtk::gio::prelude::ApplicationExt;
 
 use gtk::prelude::WidgetExt;
 
+use crate::rc_conversions::to_rc_dyn_wsc;
 use crate::{ApplicationStateContainer, StateContainers, WidgetStateContainer};
 
 use std::hash::{Hash, Hasher};
@@ -43,13 +44,15 @@ pub trait LookupApplicationObject : AsAny + Any //: Deref //Any + ApplicationExt
 
 ///
 /// Indicates that the LookupApplicationObject stored somewhere, perhaps in a Hashmap.
-/// 
+///
+/*
 pub trait StoredApplicationObject : LookupApplicationObject + Any
 {
 
     fn parent(&self) -> &Weak<dyn ApplicationStateContainer>;
 
 }
+*/
 
 ///
 /// Implement on an object which stores an Widget object for the purpose of dynmically comparing with other objects.
@@ -118,27 +121,36 @@ error: could not compile `simple_unix_time_outputer` (bin "simple_unix_time_outp
 pub trait StoredWidgetObject : LookupWidgetObject + Any
 {
 
-    fn parent(&self) -> &Weak<dyn WidgetStateContainer>;
+    //fn parent(&self) -> &Weak<dyn WidgetStateContainer>;
 
     fn connect_destroy(&self, sc: Weak<StateContainers>);
 
 }
 
+/*
+pub fn to_wsc_super<T: WidgetStateContainer>(value: Rc<T>) -> Rc<dyn WidgetStateContainer>
+{
+
+    value
+
+}
+*/
+
 //ApplicationAdapter
 
-pub struct ApplicationAdapter<T: ApplicationExt + Eq + ObjectExt + Clone>
+pub struct ApplicationAdapter<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer>
 {
 
     object: T,
-    parent: Weak<dyn ApplicationStateContainer>
-
+    //parent: Weak<dyn ApplicationStateContainer>
+    parent: Weak<P>
 
 }
 
-impl<T: ApplicationExt + Eq + ObjectExt + Clone> ApplicationAdapter<T>
+impl<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer> ApplicationAdapter<T, P>
 {
 
-    pub fn new(object: &T, parent: &Weak<dyn ApplicationStateContainer>) -> Self
+    pub fn new(object: &T, parent: &Weak<P>) -> Self //parent: &Weak<dyn ApplicationStateContainer>) -> Self
     {
 
         Self
@@ -151,6 +163,21 @@ impl<T: ApplicationExt + Eq + ObjectExt + Clone> ApplicationAdapter<T>
 
     }
 
+    /*
+    pub fn new_mv(object: &T, parent: Weak<P>)
+    {
+
+        Self
+        {
+
+            object: object.clone(),
+            parent: parent
+
+        }
+
+    }
+    */
+
     pub fn application(&self) -> &T
     {
 
@@ -158,7 +185,7 @@ impl<T: ApplicationExt + Eq + ObjectExt + Clone> ApplicationAdapter<T>
 
     }
 
-    pub fn has_in_other(&self, other: &ApplicationAdapter<T>) -> bool
+    pub fn has_in_other(&self, other: &ApplicationAdapter<T, P>) -> bool
     {
         
         self.object == other.object
@@ -174,19 +201,23 @@ impl<T: ApplicationExt + Eq + ObjectExt + Clone> ApplicationAdapter<T>
 
 }
 
-impl<T: ApplicationExt + Eq + ObjectExt> StoredApplicationObject for ApplicationAdapter<T>
-{
+//impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> StoredApplicationObject for ApplicationAdapter<T, P>
+//{
 
-    fn parent(&self) -> &Weak<dyn ApplicationStateContainer>
-    {
+//    fn parent(&self) -> Weak<dyn ApplicationStateContainer>
+//    {
 
-        &self.parent
+        //&self.parent //.clone()
 
-    }
+//        let ws: &Weak<dyn ApplicationStateContainer> = &self.parent;
 
-}
+//        ws.clone()
 
-impl<T: ApplicationExt + Eq + ObjectExt> LookupApplicationObject for ApplicationAdapter<T>
+//    }
+
+//}
+
+impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookupApplicationObject for ApplicationAdapter<T, P>
 {
 
     fn dyn_application(&self) -> &dyn Any
@@ -248,7 +279,7 @@ impl<T: ApplicationExt + Eq + ObjectExt> LookupApplicationObject for Application
 
 //impl_as_any!(ApplicationAdapter, T);
 
-impl<T: ApplicationExt> AsAny for ApplicationAdapter<T>
+impl<T: ApplicationExt, P: ApplicationStateContainer> AsAny for ApplicationAdapter<T, P>
 {
 
     fn as_any(&self) -> &dyn Any
@@ -263,15 +294,16 @@ impl<T: ApplicationExt> AsAny for ApplicationAdapter<T>
 //WidgetAdapter
 
 #[derive(Clone)]
-pub struct WidgetAdapter<T: Eq + ObjectExt + Clone> // + IsA<Widget> //WidgetExt + 
+pub struct WidgetAdapter<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> // + IsA<Widget> //WidgetExt + 
 {
 
     object: T,
-    parent: Weak<dyn WidgetStateContainer>
+    //parent: Weak<dyn WidgetStateContainer>
+    parent: Weak<P>
 
 }
 
-impl<T: Eq + ObjectExt + Clone> WidgetAdapter<T> // + IsA<Widget> //WidgetExt + 
+impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // + IsA<Widget> //WidgetExt + 
 {
 
     /*
@@ -289,19 +321,19 @@ impl<T: Eq + ObjectExt + Clone> WidgetAdapter<T> // + IsA<Widget> //WidgetExt +
     }
     */
 
-    pub fn new<WSC>(object: &T, parent: &Weak<WSC>) -> Self //Weak<dyn WidgetStateContainer>
-        where WSC: WidgetStateContainer
+    pub fn new(object: &T, parent: &Weak<P>) -> Self //<WSC> //Weak<dyn WidgetStateContainer>
+        //where WSC: WidgetStateContainer
     {
 
-        let any_wsc: &dyn Any = parent;
+        //let any_wsc: &dyn Any = parent;
 
-        let casted_wsc = any_wsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().expect("GTK Estate - Error: Weak<dyn WidgetStateContainer> cast failed.");
+        //let casted_wsc = any_wsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().expect("GTK Estate - Error: Weak<dyn WidgetStateContainer> cast failed.");
 
         Self
         {
 
             object: object.clone(),
-            parent: casted_wsc.clone()
+            parent: parent.clone() //casted_wsc.clone()
 
         }
 
@@ -314,7 +346,7 @@ impl<T: Eq + ObjectExt + Clone> WidgetAdapter<T> // + IsA<Widget> //WidgetExt +
 
     }
 
-    fn has_in_other(&self, other: &WidgetAdapter<T>) -> bool
+    fn has_in_other(&self, other: &WidgetAdapter<T, P>) -> bool
     {
         
         self.object == other.object
@@ -330,20 +362,24 @@ impl<T: Eq + ObjectExt + Clone> WidgetAdapter<T> // + IsA<Widget> //WidgetExt +
 
 }
 
-impl<T: Eq + ObjectExt + WidgetExt> StoredWidgetObject for WidgetAdapter<T> //Cast + MayDowncastTo<Widget> + IsA<Widget> + /MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
+impl<T: Eq + ObjectExt + WidgetExt, P: WidgetStateContainer> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Widget> + IsA<Widget> + /MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
 {
 
+    /*
     fn parent(&self) -> &Weak<dyn WidgetStateContainer>
     {
 
         &self.parent
 
     }
+    */
 
     fn connect_destroy(&self, sc: Weak<StateContainers>)
     {
 
         let parent = self.parent.clone();
+
+        //let wsc_parent: &Rc<dyn WidgetStateContainer> = &self.parent.clone();
 
         self.object.connect_destroy(move |_widget|
         {
@@ -358,9 +394,11 @@ impl<T: Eq + ObjectExt + WidgetExt> StoredWidgetObject for WidgetAdapter<T> //Ca
                 if let Some(rc_parent) = parent.upgrade()
                 {
 
+                    let wsc_parent: Rc<dyn WidgetStateContainer> = to_rc_dyn_wsc(rc_parent); //to_wsc_super(rc_parent); //&rc_parent;
+
                     //Don't remove right now but soon.
 
-                    rc_sc.delyed_removal(&rc_parent); //remove(&rc_parent);
+                    rc_sc.delyed_removal(&wsc_parent); //&rc_parent); //remove(&rc_parent);
 
                 }
 
@@ -391,7 +429,7 @@ impl<T: Eq + ObjectExt + WidgetExt> StoredWidgetObject for WidgetAdapter<T> //Ca
 
 }
 
-impl<T: Eq + ObjectExt + Clone + WidgetExt> LookupWidgetObject for WidgetAdapter<T> //+ Cast + MayDowncastTo<Widget> + IsA<Widget> //MayDowncastTo<Widget> + //IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
+impl<T: Eq + ObjectExt + Clone + WidgetExt, P: WidgetStateContainer> LookupWidgetObject for WidgetAdapter<T, P> //+ Cast + MayDowncastTo<Widget> + IsA<Widget> //MayDowncastTo<Widget> + //IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
 {
 
     fn dyn_widget(&self) -> &dyn Any
@@ -496,7 +534,7 @@ impl<T: WidgetExt + Hash> DynHash for WidgetAdapter<T>
 }
 */
 
-impl<T: IsA<Widget>> AsAny for WidgetAdapter<T> //WidgetExt
+impl<T: IsA<Widget>, P: WidgetStateContainer> AsAny for WidgetAdapter<T, P> //WidgetExt
 {
 
     fn as_any(&self) -> &dyn Any
@@ -540,7 +578,8 @@ impl<T: Eq + ObjectExt + Clone> LookupWidgetAdapter<T> // + IsA<Widget> //Widget
 
     }
 
-    fn has_in_other(&self, other: &WidgetAdapter<T>) -> bool
+    fn has_in_other<P>(&self, other: &WidgetAdapter<T, P>) -> bool
+        where P: WidgetStateContainer
     {
         
         self.object == other.object
@@ -568,7 +607,8 @@ impl<T: Eq + ObjectExt + WidgetExt> LookupWidgetObject for LookupWidgetAdapter<T
     
     }
     
-    fn dyn_has_in_other(&self, other: &dyn LookupWidgetObject) -> bool {
+    fn dyn_has_in_other(&self, other: &dyn LookupWidgetObject) -> bool
+    {
         
         self.dyn_has(other.dyn_widget())
         
