@@ -30,7 +30,7 @@ pub struct GtkWindowState<T>
 {
 
     weak_self: Weak<Self>,
-    window: WidgetAdapter<T, GtkWindowState<T>>
+    adapter: Rc<WidgetAdapter<T, GtkWindowState<T>>>
     //window_title: WindowTitle,
     //hb: HeaderBar,
     //contents: Box 
@@ -40,54 +40,6 @@ pub struct GtkWindowState<T>
 impl<T> GtkWindowState<T>
     where T: GtkWindowExt + WidgetExt + Clone //IsA<Widget>, //MayDowncastTo<Widget> +
           //P: WidgetStateContainer + Clone
-{
-
-    pub fn weak_self(&self) -> Weak<Self>
-    {
-
-        self.weak_self.clone()
-
-    }
-
-    pub fn window(&self) -> WidgetAdapter<T, GtkWindowState<T>>
-    {
-
-        self.window.clone()
-
-    }
-
-    pub fn child(&self) -> Option<Rc<dyn WidgetStateContainer>>
-    {
-
-        if let Some(widget) = self.window.widget().child()
-        {
-
-            return StateContainers::get().find_widget_state(&widget);
-            
-        }
-
-        None
-
-    }
-
-    pub fn set_child(&self, child_state: Option<&Rc<dyn WidgetStateContainer>>)
-    {
-
-        if let Some(state) = child_state
-        {
-
-            self.window.widget().set_child(Some(&state.adapted_widget().widget()))
-            
-        }
-
-    }
-
-}
-
-
-impl<T> GtkWindowState<T>
-    where T: GtkWindowExt + WidgetExt + IsA<T>, //+ MayDowncastTo<Widget>,
-          //P: WidgetStateContainer
 {
 
     pub fn new<F>(window_fn: F) -> Rc<Self> //app: &Application
@@ -107,7 +59,7 @@ impl<T> GtkWindowState<T>
             {
 
                 weak_self: weak_self.clone(),
-                window: WidgetAdapter::new(&window_fn(), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
+                adapter: WidgetAdapter::new(&window_fn(), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
 
             }
 
@@ -115,7 +67,63 @@ impl<T> GtkWindowState<T>
 
     }
 
+    pub fn weak_self(&self) -> Weak<Self>
+    {
+
+        self.weak_self.clone()
+
+    }
+
+    pub fn adapter(&self) -> Rc<WidgetAdapter<T, GtkWindowState<T>>>
+    {
+
+        self.adapter.clone()
+
+    }
+
+    pub fn child(&self) -> Option<Rc<dyn WidgetStateContainer>>
+    {
+
+        if let Some(widget) = self.adapter.widget().child()
+        {
+
+            return StateContainers::get().find_widget_state(&widget);
+            
+        }
+
+        None
+
+    }
+
+    /*
+    pub fn set_child(&self, child_state: Option<&Rc<dyn WidgetStateContainer>>)
+    {
+
+        if let Some(state) = child_state
+        {
+
+            self.window_adapter.widget().set_child(Some(&state.dyn_adapted_widget().widget()))
+            
+        }
+
+    }
+    */
+
+    pub fn set_child(&self, child_state: &Rc<dyn WidgetStateContainer>)
+    {
+
+        self.adapter.widget().set_child(Some(&child_state.dyn_adapter().widget()))
+
+    }
+
 }
+
+
+//impl<T> GtkWindowState<T>
+//    where T: GtkWindowExt + WidgetExt + IsA<T>, //+ MayDowncastTo<Widget>,
+          //P: WidgetStateContainer
+//{
+//}
 
 impl<T> AsAny for GtkWindowState<T>
     where T: GtkWindowExt + WidgetExt,
@@ -136,10 +144,10 @@ impl<T> WidgetStateContainer for GtkWindowState<T>
           //P: WidgetStateContainer
 {
 
-    fn adapted_widget(&self) -> &(dyn crate::StoredWidgetObject)
+    fn dyn_adapter(&self) -> Rc<dyn crate::StoredWidgetObject>
     {
         
-        &self.window
+        self.adapter.clone()
 
     }
 

@@ -45,14 +45,14 @@ pub trait LookupApplicationObject : AsAny + Any //: Deref //Any + ApplicationExt
 ///
 /// Indicates that the LookupApplicationObject stored somewhere, perhaps in a Hashmap.
 ///
-/*
+
 pub trait StoredApplicationObject : LookupApplicationObject + Any
 {
 
-    fn parent(&self) -> &Weak<dyn ApplicationStateContainer>;
+    //fn parent(&self) -> &Weak<dyn ApplicationStateContainer>;
 
 }
-*/
+
 
 ///
 /// Implement on an object which stores an Widget object for the purpose of dynmically comparing with other objects.
@@ -143,23 +143,30 @@ pub struct ApplicationAdapter<T: ApplicationExt + Eq + ObjectExt + Clone, P: App
 
     object: T,
     //parent: Weak<dyn ApplicationStateContainer>
-    parent: Weak<P>
+    weak_parent: Weak<P>,
+    weak_self: Weak<Self>
 
 }
 
 impl<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer> ApplicationAdapter<T, P>
 {
 
-    pub fn new(object: &T, parent: &Weak<P>) -> Self //parent: &Weak<dyn ApplicationStateContainer>) -> Self
+    pub fn new(object: &T, weak_parent: &Weak<P>) -> Rc<Self> //parent: &Weak<dyn ApplicationStateContainer>) -> Self
     {
 
-        Self
+        Rc::new_cyclic(|weak_self|
         {
 
-            object: object.clone(),
-            parent: parent.clone()
+            Self
+            {
+    
+                object: object.clone(),
+                weak_parent: weak_parent.clone(),
+                weak_self: weak_self.clone()
+    
+            }
 
-        }
+        })
 
     }
 
@@ -196,6 +203,13 @@ impl<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer> A
     {
         
         self.object == *application
+
+    }
+
+    pub fn weak_parent(&self) -> Weak<P>
+    {
+
+        self.weak_parent.clone()
 
     }
 
@@ -277,6 +291,13 @@ impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookupApp
 
 }
 
+impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> StoredApplicationObject for ApplicationAdapter<T, P>
+{
+
+
+
+}
+
 //impl_as_any!(ApplicationAdapter, T);
 
 impl<T: ApplicationExt, P: ApplicationStateContainer> AsAny for ApplicationAdapter<T, P>
@@ -299,7 +320,8 @@ pub struct WidgetAdapter<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> // 
 
     object: T,
     //parent: Weak<dyn WidgetStateContainer>
-    parent: Weak<P>
+    parent: Weak<P>,
+    weak_self: Weak<Self>
 
 }
 
@@ -321,7 +343,7 @@ impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // 
     }
     */
 
-    pub fn new(object: &T, parent: &Weak<P>) -> Self //<WSC> //Weak<dyn WidgetStateContainer>
+    pub fn new(object: &T, parent: &Weak<P>) -> Rc<Self> //<WSC> //Weak<dyn WidgetStateContainer>
         //where WSC: WidgetStateContainer
     {
 
@@ -329,13 +351,19 @@ impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // 
 
         //let casted_wsc = any_wsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().expect("GTK Estate - Error: Weak<dyn WidgetStateContainer> cast failed.");
 
-        Self
-        {
+        Rc::new_cyclic(|weak_self|
+        {    
 
-            object: object.clone(),
-            parent: parent.clone() //casted_wsc.clone()
+            Self
+            {
 
-        }
+                object: object.clone(),
+                parent: parent.clone(), //casted_wsc.clone()
+                weak_self: weak_self.clone()
+
+            }
+
+        })
 
     }
 
@@ -357,6 +385,13 @@ impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // 
     {
         
         self.object == *widget
+
+    }
+
+    pub fn weak_parent(&self) -> Weak<P>
+    {
+
+        self.parent.clone()
 
     }
 

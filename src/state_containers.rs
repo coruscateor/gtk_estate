@@ -51,6 +51,12 @@ pub trait ApplicationStateContainer : AsAny + Any //<'a>
 
     //fn adapted_application(&self) -> &(dyn StoredApplicationObject); //'a //Any +
 
+    //fn dyn_adapted_application(&self) -> &(dyn Any);
+
+    //fn dyn_adapted_application(&self) -> Rc<dyn StoredApplicationObject>;
+
+    fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>;
+
 }
 
 ///
@@ -59,7 +65,13 @@ pub trait ApplicationStateContainer : AsAny + Any //<'a>
 pub trait WidgetStateContainer : AsAny + Any //<'a>
 {
 
-    fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
+    //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
+
+    //fn dyn_adapted_widget(&self) -> &(dyn Any);
+
+    //fn dyn_adapted_widget(&self) -> Rc<dyn StoredWidgetObject>;
+
+    fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>;
 
 }
 
@@ -263,7 +275,7 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn set_application_state(&self, state: &Rc<dyn ApplicationStateContainer>) -> bool
+    pub fn set_application_state<T: ApplicationStateContainer>(&self, state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
     {
 
         {
@@ -285,7 +297,7 @@ impl StateContainers //<'a>
 
     }
 
-    pub fn set_application_state_or_panic(&self, state: &Rc<dyn ApplicationStateContainer>)
+    pub fn set_application_state_or_panic<T: ApplicationStateContainer>(&self, state:&Rc<T>) //&Rc<dyn ApplicationStateContainer>)
     {
 
         if !self.set_application_state(state)

@@ -62,7 +62,7 @@ impl WidgetStateContainers
 
         //let wt_id = sc.widget().type_id();
 
-        let glt = sc.adapted_widget().glib_type();
+        let glt = sc.dyn_adapter().glib_type();
 
         let rbp_sc = RcByPtr::new(sc); //: RcByPtr<dyn WidgetStateContainer>
 
@@ -119,7 +119,7 @@ impl WidgetStateContainers
 
         //Make sure the added state gets removed when its widget gets destroyed.
 
-        rbp_sc.contents().adapted_widget().connect_destroy(self.weak_parent.clone());
+        rbp_sc.contents().dyn_adapter().connect_destroy(self.weak_parent.clone());
 
     }
 
@@ -128,7 +128,7 @@ impl WidgetStateContainers
 
         let rbp_sc = RcByPtr::new(sc);
 
-        let glt = rbp_sc.contents().adapted_widget().glib_type(); //.type_id();
+        let glt = rbp_sc.contents().dyn_adapter().glib_type(); //.type_id();
 
         if let Some(wsc_set) = self.widget_state.get_mut(&glt) //(&wt_id)
         {
@@ -144,7 +144,7 @@ impl WidgetStateContainers
     pub fn remove_by_rc_by_ptr(&mut self, rbp_sc: &RcByPtr<dyn WidgetStateContainer>) -> bool
     {
 
-        let glt = rbp_sc.contents().adapted_widget().glib_type(); //.type_id();
+        let glt = rbp_sc.contents().dyn_adapter().glib_type(); //.type_id();
 
         if let Some(wsc_set) = self.widget_state.get_mut(&glt) //wt_id)
         {
@@ -162,7 +162,7 @@ impl WidgetStateContainers
 
         let rbp_sc = RcByPtr::new(sc);
 
-        let glt = rbp_sc.contents().adapted_widget().glib_type(); //.type_id();
+        let glt = rbp_sc.contents().dyn_adapter().glib_type(); //.type_id();
 
         if let Some(wsc_set) = self.widget_state.get(&glt)
         {
@@ -187,7 +187,7 @@ impl WidgetStateContainers
     pub fn contains_widget_type_in(&self, sc: &Rc<dyn WidgetStateContainer>) -> bool
     {
 
-        let glt = sc.adapted_widget().glib_type(); //.type_id();
+        let glt = sc.dyn_adapter().glib_type(); //.type_id();
 
         self.widget_state.contains_key(&glt) //wt_id)
 
@@ -249,7 +249,7 @@ impl WidgetStateContainers
 
                 let contents = ws.contents();
 
-                if contents.adapted_widget().dyn_has(widget.dyn_widget())
+                if contents.dyn_adapter().dyn_has(widget.dyn_widget())
                 {
 
                     return Some(contents.clone());
@@ -281,7 +281,7 @@ impl WidgetStateContainers
 
                 let contents = ws.contents();
 
-                if contents.adapted_widget().dyn_has(widget.dyn_widget())
+                if contents.dyn_adapter().dyn_has(widget.dyn_widget())
                 {
 
                     return true;
