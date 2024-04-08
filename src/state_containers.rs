@@ -427,3 +427,46 @@ impl StateContainers //<'a>
 
 }
 
+/// This macro gets a StateContainers instance reference and calls "set_application_state_or_panic" on it to set the application state.
+/// 
+#[macro_export]
+macro_rules! scs_set_app
+{
+
+    /*
+    () =>
+    {
+
+        let scs = StateContainers::get();
+
+        scs.set_application_state_or_panic(&this);
+
+    };
+    */
+    ($this:ident) =>
+    {
+
+        let scs = StateContainers::get();
+
+        scs.set_application_state_or_panic(&$this);
+
+    }
+
+}
+
+/// This macro gets a StateContainers instance reference and adds the "this" widget state to it.  
+/// 
+#[macro_export]
+macro_rules! scs_add
+{
+
+    ($this:ident) =>
+    {
+
+        let scs = StateContainers::get();
+
+        scs.add(&$this);
+
+    }
+
+}
