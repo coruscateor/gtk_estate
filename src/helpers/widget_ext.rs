@@ -45,10 +45,21 @@ pub fn set_margin_start_and_end(widget: &impl WidgetExt, margin: i32)
 
 }
 
-pub fn set_margin_top_and_botton(widget: &impl WidgetExt, margin: i32)
+pub fn set_margin_top_and_bottom(widget: &impl WidgetExt, margin: i32)
 {
 
     widget.set_margin_top(margin);
+
+    widget.set_margin_bottom(margin);
+
+}
+
+pub fn set_margin_sides_and_bottom(widget: &impl WidgetExt, margin: i32)
+{
+
+    widget.set_margin_start(margin);
+
+    widget.set_margin_end(margin);
 
     widget.set_margin_bottom(margin);
 
