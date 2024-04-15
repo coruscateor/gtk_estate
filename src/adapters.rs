@@ -433,7 +433,7 @@ impl<T: Eq + ObjectExt + WidgetExt, P: WidgetStateContainer> StoredWidgetObject 
 
                     //Don't remove right now but soon.
 
-                    rc_sc.delyed_removal(&wsc_parent); //&rc_parent); //remove(&rc_parent);
+                    rc_sc.delayed_removal(&wsc_parent); //&rc_parent); //remove(&rc_parent);
 
                 }
 

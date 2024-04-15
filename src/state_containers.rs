@@ -33,6 +33,7 @@ use gtk4 as gtk;
 use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo, 
 
 use crate::rc_conversions::to_rc_dyn_wsc;
+
 use crate::{adapters::*, RcSimpleTimeOut, WidgetStateContainers, SimpleTimeOut};
 
 /*
@@ -75,8 +76,13 @@ pub trait WidgetStateContainer : AsAny + Any //<'a>
 
 }
 
+//The StateContainers sigleton static location.
+
 static mut STATE_CONTAINERS: NonOption<Rc<StateContainers>> = NonOption::invalid(); 
 
+///
+/// Clone a copy of the StateContainers state.
+/// 
 fn get_state_containers() -> Rc<StateContainers>
 {
 
@@ -92,6 +98,9 @@ fn get_state_containers() -> Rc<StateContainers>
 
 }
 
+///
+/// Try to clone a copy of the StateContainers state.
+/// 
 fn try_get_state_containers() -> Option<Rc<StateContainers>>
 {
 
@@ -115,6 +124,9 @@ fn try_get_state_containers() -> Option<Rc<StateContainers>>
 
 }
 
+///
+/// Set the StateContainers state if it is invalid.
+/// 
 fn set_state_containers(state_containers: &Rc<StateContainers>)
 {
 
@@ -123,11 +135,18 @@ fn set_state_containers(state_containers: &Rc<StateContainers>)
     unsafe
     {
 
-        STATE_CONTAINERS.set(state_containers.clone())
+        if !STATE_CONTAINERS.is_valid()
+        {
+
+            STATE_CONTAINERS.set(state_containers.clone())
+
+        }
 
     }
 
 }
+
+//StateContainers internal, externally mutable state.
 
 struct InternalNonCollectionStateContainers
 {
@@ -176,7 +195,7 @@ impl StateContainers //<'a>
 {
 
     ///
-    /// Call this once: prefereably in the main function.
+    /// Call this once to Initialise the StateContainers, prefereably in the main function.
     /// 
     pub fn init() -> Rc<Self>
     {
@@ -268,6 +287,9 @@ impl StateContainers //<'a>
 
     }
 
+    ///
+    /// Get the weak self if the StateContainers.
+    /// 
     pub fn weak_self(&self) -> Weak<StateContainers>
     {
 
@@ -275,6 +297,9 @@ impl StateContainers //<'a>
 
     }
 
+    ///
+    /// Set the application state.
+    /// 
     pub fn set_application_state<T: ApplicationStateContainer>(&self, state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
     {
 
@@ -297,6 +322,9 @@ impl StateContainers //<'a>
 
     }
 
+    ///
+    /// Set the application state or panic.
+    /// 
     pub fn set_application_state_or_panic<T: ApplicationStateContainer>(&self, state:&Rc<T>) //&Rc<dyn ApplicationStateContainer>)
     {
 
@@ -309,6 +337,9 @@ impl StateContainers //<'a>
 
     }
 
+    ///
+    /// Get the application state (or panic).
+    /// 
     pub fn application_state(&self) -> Rc<dyn ApplicationStateContainer>
     {
 
@@ -316,6 +347,9 @@ impl StateContainers //<'a>
 
     }
 
+    ///
+    /// Check if the application state exists or not.
+    /// 
     pub fn has_application_state(&self) -> bool
     {
 
@@ -323,6 +357,9 @@ impl StateContainers //<'a>
 
     }
 
+    ///
+    /// Add a Rc<dyn WidgetStateContainer> to the widgets states.
+    /// 
     pub fn dyn_add(&self, sc: &Rc<dyn WidgetStateContainer>)
     {
 
@@ -330,6 +367,9 @@ impl StateContainers //<'a>
         
     }
 
+    ///
+    /// Add a Rc<WSC: WidgetStateContainer> to the widgets states.
+    /// 
     pub fn add<WSC>(&self, sc: &Rc<WSC>)
         where WSC: WidgetStateContainer
     {
@@ -362,7 +402,10 @@ impl StateContainers //<'a>
     }
     */
 
-    pub fn delyed_removal(&self, sc: &Rc<dyn WidgetStateContainer>) -> bool
+    ///
+    /// Remove a widget - delayed by a short period.
+    /// 
+    pub fn delayed_removal(&self, sc: &Rc<dyn WidgetStateContainer>) -> bool
     {
 
         if self.nc_internals.borrow_mut().widget_states_to_remove.insert(RcByPtr::new(sc))
@@ -382,6 +425,9 @@ impl StateContainers //<'a>
 
     }
 
+    ///
+    /// Remove a widget - via an RcByPtr.
+    /// 
     pub fn remove_by_rc_by_ptr(&self, rbp_sc: &RcByPtr<dyn WidgetStateContainer>) -> bool
     {
 
@@ -395,6 +441,9 @@ impl StateContainers //<'a>
 
     impl_rfc_borrow_and_mut!(widget_state, WidgetStateContainers);
 
+    ///
+    /// Does the widget state exist?
+    /// 
     pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> bool // + MayDowncastTo<Widget>
     {
 
@@ -410,6 +459,9 @@ impl StateContainers //<'a>
 
     }
 
+    ///
+    /// Try find the widget state based on the widget instance.
+    /// 
     pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>> // + MayDowncastTo<Widget>
     {
 
@@ -427,6 +479,7 @@ impl StateContainers //<'a>
 
 }
 
+///
 /// This macro gets a StateContainers instance reference and calls "set_application_state_or_panic" on it to set the application state.
 /// 
 #[macro_export]
@@ -454,6 +507,7 @@ macro_rules! scs_set_app
 
 }
 
+///
 /// This macro gets a StateContainers instance reference and adds the "this" widget state to it.  
 /// 
 #[macro_export]

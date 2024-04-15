@@ -2,7 +2,7 @@
 
 GTK Estate is a state association library using the excellent [GTK 4](https://crates.io/crates/gtk4) and [libadwaita](https://crates.io/crates/libadwaita) libraries.
 
-The core of what GTK Estate does is associate user-defined state objects with GTK and libadwaita container widgets and windows. It also contains objects and functions such as TimeOut that make working with GTK and libadwaita a bit easier.
+The core of what GTK Estate does is associate user-defined state objects with GTK and libadwaita container widgets and windows. It also contains objects and functions such as TimeOut that might make working with GTK and libadwaita a bit easier.
 
 It basically helps you to build dynamic GUIs based on GTK in Rust.
 
@@ -23,13 +23,13 @@ fn main()
 
     let app = Application::builder().application_id("org.example_gui").build();
 
-    //This instance of the State containers is needed for it to be accessible elsewhere
+    //Initialise State the containers.
 
-    let _sc = StateContainers::new();
+    StateContainers::init();
 
-    //The ApplicattionState can now add itself to the StateContainers instance from within its own constructor
+    //The ApplicattionState (which you define) can now add itself to the StateContainers instance from within its own constructor
 
-    ApplicattionState::new(app.clone());
+    ApplicattionState::new(&app);
 
     //Run the application
 
@@ -41,15 +41,15 @@ fn main()
 
 </br>
 
-The reason why StateContainers is a singleton is because it's easier to considate all GTK and libadwaita related state into one set of maps than handle this state discretely.
+The reason why StateContainers is a singleton is because it's easier to consolidate all GTK and libadwaita related state into one set of maps than handle this state discretely.
 
-Also this is only a single-threaded singleton which should only be dealing with UI and inter-thread-communication related tasks probably using a crate like [act_rs](https://crates.io/crates/act_rs) for the latter.
+Also StateContainers is a single-threaded singleton which should only contain state which deals with UI and inter-thread-communication related tasks probably using a crate like [act_rs](https://crates.io/crates/act_rs) for the latter.
 
 </br>
 
 ## Building Requirements
 
-Requires the GTK4 and libadwaita C based library binaries on your system (See [The GTK Book](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation.html) for GTK installation instructions).
+Requires the GTK4 and libadwaita library binaries on your system (See [The GTK Book](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation.html) for GTK installation instructions).
 
 Search your software repositories to find the libadwaita libraries.
 
@@ -59,18 +59,27 @@ Search your software repositories to find the libadwaita libraries.
 
 GTK Estate Re-exposes:
 
-- GTK4
-- libadwaita
-- Corlib
+- GTK4 (gtk)
+- libadwaita (adw)
+- Corlib (corlib)
 
 </br>
 
 ## Todo
 
-- Make each widget storage map a compliation feature.
 - Re-wite the Timeout objects.
 - Add more GTK/adw helper functions and helper objects. 
 - Add example projects
+
+</br>
+
+## Examples
+
+- [Simple Unix Time Outputer](https://github.com/coruscateor/simple_unix_time_outputer)
+
+- [Escape It](https://crates.io/crates/escape_it)
+
+- [Req It](https://crates.io/crates/req_it)
 
 </br>
 
