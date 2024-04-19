@@ -1,12 +1,29 @@
+<div align="center">
+
 # GTK Estate
 
-GTK Estate is a state association library using the excellent [GTK 4](https://crates.io/crates/gtk4) and [libadwaita](https://crates.io/crates/libadwaita) libraries.
+[![Crates.io](https://img.shields.io/crates/v/gtk_estate)](https://crates.io/crates/gtk_estate)
+[![License](https://img.shields.io/badge/license-MIT%2FApache-blue)](#license)
+[![Downloads](https://img.shields.io/crates/d/gtk_estate)](https://crates.io/crates/gtk_estate)
+[![Docs](https://docs.rs/gtk_estate/badge.svg)](https://docs.rs/gtk_estate/latest/gtk_estate/)
+[![Twitch Status](https://img.shields.io/twitch/status/coruscateor)](https://www.twitch.tv/coruscateor)
+
+[X](https://twitter.com/Coruscateor) | 
+[Twitch](https://www.twitch.tv/coruscateor) | 
+[Youtube](https://www.youtube.com/@coruscateor) | 
+[Mastodon](https://mastodon.social/@Coruscateor) | 
+[GitHub](https://github.com/coruscateor) | 
+[GitHub Sponsors](https://github.com/sponsors/coruscateor)
+
+GTK Estate is a state association library fot GTK widgets using the excellent [GTK 4](https://crates.io/crates/gtk4) and [libadwaita](https://crates.io/crates/libadwaita) libraries.
+
+</div>
 
 The core of what GTK Estate does is associate user-defined state objects with GTK and libadwaita container widgets and windows. It also contains objects and functions such as TimeOut that might make working with GTK and libadwaita a bit easier.
 
 It basically helps you to build dynamic GUIs based on GTK in Rust.
 
-The StateContainers struct contains widget and window state association hashmaps and is a singleton that needs to be initialised before it is used:
+The StateContainers struct contains widget and window state association hashmaps and is a singleton that needs to be initialised before being used:
 
 </br>
 
@@ -41,6 +58,8 @@ fn main()
 
 </br>
 
+Further StateContainers, ApplicattionState etc explanation...
+
 The reason why StateContainers is a singleton is because it's easier to consolidate all GTK and libadwaita related state into one set of maps than handle this state discretely.
 
 Also StateContainers is a single-threaded singleton which should only contain state which deals with UI and inter-thread-communication related tasks probably using a crate like [act_rs](https://crates.io/crates/act_rs) for the latter.
@@ -55,12 +74,53 @@ Search your software repositories to find the libadwaita libraries.
 
 </br>
 
+## Features
+
+### GTK4
+
+| Feature | Enabled Feature |
+|---------|-----
+| gtk_v4_14 | gtk4/v4_14 |
+| gtk_v4_12 | gtk4/v4_12 |
+| gtk_v4_10 | gtk4/v4_10 |
+| gtk_v4_8 |  gtk4/v4_8  |
+| gtk_v4_6 |  gtk4/v4_6  |
+| gtk_v4_4 |  gtk4/v4_4  |
+| gtk_v4_2 |  gtk4/v4_2  |
+| gtk_gnome_45 | gtk4/gnome_45 |
+| gtk_gnome_44 | gtk4/gnome_44 |
+| gtk_gnome_43 | gtk4/gnome_43 |
+| gtk_gnome_42 | gtk4/gnome_42 |
+| gtk_unsafe-assume-initialized | gtk4/unsafe-assume-initialized |
+| gtk_xml_validation | gtk4/xml_validation |
+| gtk_blueprint | gtk4/blueprint |
+
+</br>
+
+### libadwaita
+
+| Feature | Enabled Feature |
+|---------|-----
+| adw | dep:adw |
+| adw_gtk_v4_2 | adw/gtk_v4_2 |
+| adw_gtk_v4_4 | adw/gtk_v4_4 |
+| adw_gtk_v4_6 | adw/gtk_v4_6 |
+| adw_gtk_v4_8 | adw/gtk_v4_8 |
+| adw_gtk_v4_10 | adw/gtk_v4_10 |
+| adw_gtk_v4_12 | adw/gtk_v4_12 |
+| adw_v1_2 | adw/v1_2 |
+| adw_v1_3 | adw/v1_3 |
+| adw_v1_4 | adw/v1_4 |
+| adw_v1_5 | adw/v1_5 |
+
+</br>
+
 ## Additionally
 
 GTK Estate Re-exposes:
 
 - GTK4 (gtk)
-- libadwaita (adw)
+- libadwaita (adw (if selected))
 - Corlib (corlib)
 
 </br>
@@ -69,7 +129,6 @@ GTK Estate Re-exposes:
 
 - Re-wite the Timeout objects.
 - Add more GTK/adw helper functions and helper objects. 
-- Add example projects
 
 </br>
 
