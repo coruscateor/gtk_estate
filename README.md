@@ -19,6 +19,8 @@ GTK Estate is a state association library fot GTK widgets using the excellent [G
 
 </div>
 
+</br>
+
 The core of what GTK Estate does is associate user-defined state objects with GTK and libadwaita container widgets and windows. It also contains objects and functions such as TimeOut that might make working with GTK and libadwaita a bit easier.
 
 It basically helps you to build dynamic GUIs based on GTK in Rust.
@@ -29,11 +31,11 @@ The StateContainers struct contains widget and window state association hashmaps
 
 ```rust
 
-mod applicaion_state;
+mod application_state;
 
 use gtk_estate::{adw::{prelude::*, Application}, StateContainers};
 
-use crate::applicaion_state::ApplicattionState;
+use crate::application_state::ApplicationState;
 
 fn main()
 {
@@ -44,9 +46,9 @@ fn main()
 
     StateContainers::init();
 
-    //The ApplicattionState (which you define) can now add itself to the StateContainers instance from within its own constructor
+    //The ApplicationState (which you define) can now add itself to the StateContainers instance from within its own constructor
 
-    ApplicattionState::new(&app);
+    ApplicationState::new(&app);
 
     //Run the application
 
@@ -58,7 +60,7 @@ fn main()
 
 </br>
 
-Further StateContainers, ApplicattionState etc explanation...
+In the above example an adw Application is built then StateContainers is initialised, then ApplicationState is instantiated and passed a reference to the Application (a clone of which will become part of its state). An ApplicationState object must implement ApplicationStateContainer, likewise widget state container objects (including windows) must implement WidgetStateContainer (see examples).
 
 The reason why StateContainers is a singleton is because it's easier to consolidate all GTK and libadwaita related state into one set of maps than handle this state discretely.
 
