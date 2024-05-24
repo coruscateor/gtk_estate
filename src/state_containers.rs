@@ -6,7 +6,7 @@ use std::{rc::*, any::Any};
 
 use std::cell::{RefCell, Ref, RefMut};
 
-use corlib::{impl_rfc_borrow_call, impl_rfc_borrow_mut_call, AsAny};
+use corlib::{impl_rfc_borrow_2, impl_rfc_borrow_mut_2, impl_rfc_borrow_and_mut_2, impl_rfc_borrow_call, impl_rfc_borrow_mut_call, AsAny};
 
 use gtk::gio::prelude::ApplicationExt;
 
@@ -24,7 +24,7 @@ use corlib::
     collections::UniqueItemList,
     impl_rfc_borrow,
     impl_rfc_borrow_mut,
-    impl_rfc_borrow_and_mut
+    //impl_rfc_borrow_and_mut
 
 };
 
@@ -439,7 +439,7 @@ impl StateContainers //<'a>
 
     //impl_rfc_borrow_mut_call!(widget_state, remove_by_rc_by_ptr, rbp_sc: &RcByPtr<dyn WidgetStateContainer>);
 
-    impl_rfc_borrow_and_mut!(widget_state, WidgetStateContainers);
+    impl_rfc_borrow_and_mut_2!(widget_state, WidgetStateContainers);
 
     ///
     /// Does the widget state exist?

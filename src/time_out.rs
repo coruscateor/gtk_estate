@@ -6,41 +6,33 @@ use std::cell::{Cell, RefCell};
 
 use gtk4 as gtk;
 
-use gtk::{glib::source::{timeout_add_local, SourceId}}; //, prelude::Continue};
+use gtk::{glib::source::{timeout_add_local, SourceId}};
 
 use gtk::{glib::ControlFlow};
 
 use corlib::events::{ListEvent, SenderEventFunc};
 
-//use corlib::{NonOption, rc_self_setup, impl_rfc_set_rfc_field_delegate, impl_rfc_deref_get_rfc_field_delegate, impl_rfc_deref_get_set_rfc_field_delegate, impl_rfc_field_subscription_delegate, impl_rfc_field_subscribe_delegate, impl_rfc_field_unsubscribe_delegate}; //, impl_rfc_field_subscribe_move_delegate, impl_rfc_field_unsubscribe_move_delegate, impl_rfc_field_subscription_move_delegate}; //impl_rfc_get_rfc_field_delegate, 
-
-use corlib::{NonOption, rc_self_setup, impl_rfc_borrow_get, impl_rfc_borrow_mut_set, impl_rfc_borrow_mut_get_set, impl_rfc_borrow_mut_subscribe, impl_rfc_borrow_mut_unsubscribe, impl_rfc_borrow_mut_subscription, impl_rfc_get_weak_self}; 
-
-//
+use corlib::{impl_get_weak_self_ref, impl_rfc_borrow_get, impl_rfc_borrow_mut_set, impl_rfc_borrow_mut_subscribe, impl_rfc_borrow_mut_subscription, impl_rfc_borrow_mut_unsubscribe, rc_self_setup, NonOption}; 
 
 use corlib::rc_default::RcDefault;
 
 use paste::paste;
 
-//use gtk::glib;
-
-//use glib::clone;
-
-struct PrivateTimeOutFileds //InternalTimeOut
+struct PrivateTimeOutFileds<T>
+    where T: 'static
 {
 
     pub interval: Duration,
     pub source_id: Option<SourceId>,
-    pub on_time_out: ListEvent<Rc<TimeOut>>,
-    //pub reoccurs: bool,
-    //pub is_active: bool
+    pub on_time_out: ListEvent<Rc<TimeOut<T>>>
 
 }
 
-impl PrivateTimeOutFileds //InternalTimeOut
+impl<T> PrivateTimeOutFileds<T>
+    where T: 'static
 {
 
-    pub fn new(interval: Duration) -> Self //, reoccurs: bool) -> Self
+    pub fn new(interval: Duration) -> Self
     {
 
         Self
@@ -49,8 +41,6 @@ impl PrivateTimeOutFileds //InternalTimeOut
             interval,
             source_id: None,
             on_time_out: ListEvent::new(),
-            //reoccurs,  //: false,
-            //is_active: false
 
         }
 
@@ -58,79 +48,119 @@ impl PrivateTimeOutFileds //InternalTimeOut
 
 }
 
-pub type RcTimeOut = Rc<TimeOut>;
+pub type RcTimeOut<T = ()> = Rc<TimeOut<T>>;
 
 ///
 /// Wraps a glib::source::timeout_add_local function and a glib::source::SourceId struct into a single easy to use object.
 /// 
 /// On timeout it raises an event.
 /// 
-pub struct TimeOut
+pub struct TimeOut<T = ()> // = ()
+    where T: 'static
 {
 
-    fields: RefCell<PrivateTimeOutFileds>, //internal_timeout InternalTimeOut>,
+    fields: RefCell<PrivateTimeOutFileds<T>>,
     reoccurs: Cell<bool>,
-    weak_self: RefCell<NonOption<Weak<TimeOut>>>
+    weak_self: Weak<Self>, //<TimeOut<T>>,
+    state: T
 
 }
 
-impl TimeOut
+impl<T> TimeOut<T>
+    where T: Default + 'static
 {
 
     pub fn new(interval: Duration, reoccurs: bool) -> Rc<Self>
     {
 
-        let rc_self = Rc::new(Self
+        let res = Rc::new_cyclic(|weak_self|
         {
 
-            fields: RefCell::new(PrivateTimeOutFileds::new(interval)), //, reoccurs)), //internal_timeout
-            reoccurs: Cell::new(reoccurs),
-            weak_self: RefCell::new(NonOption::invalid())
+            Self //TimeOut::<T> //Self
+            {
+    
+                fields: RefCell::new(PrivateTimeOutFileds::new(interval)),
+                reoccurs: Cell::new(reoccurs),
+                weak_self: weak_self.clone(),
+                state: T::default()
+    
+            }
 
-            /*
-            interval,
-            source_id: None,
-            on_time_out: ListEvent::new(),
-            reoccurs: false
-            */
         });
 
-        rc_self_setup!(rc_self, weak_self);
-
-        rc_self
+        res
 
     }
 
     pub fn new_once(interval: Duration) -> Rc<Self>
     {
 
-        let rc_self = Rc::new(Self
+        Rc::new_cyclic(|weak_self|
         {
 
-            fields: RefCell::new(PrivateTimeOutFileds::new(interval)), //, false)), //internal_timeout
-            reoccurs: Cell::new(false),
-            weak_self: RefCell::new(NonOption::invalid())
+            Self
+            {
+
+                fields: RefCell::new(PrivateTimeOutFileds::new(interval)),
+                reoccurs: Cell::new(false),
+                weak_self: weak_self.clone(),
+                state: T::default()
+
+            }
+
+        })
+
+    }
+
+}
+
+impl<T> TimeOut<T>
+    where T: 'static
+{
+
+    pub fn with_state(interval: Duration, reoccurs: bool, state: T) -> Rc<Self>
+    {
+
+        let res = Rc::new_cyclic(|weak_self|
+        {
+
+            Self
+            {
+    
+                fields: RefCell::new(PrivateTimeOutFileds::new(interval)),
+                reoccurs: Cell::new(reoccurs),
+                weak_self: weak_self.clone(),
+                state
+    
+            }
 
         });
 
-        rc_self_setup!(rc_self, weak_self);
-
-        rc_self
+        res
 
     }
 
-    //impl_rfc_deref_get_rfc_field_delegate!(fields, interval, Duration);
-
-    /*
-    pub fn get_weak_self(&self) -> Weak<Self>
+    pub fn new_once_with_state(interval: Duration, state: T) -> Rc<Self>
     {
 
-        self.weak_self.borrow().get_ref().clone()
+        Rc::new_cyclic(|weak_self|
+        {
+
+            Self
+            {
+
+                fields: RefCell::new(PrivateTimeOutFileds::new(interval)),
+                reoccurs: Cell::new(false),
+                weak_self: weak_self.clone(),
+                state
+
+            }
+
+        })
 
     }
-    */
 
-    impl_rfc_get_weak_self!();
+    impl_get_weak_self_ref!();
 
     pub fn set_interval(&self, value: Duration) -> bool
     {
@@ -162,10 +192,6 @@ impl TimeOut
 
     }
 
-    //impl_rfc_deref_get_rfc_field_delegate!(fields, is_active, bool);
-
-    //impl_rfc_borrow_get!(fields, is_active, bool);
-
     pub fn is_active(&self) -> bool
     {
 
@@ -173,11 +199,7 @@ impl TimeOut
 
     }
 
-    //impl_rfc_deref_get_set_rfc_field_delegate!(fields, reoccurs, bool);
-
-    //impl_rfc_borrow_mut_get_set!(fields, reoccurs, bool);
-
-    pub fn get_reoccurs(&self) -> bool
+    pub fn reoccurs(&self) -> bool
     {
 
         self.reoccurs.get()
@@ -205,39 +227,23 @@ impl TimeOut
 
     }
 
-    /*
-    pub fn subscribe_on_time_out(&self)
-    {
-
-        let mut fields_mut = self.fields.borrow_mut();
-
-        fields_mut.on_time_out.subscribe(f)
-
-    }
-    */
-
-    //impl_rfc_field_subscription_delegate!(fields, on_time_out, SenderEventFunc<Rc<Self>>);
-
     impl_rfc_borrow_mut_subscription!(fields, on_time_out, SenderEventFunc<Rc<Self>>);
-
-    //impl_rfc_field_subscription_move_delegate!(fields, on_time_out, SenderEventFunc<Rc<Self>>);
 
     pub fn start(&self) -> bool
     {
 
         let mut fields_mut = self.fields.borrow_mut();
         
-        if fields_mut.source_id.is_none() //let None = fields_mut.source_id
+        let weak_self = self.weak_self.clone();
+
+        if fields_mut.source_id.is_none()
         {
 
-            let weak_self = self.weak_self.borrow().get_ref().clone();
-
-            fields_mut.source_id = Some(timeout_add_local(fields_mut.interval, move || {  
+            fields_mut.source_id = Some(timeout_add_local(fields_mut.interval, move ||
+            {  
             
                 if let Some(this) = weak_self.upgrade()
                 {
-
-                    //let reoccurs;
 
                     {
 
@@ -245,14 +251,10 @@ impl TimeOut
 
                         fields_mut.on_time_out.raise(&this);
     
-                        //reoccurs = fields_mut.reoccurs;
-
                     }
 
-                    if this.get_reoccurs() //reoccurs
+                    if this.reoccurs()
                     {
-
-                        //Continue(true)
 
                         ControlFlow::Continue
 
@@ -260,25 +262,17 @@ impl TimeOut
                     else
                     {
 
-                        //this.fields.borrow_mut().is_active = false;
-
                         //The presence source_id indecates whether or not the TimeOut is active
 
                         this.fields.borrow_mut().source_id = None;
-
-                        //Continue(false)
 
                         ControlFlow::Break
 
                     }
 
-                    //Continue(fields_ref.reoccurs)
-
                 }
                 else
                 {
-
-                    //Continue(false)
 
                     ControlFlow::Break
 
@@ -301,21 +295,10 @@ impl TimeOut
     pub fn stop(&self) -> bool
     {
 
-        /*
-        if let Some(src_id) = &mut self.source_id
-        {
-
-            src_id.remove();
-
-        }
-        */
-
         let mut fields_mut = self.fields.borrow_mut();
 
-        if fields_mut.source_id.is_some()//&& fields_mut.is_active
+        if fields_mut.source_id.is_some()
         {
-
-            //let src_id = self.source_id.unwrap(); //expect("Can'f find source_id");
 
             let src_id_taken = fields_mut.source_id.take();
 
@@ -328,7 +311,8 @@ impl TimeOut
             true
 
         }
-        else {
+        else
+        {
             
             false
 
@@ -338,7 +322,8 @@ impl TimeOut
 
 }
 
-impl Drop for TimeOut
+impl<T> Drop for TimeOut<T>
+    where T: 'static
 {
 
     fn drop(&mut self)
@@ -350,7 +335,8 @@ impl Drop for TimeOut
 
 }
 
-impl RcDefault for TimeOut
+/*
+impl<T> RcDefault for TimeOut<T>
 {
 
     fn rc_default() -> Rc<Self>
@@ -359,14 +345,6 @@ impl RcDefault for TimeOut
         Self::new(Duration::new(1, 0), false)
         
     }
-
-}
-
-/*
-struct TimeOutInternal
-{
-
-    continue_: bool
 
 }
 */
