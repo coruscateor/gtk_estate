@@ -12,7 +12,9 @@ use gtk::{glib::ControlFlow};
 
 use corlib::events::{ListEvent, SenderEventFunc};
 
-use corlib::{NonOption, rc_self_setup, impl_rfc_borrow_get, impl_rfc_borrow_mut_set, impl_rfc_borrow_mut_get_set, impl_rfc_borrow_mut_subscribe, impl_rfc_borrow_mut_unsubscribe, impl_rfc_borrow_mut_subscription, impl_rfc_get_weak_self}; 
+use corlib::{impl_get_ref, impl_get_weak_self_ref, impl_rfc_borrow_get, impl_rfc_borrow_mut_set, impl_rfc_borrow_mut_subscription, impl_rfc_borrow_mut_unsubscribe, rc_self_setup, NonOption}; 
+
+//impl_rfc_borrow_mut_get_set, impl_rfc_borrow_mut_subscribe, impl_rfc_get_weak_self
 
 pub struct PrivateSimpleTimeOutFileds //<F>
     //where F: Fn(&Rc<SimpleTimeOut>) -> bool + 'static //<F>
@@ -60,84 +62,165 @@ impl PrivateSimpleTimeOutFileds //<F>
 
 }
 
-pub type RcSimpleTimeOut = Rc<SimpleTimeOut>;
+pub type RcSimpleTimeOut<T = ()> = Rc<SimpleTimeOut<T>>;
 
 //pub trait SimpleTimeOutFn = Fn(&SimpleTimeOut) -> bool;
 
-pub type SimpleTimeOutFn = dyn Fn(&Rc<SimpleTimeOut>) -> bool;
+pub type SimpleTimeOutFn<T> = dyn Fn(&Rc<SimpleTimeOut<T>>) -> bool;
 
 ///
 /// Wraps a glib::source::timeout_add_local function and a glib::source::SourceId struct into a single easy to use object.
 /// 
 /// On timeout it calls a function which returns a value indicating wheher or not the timeout should continue.
 /// 
-pub struct SimpleTimeOut //<F>
-    //where F: Fn(&Rc<Self>) -> bool + 'static
+pub struct SimpleTimeOut<T = ()>
+    where T: 'static
 {
 
-    fields: RefCell<PrivateSimpleTimeOutFileds>, //<F>
-    function: RefCell<Option<Box<SimpleTimeOutFn>>>,
-    weak_self: RefCell<NonOption<Weak<Self>>>,
-    
+    fields: RefCell<PrivateSimpleTimeOutFileds>,
+    function: RefCell<Option<Box<SimpleTimeOutFn<T>>>>,
+    weak_self: Weak<Self>,
+    state: T
+
 }
 
-impl SimpleTimeOut //<F>
-    //where F: Fn(&Rc<Self>) -> bool + 'static
+impl<T> SimpleTimeOut<T>
+    where T: Default + 'static
 {
 
-    pub fn new(interval: Duration) -> Rc<Self> //, opt_function: Option<F>) -> Rc<Self>
-    {
+    pub fn new(interval: Duration) -> Rc<Self>
+    {   
 
-        /*
-        let function: F;
-
-        if let Some(val) = opt_function
+        Rc::new_cyclic(|weak_self|
         {
 
-            function = val;
+            Self
+            {
+    
+                fields: RefCell::new(PrivateSimpleTimeOutFileds::new(interval)),
+                function: RefCell::new(None),
+                weak_self: weak_self.clone(),
+                state: T::default()
+    
+            }
 
-        }
-        else {
-            
-            function = |_| false;
-
-        }
-        */
-
-        let rc_self = Rc::new(Self
-        {
-
-            fields: RefCell::new(PrivateSimpleTimeOutFileds::new(interval)), //, function)),
-            function: RefCell::new(None),
-            weak_self: RefCell::new(NonOption::invalid()),
-
-        });
-
-        rc_self_setup!(rc_self, weak_self);
-
-        rc_self
+        })
 
     }
 
     pub fn with_fn<F>(interval: Duration, function: F) -> Rc<Self>
         where F: Fn(&Rc<Self>) -> bool + 'static
     {
-        let rc_self = Rc::new(Self
+
+        Rc::new_cyclic(|weak_self|
         {
 
-            fields: RefCell::new(PrivateSimpleTimeOutFileds::new(interval)), //with_fn(interval, function)),
-            function: RefCell::new(Some(Box::new(function))),
-            weak_self: RefCell::new(NonOption::invalid()),
+            Self
+            {
 
-        });
+                fields: RefCell::new(PrivateSimpleTimeOutFileds::new(interval)),
+                function: RefCell::new(Some(Box::new(function))),
+                weak_self: weak_self.clone(),
+                state: T::default()
 
-        rc_self_setup!(rc_self, weak_self);
+            }
 
-        rc_self
+        })
 
     }
 
-    impl_rfc_get_weak_self!();
+}
+
+impl<T> SimpleTimeOut<T>
+{
+
+    pub fn with_state(interval: Duration, state: T) -> Rc<Self>
+    {
+
+        Rc::new_cyclic(|weak_self|
+        {
+
+            Self
+            {
+    
+                fields: RefCell::new(PrivateSimpleTimeOutFileds::new(interval)),
+                function: RefCell::new(None),
+                weak_self: weak_self.clone(),
+                state
+    
+            }
+
+        })
+
+    }
+
+    pub fn with_state_ref(interval: Duration, state: &T) -> Rc<Self>
+        where T: Clone
+    {
+
+        Rc::new_cyclic(|weak_self|
+        {
+
+            Self
+            {
+    
+                fields: RefCell::new(PrivateSimpleTimeOutFileds::new(interval)),
+                function: RefCell::new(None),
+                weak_self: weak_self.clone(),
+                state: state.clone()
+    
+            }
+
+        })
+
+    }
+
+    pub fn with_fn_and_state<F>(interval: Duration, function: F, state: T) -> Rc<Self>
+        where F: Fn(&Rc<Self>) -> bool + 'static
+    {
+
+        Rc::new_cyclic(|weak_self|
+        {
+
+            Self
+            {
+    
+                fields: RefCell::new(PrivateSimpleTimeOutFileds::new(interval)),
+                function: RefCell::new(Some(Box::new(function))),
+                weak_self: weak_self.clone(),
+                state
+    
+            }
+
+        })
+
+    }
+
+    pub fn with_fn_and_state_ref<F>(interval: Duration, function: F, state: &T) -> Rc<Self>
+        where F: Fn(&Rc<Self>) -> bool + 'static,
+              T: Clone
+    {
+
+        Rc::new_cyclic(|weak_self|
+        {
+
+            Self
+            {
+
+                fields: RefCell::new(PrivateSimpleTimeOutFileds::new(interval)),
+                function: RefCell::new(Some(Box::new(function))),
+                weak_self: weak_self.clone(),
+                state: state.clone()
+
+            }
+
+        })
+
+    }
+
+    //impl_rfc_get_weak_self!();
+
+    impl_get_weak_self_ref!();
 
     pub fn set_interval(&self, value: Duration) -> bool
     {
@@ -150,9 +233,9 @@ impl SimpleTimeOut //<F>
 
         }
 
-        //if fields_mut.source_id.is_some()
+        //If fields_mut.source_id.is_some()
 
-        //retart the timer if it was active
+        //Retart the timer if it was active
 
         if self.stop()
         {
@@ -176,33 +259,11 @@ impl SimpleTimeOut //<F>
 
     }
 
-    /* 
-    pub fn get_function(&self) -> F
-    {
-
-        self.fields.borrow().function
-
-    }
-    */
-
-    /*
-    pub fn get_private_fields_ref(&self) -> Ref<PrivateSimpleTimeOutFileds<F>>
-    {
-
-        self.fields.borrow()
-
-    }
-    */
+    impl_get_ref!(state, T);
 
     pub fn set_function<F>(&self, function: F)
         where F: Fn(&Rc<Self>) -> bool + 'static
     {
-
-        //let mut fields = self.fields.borrow_mut();
-
-        //fields.function = function;
-
-        //fields.opt_function = Some(function);
 
         let mut fn_mut = self.function.borrow_mut();
 
@@ -210,19 +271,8 @@ impl SimpleTimeOut //<F>
 
     }
 
-    /*
-    pub fn try_get_function_ref(&self) -> Option<&Box<SimpleTimeOutFn>>
-    {
-
-        self.function.borrow().as_ref()
-
-    }
-    */
-
     pub fn has_function(&self) -> bool
     {
-
-        //self.fields.borrow().opt_function.is_some()
 
         self.function.borrow().is_some()
 
@@ -253,28 +303,22 @@ impl SimpleTimeOut //<F>
 
         let mut fields_mut = self.fields.borrow_mut();
 
-        if fields_mut.source_id.is_none() //let None = fields_mut.source_id //&& fields_mut.opt_function.is_some()
+        if fields_mut.source_id.is_none()
         {
 
-            /*
-            if self.function.borrow().is_some()
-            {
-            */
+            let weak_self = self.weak_self.clone();
 
-            let weak_self = self.weak_self.borrow().get_ref().clone();
-
-            fields_mut.source_id = Some(timeout_add_local(fields_mut.interval, move || {  
+            fields_mut.source_id = Some(timeout_add_local(fields_mut.interval, move ||
+            {  
             
                 if let Some(this) = weak_self.upgrade()
                 {
 
-                    if let Some(function) = this.function.borrow().as_ref() //&this.fields.borrow().opt_function
+                    if let Some(function) = this.function.borrow().as_ref()
                     {
                         
-                        if function(&this) //if (this.fields.borrow().function)(&this)
+                        if function(&this)
                         {
-
-                            //Continue(true)
 
                             ControlFlow::Continue
 
@@ -286,8 +330,6 @@ impl SimpleTimeOut //<F>
 
                             this.fields.borrow_mut().source_id = None;
 
-                            //Continue(false)
-
                             ControlFlow::Break
 
                         }
@@ -295,8 +337,6 @@ impl SimpleTimeOut //<F>
                     }
                     else
                     {
-
-                        //Continue(false)
                         
                         ControlFlow::Break
 
@@ -306,8 +346,6 @@ impl SimpleTimeOut //<F>
                 else
                 {
 
-                    //Continue(false)
-
                     ControlFlow::Break
 
                 }
@@ -315,16 +353,6 @@ impl SimpleTimeOut //<F>
             }));
 
             true
-
-            /*
-            }
-            else
-            {
-    
-                false
-    
-            }
-            */
 
         }
         else
@@ -364,8 +392,8 @@ impl SimpleTimeOut //<F>
 
 }
 
-impl Drop for SimpleTimeOut //<F>
-    //where F: Fn(&Rc<Self>) -> bool
+impl<T> Drop for SimpleTimeOut<T>
+    where T: 'static
 {
 
     fn drop(&mut self)

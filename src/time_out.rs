@@ -12,7 +12,7 @@ use gtk::{glib::ControlFlow};
 
 use corlib::events::{ListEvent, SenderEventFunc};
 
-use corlib::{impl_get_weak_self_ref, impl_rfc_borrow_get, impl_rfc_borrow_mut_set, impl_rfc_borrow_mut_subscribe, impl_rfc_borrow_mut_subscription, impl_rfc_borrow_mut_unsubscribe, rc_self_setup, NonOption}; 
+use corlib::{impl_get_ref, impl_get_weak_self_ref, impl_rfc_borrow_get, impl_rfc_borrow_mut_set, impl_rfc_borrow_mut_subscribe, impl_rfc_borrow_mut_subscription, impl_rfc_borrow_mut_unsubscribe, rc_self_setup, NonOption}; 
 
 use corlib::rc_default::RcDefault;
 
@@ -121,7 +121,7 @@ impl<T> TimeOut<T>
     pub fn with_state(interval: Duration, reoccurs: bool, state: T) -> Rc<Self>
     {
 
-        let res = Rc::new_cyclic(|weak_self|
+        Rc::new_cyclic(|weak_self|
         {
 
             Self
@@ -134,9 +134,28 @@ impl<T> TimeOut<T>
     
             }
 
-        });
+        })
 
-        res
+    }
+
+    pub fn with_state_ref(interval: Duration, reoccurs: bool, state: &T) -> Rc<Self>
+        where T: Clone
+    {
+
+        Rc::new_cyclic(|weak_self|
+        {
+
+            Self
+            {
+    
+                fields: RefCell::new(PrivateTimeOutFileds::new(interval)),
+                reoccurs: Cell::new(reoccurs),
+                weak_self: weak_self.clone(),
+                state: state.clone()
+    
+            }
+
+        })
 
     }
 
@@ -153,6 +172,27 @@ impl<T> TimeOut<T>
                 reoccurs: Cell::new(false),
                 weak_self: weak_self.clone(),
                 state
+
+            }
+
+        })
+
+    }
+
+    pub fn new_once_with_state_ref(interval: Duration, state: &T) -> Rc<Self>
+        where T: Clone
+    {
+
+        Rc::new_cyclic(|weak_self|
+        {
+
+            Self
+            {
+
+                fields: RefCell::new(PrivateTimeOutFileds::new(interval)),
+                reoccurs: Cell::new(false),
+                weak_self: weak_self.clone(),
+                state: state.clone()
 
             }
 
@@ -226,6 +266,8 @@ impl<T> TimeOut<T>
         self.reoccurs.set(false)
 
     }
+
+    impl_get_ref!(state, T);
 
     impl_rfc_borrow_mut_subscription!(fields, on_time_out, SenderEventFunc<Rc<Self>>);
 
