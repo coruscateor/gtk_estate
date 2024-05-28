@@ -78,7 +78,9 @@ pub trait WidgetStateContainer : AsAny + Any //<'a>
 
 //The StateContainers sigleton static location.
 
-static mut STATE_CONTAINERS: NonOption<Rc<StateContainers>> = NonOption::invalid(); 
+//static mut STATE_CONTAINERS: NonOption<Rc<StateContainers>> = NonOption::invalid(); 
+
+static mut STATE_CONTAINERS: Option<Rc<StateContainers>> = None; 
 
 ///
 /// Clone a copy of the StateContainers state.
@@ -91,7 +93,20 @@ fn get_state_containers() -> Rc<StateContainers>
     unsafe
     {
 
-        STATE_CONTAINERS.get_ref().clone()
+        //STATE_CONTAINERS.get_ref().clone()
+
+        if let Some(res) = &STATE_CONTAINERS
+        {
+
+            res.clone()
+
+        }
+        else
+        {
+
+            StateContainers::init()
+
+        }
 
     }
 
@@ -109,7 +124,7 @@ fn try_get_state_containers() -> Option<Rc<StateContainers>>
     unsafe
     {
 
-        let opt = STATE_CONTAINERS.try_get_ref();
+        let opt = STATE_CONTAINERS.as_ref(); //.try_get_ref();
 
         if let Some(sc) = opt
         {
@@ -135,10 +150,10 @@ fn set_state_containers(state_containers: &Rc<StateContainers>)
     unsafe
     {
 
-        if !STATE_CONTAINERS.is_valid()
+        if !STATE_CONTAINERS.is_some() //.is_valid()
         {
 
-            STATE_CONTAINERS.set(state_containers.clone())
+            STATE_CONTAINERS = Some(state_containers.clone()); //.set(state_containers.clone())
 
         }
 
@@ -195,7 +210,9 @@ impl StateContainers //<'a>
 {
 
     ///
-    /// Call this once to Initialise the StateContainers, prefereably in the main function.
+    /// Called once to Initialise the StateContainers.
+    /// 
+    /// This is done automatically when you call the "get" static method.
     /// 
     pub fn init() -> Rc<Self>
     {

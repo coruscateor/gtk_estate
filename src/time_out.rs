@@ -61,7 +61,7 @@ pub struct TimeOut<T = ()> // = ()
 
     fields: RefCell<PrivateTimeOutFileds<T>>,
     reoccurs: Cell<bool>,
-    weak_self: Weak<Self>, //<TimeOut<T>>,
+    weak_self: Weak<Self>,
     state: T
 
 }
@@ -76,7 +76,7 @@ impl<T> TimeOut<T>
         let res = Rc::new_cyclic(|weak_self|
         {
 
-            Self //TimeOut::<T> //Self
+            Self
             {
     
                 fields: RefCell::new(PrivateTimeOutFileds::new(interval)),
@@ -202,6 +202,8 @@ impl<T> TimeOut<T>
 
     impl_get_weak_self_ref!();
 
+    impl_rfc_borrow_get!(fields, interval, Duration);
+    
     pub fn set_interval(&self, value: Duration) -> bool
     {
 
@@ -213,9 +215,9 @@ impl<T> TimeOut<T>
 
         }
 
-        //if fields_mut.source_id.is_some()
+        //If fields_mut.source_id.is_some()
 
-        //retart the timer if it was active
+        //Restart the timer if it was active
 
         if self.stop()
         {
@@ -304,7 +306,7 @@ impl<T> TimeOut<T>
                     else
                     {
 
-                        //The presence source_id indecates whether or not the TimeOut is active
+                        //The presence source_id indicates whether or not the TimeOut is active.
 
                         this.fields.borrow_mut().source_id = None;
 
@@ -347,8 +349,6 @@ impl<T> TimeOut<T>
             let src_id = src_id_taken.unwrap();
 
             src_id.remove();
-
-            //fields_mut.is_active = false;
 
             true
 
