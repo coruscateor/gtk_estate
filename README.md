@@ -15,17 +15,15 @@
 [GitHub](https://github.com/coruscateor) | 
 [GitHub Sponsors](https://github.com/sponsors/coruscateor)
 
-GTK Estate is a state association library fot GTK widgets using the excellent [GTK 4](https://crates.io/crates/gtk4) and [libadwaita](https://crates.io/crates/libadwaita) libraries.
+GTK Estate is a state association library for GTK widgets using the excellent [GTK 4](https://crates.io/crates/gtk4) and [libadwaita](https://crates.io/crates/libadwaita) libraries.
 
 </div>
 
 </br>
 
-The core of what GTK Estate does is associate user-defined state objects with GTK and libadwaita container widgets and windows. It also contains objects and functions such as TimeOut that might make working with GTK and libadwaita a bit easier.
+The main purpose of GTK Estate is to provide a convenient way to associate user-defined state objects with GTK and libadwaita container widgets. Using user-defined objects you control the user-centric state of their associated widgets and react to their signals. GTK Estate also contains objects such as TimeOut and helper functions that can assist you in building dynamic GTK applications programmatically.
 
-It basically helps you to build dynamic GUIs based on GTK in Rust.
-
-The StateContainers struct contains widget and window state association hashmaps and is a singleton that needs to be initialised before being used:
+The StateContainers struct is a singleton and contains widget state association hashmaps, each type of widget gets its own map instance.
 
 </br>
 
@@ -42,11 +40,11 @@ fn main()
 
     let app = Application::builder().application_id("org.example_gui").build();
 
-    //Initialise State the containers.
+    //Explicit initialisation of the StateContainers object is no longer required as of v0.3.0.
 
-    StateContainers::init();
+    //StateContainers::init();
 
-    //The ApplicationState (which you define) can now add itself to the StateContainers instance from within its own constructor
+    //The ApplicationState (which you define) should add itself to the StateContainers instance from within its own constructor.
 
     ApplicationState::new(&app);
 
@@ -60,19 +58,17 @@ fn main()
 
 </br>
 
-In the above example an adw Application is built then StateContainers is initialised, then ApplicationState is instantiated and passed a reference to the Application (a clone of which will become part of its state). An ApplicationState object must implement ApplicationStateContainer, likewise widget state container objects (including windows) must implement WidgetStateContainer (see examples).
+In the above example an adw Application is constructed then ApplicationState is instantiated and passed a reference to the Application (a clone of which will become part of its state). An ApplicationState object must implement ApplicationStateContainer, likewise widget state container objects (including windows) must implement WidgetStateContainer (see examples).
 
-The reason why StateContainers is a singleton is because it's easier to consolidate all GTK and libadwaita related state into one set of maps than handle this state discretely.
-
-Also StateContainers is a single-threaded singleton which should only contain state which deals with UI and inter-thread-communication related tasks probably using a crate like [act_rs](https://crates.io/crates/act_rs) for the latter.
+StateContainers is a single-threaded singleton which should only contain state which deals with UI and inter-thread-communication related tasks probably using a crate like [act_rs](https://crates.io/crates/act_rs) for the latter.
 
 </br>
 
 ## Building Requirements
 
-Requires the GTK4 and libadwaita library binaries on your system (See [The GTK Book](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation.html) for GTK installation instructions).
+Requires the GTK4 library binaries on your system (See [The GTK Book](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation.html) for GTK installation instructions).
 
-Search your software repositories to find the libadwaita libraries.
+Search your software repositories to find the libadwaita libraries if you want to use any adw features.
 
 </br>
 
@@ -129,8 +125,8 @@ GTK Estate Re-exposes:
 
 ## Todo
 
-- Re-wite the Timeout objects.
-- Add more GTK/adw helper functions and helper objects. 
+- Add more GTK/adw helper functions and helper objects.
+- Add more documentation.
 
 </br>
 
@@ -146,7 +142,7 @@ GTK Estate Re-exposes:
 
 ## Coding Style
 
-This project uses a coding style the emphasises the use of white space over keeping the line and column counts as low as possible.
+This project uses a coding style which emphasises the use of white space over keeping the line and column counts as low as possible.
 
 So this:
 

@@ -1,7 +1,10 @@
+use adw::glib::object::CastNone;
+//use adw::glib::object::ObjectExt;
 use gtk4 as gtk;
 
 use gtk::{Widget, Paned, prelude::IsA, prelude::WidgetExt};
 
+use gtk::glib::{object::{ObjectExt, Cast}, types::StaticType};
 
 //pub fn set_hvexpand<T: WidgetExt>(widget: &T, expand: bool) // IsA<Widget>>
 
@@ -75,6 +78,58 @@ pub fn set_margin_all(widget: &impl WidgetExt, margin: i32)
     widget.set_margin_top(margin);
 
     widget.set_margin_bottom(margin);
+
+}
+
+///
+/// Try to find a direct or an indirect parent of the provided child widget which is of the type T. 
+/// 
+pub fn try_find_parent<T, C>(child_widget: &C) -> Result<T, Widget>
+    where T: WidgetExt + ObjectExt + StaticType + Cast,
+          C: WidgetExt + ObjectExt + StaticType + Cast
+{
+
+    let cw = child_widget.clone();
+
+    let mut next_child: Widget = cw.into();
+
+    loop {
+        
+        let opt_parent = next_child.parent();
+
+        if let Some(parent) = opt_parent
+        {
+
+            if parent.is::<T>()
+            {
+
+                return parent.downcast::<T>();
+
+            }
+
+            next_child = parent;
+
+        }
+        else
+        {
+
+            return Err(next_child);
+
+        }
+
+    }
+
+}
+
+///
+/// Find a direct or an indirect parent of the provided child widget which is of the type T or panic.
+/// 
+pub fn find_parent<T, C>(child_widget: &C) -> T
+    where T: WidgetExt + ObjectExt + StaticType,
+          C: WidgetExt + ObjectExt + StaticType
+{
+
+    try_find_parent::<T, C>(child_widget).expect("Error: A parent Widget of the specified type has not been found.")
 
 }
 
