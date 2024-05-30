@@ -6,18 +6,6 @@ use std::rc::{Weak, Rc};
 
 use crate::{gtk4 as gtk, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
 
-//use crate::gtk4::prelude::{BoxExt, WidgetExt};
-
-//use crate::{HasObject, impl_has_application_window, impl_has_object, StateContainers};
-
-//use crate::gtk4::{self as gtk, Box, Orientation};
-
-//use crate::adw::{Application, ApplicationWindow, HeaderBar, WindowTitle, prelude::AdwApplicationWindowExt, gtk::prelude::ApplicationWindowExt, gtk::prelude::GtkWindowExt};
-
-use crate::corlib::{NonOption, rc_self_rfc_setup};
-
-//use crate::window_contents_state::WindowContentsState;
-
 use adw::builders::WindowBuilder;
 use adw::prelude::{AdwWindowExt, AdwApplicationWindowExt};
 use adw::Window;

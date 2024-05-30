@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.0 (_/05/2024)
+
+
+
 ## Version 0.2.0 (22/04/2024)
 
 - Updated dependencies (gtk4 to "0.8.*" adw to "0.6.*" and corlib to "0.2.0")

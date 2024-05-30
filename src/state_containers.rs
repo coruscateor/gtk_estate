@@ -93,8 +93,6 @@ fn get_state_containers() -> Rc<StateContainers>
     unsafe
     {
 
-        //STATE_CONTAINERS.get_ref().clone()
-
         if let Some(res) = &STATE_CONTAINERS
         {
 
@@ -285,8 +283,6 @@ impl StateContainers //<'a>
     ///
     /// Get the StateContainers singleton.
     /// 
-    /// WARNING: will panic if it hasn't been initalised.
-    /// 
     pub fn get() -> Rc<StateContainers>
     {
 
@@ -305,7 +301,7 @@ impl StateContainers //<'a>
     }
 
     ///
-    /// Get the weak self if the StateContainers.
+    /// Get the "weak self" of the StateContainers.
     /// 
     pub fn weak_self(&self) -> Weak<StateContainers>
     {
@@ -315,7 +311,7 @@ impl StateContainers //<'a>
     }
 
     ///
-    /// Set the application state.
+    /// Set the application state. Returns false if an ApplicationStateContainer is already present.
     /// 
     pub fn set_application_state<T: ApplicationStateContainer>(&self, state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
     {
@@ -348,14 +344,14 @@ impl StateContainers //<'a>
         if !self.set_application_state(state)
         {
 
-            panic!("GTK Estate: Error: Cound not set applicaton state!")
+            panic!("GTK Estate - Error: Cound not set applicaton state!")
 
         }
 
     }
 
     ///
-    /// Get the application state (or panic).
+    /// Get the application state or panic.
     /// 
     pub fn application_state(&self) -> Rc<dyn ApplicationStateContainer>
     {
@@ -452,10 +448,6 @@ impl StateContainers //<'a>
 
     }
 
-    //Fix:
-
-    //impl_rfc_borrow_mut_call!(widget_state, remove_by_rc_by_ptr, rbp_sc: &RcByPtr<dyn WidgetStateContainer>);
-
     impl_rfc_borrow_and_mut_2!(widget_state, WidgetStateContainers);
 
     ///
@@ -497,22 +489,12 @@ impl StateContainers //<'a>
 }
 
 ///
-/// This macro gets a StateContainers instance reference and calls "set_application_state_or_panic" on it to set the application state.
+/// This macro gets a StateContainers Rc instance and calls "set_application_state_or_panic" on it, passing "$this", to set the application state.
 /// 
 #[macro_export]
 macro_rules! scs_set_app
 {
 
-    /*
-    () =>
-    {
-
-        let scs = StateContainers::get();
-
-        scs.set_application_state_or_panic(&this);
-
-    };
-    */
     ($this:ident) =>
     {
 
@@ -525,7 +507,7 @@ macro_rules! scs_set_app
 }
 
 ///
-/// This macro gets a StateContainers instance reference and adds the "this" widget state to it.  
+/// This macro gets a StateContainers Rc instance and adds the "$this" widget state to it  
 /// 
 #[macro_export]
 macro_rules! scs_add
