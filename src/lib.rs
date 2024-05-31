@@ -21,7 +21,9 @@ pub extern crate adw;
 
 pub extern crate corlib;
 
-pub mod time_out;
+mod time_out;
+
+pub use time_out::*;
 
 pub mod helpers;
 

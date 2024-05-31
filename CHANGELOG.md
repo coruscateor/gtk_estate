@@ -4,30 +4,26 @@
 
 e013a2478aad90d67219add62bda91dc5aea976f
 
-- Cleaned up lib
+- Cleaned up lib.rs
 - Removed a bunch of old code.
-
 - Updated the Corlib RefCell borrowing macros in the state_containers module.
-
 - Cleaned up TimeOut, updated its Corlib macro imports and added a generic state field.
 
 53f493d6e6068bb22b3472b3c0f23cdf152583c1
 
 - Added a state object and related methods to SimpleTimeOut.
-
 - Added a “state” method to TimeOut which returns a reference to its state object.
 
 7d204e83553ddf888d3eb388d6957e82ee32d590
 
 - Removed the gtk_estate.code-workspace file and added it to the .gitignore.
-
 - Cleaned up SimpleTimeOut and renamed the field “function” to “on_time_out_fn” as well as “set_function” to “set_on_time_out_fn”, “has_function” to “has_on_time_out_fn”, “remove_function” to “remove_on_time_out_fn” and “remove_function_only” to “remove_on_time_out_fn_only”.
-
 - Added a getter for “interval”, so you can get the set interval for the SimpleTimeOut.
-
 - StateContainers is now lazily loaded.
 
-- Cleaned up TimeOut, updated documentation and added an interval getter method.
+-- Cleaned up TimeOut, updated documentation and added an interval getter method.
+
+- Updated the documentation of TimeOut and added an interval getter method to it.
 
 37e7641381907823cd1ed626cf714e4d51b82c51
 
@@ -45,7 +41,7 @@ e013a2478aad90d67219add62bda91dc5aea976f
 
 906987f5f2b9f3656e83058f92376e4e826c3488
 
-Replaced the “C” type parameter in the try_find_parent and find_parent functions with an impl parameter.
+- Replaced the “C” type parameter in the try_find_parent and find_parent functions with an impl parameter.
 
 
 
