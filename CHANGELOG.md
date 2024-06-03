@@ -37,12 +37,23 @@ e013a2478aad90d67219add62bda91dc5aea976f
 
 - Added docs.rs documentation build configurations to the cargo.toml and lib.rs files.
 
-- Updated StateContainers documentation
+- Updated the StateContainers documentation.
 
 906987f5f2b9f3656e83058f92376e4e826c3488
 
-- Replaced the “C” type parameter in the try_find_parent and find_parent functions with an impl parameter.
+-- Replaced the “C” type parameter in the try_find_parent and find_parent functions with an impl parameter.
 
+af4afe24436888a51e6f3c0b58e6f53ab8c788cd
+
+-- Updated the changelog
+
+- Directly exposed the time_out module contents in lib.rs.
+
+5213fa1ee443f625768bcab9f4026e6999df29bd
+
+-- Updated the readme
+
+-- Added struct level documentation to StateContainers.
 
 
 
