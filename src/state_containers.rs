@@ -143,7 +143,7 @@ fn try_get_state_containers() -> Option<Rc<StateContainers>>
 fn set_state_containers(state_containers: &Rc<StateContainers>)
 {
 
-    //check is correct thread?
+    //Check if the current thread is correct?
 
     unsafe
     {
@@ -191,20 +191,19 @@ impl InternalNonCollectionStateContainers
 
 }
 
-pub struct StateContainers //<'a>
+///
+/// The struct within which all widget states are centrally located.
+/// 
+pub struct StateContainers
 {
 
     nc_internals: RefCell<InternalNonCollectionStateContainers>,
-    widget_state: RefCell<WidgetStateContainers>, //RefCell<HashMap<TypeId, HashSet<RcByPtr<Rc<dyn WidgetStateContainer>>>>>
+    widget_state: RefCell<WidgetStateContainers>,
     widget_state_removal_timeout: RcSimpleTimeOut,
-
-    //application_state: NonOption<Rc<dyn ApplicationStateContainer>>, //<'a>
-    //widget_state: HashMap<TypeId, HashSet<RcByPtr<Rc<dyn WidgetStateContainer>>>>,
-    //weak_self: Weak<StateContainers> //Self is a Reference Type!
 
 }
 
-impl StateContainers //<'a>
+impl StateContainers
 {
 
     ///
@@ -260,17 +259,6 @@ impl StateContainers //<'a>
                 })
 
             }
-
-            /*
-            Self
-            {
-
-                application_state: NonOption::invalid(),
-                widget_state: HashMap::new(),
-                weak_self: weak_self.clone()
-
-            }
-            */
 
         });
 

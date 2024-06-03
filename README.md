@@ -58,7 +58,7 @@ fn main()
 
 </br>
 
-In the above example an adw Application is constructed then ApplicationState is instantiated and passed a reference to the Application (a clone of which will become part of its state). An ApplicationState object must implement ApplicationStateContainer, likewise widget state container objects (including windows) must implement WidgetStateContainer (see examples).
+In the above example an adw::Application is constructed then ApplicationState is instantiated and passed a reference to the Application (a clone of which will become part of its state). An ApplicationState object must implement ApplicationStateContainer, likewise widget state container objects (including windows) must implement WidgetStateContainer (see [example applications](#example-applications)).
 
 StateContainers is a single-threaded singleton which should only contain state which deals with UI and inter-thread-communication related tasks probably using a crate like [act_rs](https://crates.io/crates/act_rs) for the latter.
 
@@ -130,7 +130,7 @@ GTK Estate Re-exposes:
 
 </br>
 
-## Examples
+## Example Applications
 
 - [Simple Unix Time Outputer](https://github.com/coruscateor/simple_unix_time_outputer)
 
