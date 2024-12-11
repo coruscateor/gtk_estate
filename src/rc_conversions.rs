@@ -2,21 +2,24 @@ use std::rc::Rc;
 
 use crate::{StoredApplicationObject, StoredWidgetObject, WidgetStateContainer};
 
-pub fn to_rc_dyn_wsc<T: WidgetStateContainer>(value: Rc<T>) -> Rc<dyn WidgetStateContainer>
+pub fn to_rc_dyn_wsc<T>(value: Rc<T>) -> Rc<dyn WidgetStateContainer>
+    where T: WidgetStateContainer + 'static
 {
 
     value
 
 }
 
-pub fn to_rc_dyn_sao<T: StoredApplicationObject>(value: Rc<T>) -> Rc<dyn StoredApplicationObject>
+pub fn to_rc_dyn_sao<T>(value: Rc<T>) -> Rc<dyn StoredApplicationObject>
+    where T: StoredApplicationObject + 'static
 {
 
     value
 
 }
 
-pub fn to_rc_dyn_swo<T: StoredWidgetObject>(value: Rc<T>) -> Rc<dyn StoredWidgetObject>
+pub fn to_rc_dyn_swo<T>(value: Rc<T>) -> Rc<dyn StoredWidgetObject>
+    where T: StoredWidgetObject + 'static
 {
 
     value

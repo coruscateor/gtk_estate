@@ -4,9 +4,9 @@ use std::time::Duration;
 
 use std::{rc::*, any::Any};
 
-use std::cell::{RefCell, Ref, RefMut};
+use std::cell::{Ref, RefCell, RefMut, UnsafeCell};
 
-use corlib::{impl_rfc_borrow_2, impl_rfc_borrow_mut_2, impl_rfc_borrow_and_mut_2, impl_rfc_borrow_call, impl_rfc_borrow_mut_call, AsAny};
+use corlib::{get_some, impl_rfc_borrow_2, impl_rfc_borrow_and_mut_2, impl_rfc_borrow_call, impl_rfc_borrow_mut_2, impl_rfc_borrow_mut_call, AsAny};
 
 use gtk::gio::prelude::ApplicationExt;
 
@@ -45,7 +45,7 @@ consider creating a new trait with all of these as supertraits and using that tr
 ///
 /// Indicates that the implementing object stores application related data.
 /// 
-pub trait ApplicationStateContainer : AsAny + Any //<'a>
+pub trait ApplicationStateContainer //: AsAny + Any //<'a>
 {
 
     //fn application() -> &'a (dyn Any + ApplicationExt);
@@ -58,12 +58,117 @@ pub trait ApplicationStateContainer : AsAny + Any //<'a>
 
     fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>;
 
+    fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject;
+
+}
+
+//gtk_estate::
+
+#[macro_export]
+macro_rules! impl_application_state_container
+{
+
+    () =>
+    {
+
+        impl ApplicationStateContainer for ApplicationState
+        {
+
+            fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>
+            {
+
+                self.application_adapter.clone()
+
+            }
+
+            fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject
+            {
+
+                self.application_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+    ($application_adapter:ident) =>
+    {
+
+        impl ApplicationStateContainer for ApplicationState
+        {
+
+            fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>
+            {
+
+                self.$application_adapter.clone()
+
+            }
+
+            fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject
+            {
+
+                self.$application_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+    /*
+    ($application_state_container_type:ty) =>
+    {
+
+        impl ApplicationStateContainer for $application_state_container_type
+        {
+
+            fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>
+            {
+
+                self.application_adapter.clone()
+
+            }
+
+            fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject
+            {
+
+                self.application_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+    */
+    ($application_adapter:ident, $application_state_container_type:ty) =>
+    {
+
+        impl ApplicationStateContainer for $application_state_container_type
+        {
+
+            fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>
+            {
+
+                self.$application_adapter.clone()
+
+            }
+
+            fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject
+            {
+
+                self.$application_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+
 }
 
 ///
 /// Indicates that the implementing object stores widget related data.
 /// 
-pub trait WidgetStateContainer : AsAny + Any //<'a>
+pub trait WidgetStateContainer //: AsAny + Any //<'a>
 {
 
     //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
@@ -74,13 +179,75 @@ pub trait WidgetStateContainer : AsAny + Any //<'a>
 
     fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>;
 
+    fn dyn_adapter_ref(&self) -> &dyn StoredWidgetObject;
+
+}
+
+#[macro_export]
+macro_rules! impl_widget_state_container
+{
+
+    /*
+    ($widget_state_container_type:ty) =>
+    {
+
+        impl WidgetStateContainer for $widget_state_container_type
+        {
+
+            fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>
+            {
+
+                self.widget_adapter.clone()
+
+            }
+
+            fn dyn_adapter_ref(&self) -> &dyn StoredWidgetObject
+            {
+
+                self.widget_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+    */
+    ($widget_adapter:ident, $widget_state_container_type:ty) =>
+    {
+
+        impl WidgetStateContainer for $widget_state_container_type
+        {
+
+            fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>
+            {
+
+                self.$widget_adapter.clone()
+
+            }
+
+            fn dyn_adapter_ref(&self) -> &dyn StoredWidgetObject
+            {
+
+                self.$widget_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+
 }
 
 //The StateContainers sigleton static location.
 
 //static mut STATE_CONTAINERS: NonOption<Rc<StateContainers>> = NonOption::invalid(); 
 
-static mut STATE_CONTAINERS: Option<Rc<StateContainers>> = None; 
+thread_local!
+{
+
+    static STATE_CONTAINERS: UnsafeCell<Option<Rc<StateContainers>>> = UnsafeCell::new(None); 
+
+}
 
 ///
 /// Clone a copy of the StateContainers state.
@@ -90,10 +257,12 @@ fn get_state_containers() -> Rc<StateContainers>
 
     //check is correct thread?
 
-    unsafe
+    STATE_CONTAINERS.with(|containers|
     {
 
-        if let Some(res) = &STATE_CONTAINERS
+        let mut opt_ref = unsafe { containers.get().as_ref() };
+
+        if let Some(res) = get_some!(opt_ref)
         {
 
             res.clone()
@@ -106,7 +275,7 @@ fn get_state_containers() -> Rc<StateContainers>
 
         }
 
-    }
+    })
 
 
 }
@@ -119,21 +288,31 @@ fn try_get_state_containers() -> Option<Rc<StateContainers>>
 
     //check is correct thread?
 
-    unsafe
+    STATE_CONTAINERS.with(|containers|
     {
 
-        let opt = STATE_CONTAINERS.as_ref(); //.try_get_ref();
+        //let opt = unsafe { containers.get().as_ref() }; //STATE_CONTAINERS.as_ref(); //.try_get_ref();
 
-        if let Some(sc) = opt
+        let mut opt_ref = unsafe { containers.get().as_ref() };
+
+        get_some!(opt_ref).clone()
+
+        /*
+        if let Some(sc) = get_some!(opt_ref)
         {
 
             return Some(sc.clone());
 
         }
+        else
+        {
 
-    }
+            None
+            
+        }
+        */
 
-    None
+    })
 
 }
 
@@ -143,8 +322,20 @@ fn try_get_state_containers() -> Option<Rc<StateContainers>>
 fn set_state_containers(state_containers: &Rc<StateContainers>)
 {
 
+    STATE_CONTAINERS.with(|containers|
+    {
+
+        let mut opt_mut = unsafe{ containers.get().as_mut() };
+
+        let mut_ref = get_some!(opt_mut);
+
+        *mut_ref = Some(state_containers.clone());
+
+    });
+
     //Check if the current thread is correct?
 
+    /*
     unsafe
     {
 
@@ -156,6 +347,7 @@ fn set_state_containers(state_containers: &Rc<StateContainers>)
         }
 
     }
+    */
 
 }
 
@@ -301,7 +493,8 @@ impl StateContainers
     ///
     /// Set the application state. Returns false if an ApplicationStateContainer is already present.
     /// 
-    pub fn set_application_state<T: ApplicationStateContainer>(&self, state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
+    pub fn set_application_state<T>(&self, state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
+        where T: ApplicationStateContainer + 'static
     {
 
         {
@@ -326,7 +519,8 @@ impl StateContainers
     ///
     /// Set the application state or panic.
     /// 
-    pub fn set_application_state_or_panic<T: ApplicationStateContainer>(&self, state:&Rc<T>) //&Rc<dyn ApplicationStateContainer>)
+    pub fn set_application_state_or_panic<T>(&self, state:&Rc<T>) //&Rc<dyn ApplicationStateContainer>)
+        where T: ApplicationStateContainer + 'static
     {
 
         if !self.set_application_state(state)
@@ -372,7 +566,7 @@ impl StateContainers
     /// Add a Rc<WSC: WidgetStateContainer> to the widgets states.
     /// 
     pub fn add<WSC>(&self, sc: &Rc<WSC>)
-        where WSC: WidgetStateContainer
+        where WSC: WidgetStateContainer + 'static
     {
 
         //let any_sc: &dyn Any = sc;
@@ -444,7 +638,7 @@ impl StateContainers
     pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> bool // + MayDowncastTo<Widget>
     {
 
-        let lwa = LookupWidgetAdapter::new(widget);
+        let lwa = LookUpWidgetAdapter::new(widget);
 
         {
 
@@ -462,7 +656,7 @@ impl StateContainers
     pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> Option<Rc<dyn WidgetStateContainer>> // + MayDowncastTo<Widget>
     {
 
-        let lwa = LookupWidgetAdapter::new(widget);
+        let lwa = LookUpWidgetAdapter::new(widget);
 
         {
 

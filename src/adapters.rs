@@ -18,7 +18,7 @@ use std::hash::{Hash, Hasher};
 
 //use corlib::collections::DynHash;
 
-use corlib::AsAny; //{AsAny, impl_as_any};
+//use corlib::AsAny; //{AsAny, impl_as_any};
 
 //use gtk::glib::object::{IsA, MayDowncastTo, ObjectExt};
 
@@ -29,12 +29,12 @@ use gtk::glib::object::{Cast, IsA, ObjectExt, ObjectType}; //MayDowncastTo,
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
 /// 
-pub trait LookupApplicationObject : AsAny + Any //: Deref //Any + ApplicationExt +
+pub trait LookUpApplicationObject //: AsAny + Any //: Deref //Any + ApplicationExt +
 {
 
     fn dyn_application(&self) -> &dyn Any;
 
-    fn dyn_has_in_other(&self, other: &dyn LookupApplicationObject) -> bool;
+    fn dyn_has_in_other(&self, other: &dyn LookUpApplicationObject) -> bool;
 
     fn dyn_has(&self, application: &dyn Any) -> bool;
 
@@ -43,10 +43,10 @@ pub trait LookupApplicationObject : AsAny + Any //: Deref //Any + ApplicationExt
 }
 
 ///
-/// Indicates that the LookupApplicationObject stored somewhere, perhaps in a Hashmap.
+/// Indicates that the LookUpApplicationObject stored somewhere, perhaps in a Hashmap.
 ///
 
-pub trait StoredApplicationObject : LookupApplicationObject + Any
+pub trait StoredApplicationObject : LookUpApplicationObject //+ Any
 {
 
     //fn parent(&self) -> &Weak<dyn ApplicationStateContainer>;
@@ -55,9 +55,9 @@ pub trait StoredApplicationObject : LookupApplicationObject + Any
 
 
 ///
-/// Implement on an object which stores an Widget object for the purpose of dynmically comparing with other objects.
+/// Implement on an object which stores a Widget object for the purpose of dynmically comparing with other objects.
 /// 
-pub trait LookupWidgetObject : AsAny + Any //+ DynHash //+ Eq //Hash  //: WidgetExt + Deref
+pub trait LookupWidgetObject //: AsAny + Any //+ DynHash //+ Eq //Hash  //: WidgetExt + Deref
 {
 
     fn dyn_widget(&self) -> &dyn Any; //_as_any
@@ -118,7 +118,7 @@ error: could not compile `simple_unix_time_outputer` (bin "simple_unix_time_outp
 ///
 /// Indicates that the LookupWidgetObject stored somewhere, perhaps in a Hashmap.
 /// 
-pub trait StoredWidgetObject : LookupWidgetObject + Any
+pub trait StoredWidgetObject : LookupWidgetObject //+ Any
 {
 
     //fn parent(&self) -> &Weak<dyn WidgetStateContainer>;
@@ -231,7 +231,7 @@ impl<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer> A
 
 //}
 
-impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookupApplicationObject for ApplicationAdapter<T, P>
+impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookUpApplicationObject for ApplicationAdapter<T, P>
 {
 
     fn dyn_application(&self) -> &dyn Any
@@ -241,7 +241,7 @@ impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookupApp
         
     }
     
-    fn dyn_has_in_other(&self, other: &dyn LookupApplicationObject) -> bool {
+    fn dyn_has_in_other(&self, other: &dyn LookUpApplicationObject) -> bool {
 
         self.dyn_has(other.dyn_application())
 
@@ -291,7 +291,9 @@ impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookupApp
 
 }
 
-impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> StoredApplicationObject for ApplicationAdapter<T, P>
+impl<T, P> StoredApplicationObject for ApplicationAdapter<T, P>
+    where T: ApplicationExt + Eq + ObjectExt,
+          P: ApplicationStateContainer + 'static
 {
 
 
@@ -300,6 +302,7 @@ impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> StoredApp
 
 //impl_as_any!(ApplicationAdapter, T);
 
+/*
 impl<T: ApplicationExt, P: ApplicationStateContainer> AsAny for ApplicationAdapter<T, P>
 {
 
@@ -311,6 +314,7 @@ impl<T: ApplicationExt, P: ApplicationStateContainer> AsAny for ApplicationAdapt
     }
 
 }
+*/
 
 //WidgetAdapter
 
@@ -397,7 +401,9 @@ impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // 
 
 }
 
-impl<T: Eq + ObjectExt + WidgetExt, P: WidgetStateContainer> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Widget> + IsA<Widget> + /MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
+impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Widget> + IsA<Widget> + /MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
+    where T: Eq + ObjectExt + WidgetExt,
+          P: WidgetStateContainer + 'static
 {
 
     /*
@@ -569,6 +575,7 @@ impl<T: WidgetExt + Hash> DynHash for WidgetAdapter<T>
 }
 */
 
+/*
 impl<T: IsA<Widget>, P: WidgetStateContainer> AsAny for WidgetAdapter<T, P> //WidgetExt
 {
 
@@ -580,18 +587,19 @@ impl<T: IsA<Widget>, P: WidgetStateContainer> AsAny for WidgetAdapter<T, P> //Wi
     }
 
 }
+*/
 
 ///
 ///A WidgetAdapter for checking on the existance of state objects.
 ///
-pub struct LookupWidgetAdapter<T: Eq + ObjectExt + Clone> // + IsA<Widget> //WidgetExt + 
+pub struct LookUpWidgetAdapter<T: Eq + ObjectExt + Clone> // + IsA<Widget> //WidgetExt + 
 {
 
     object: T
 
 }
 
-impl<T: Eq + ObjectExt + Clone> LookupWidgetAdapter<T> // + IsA<Widget> //WidgetExt + 
+impl<T: Eq + ObjectExt + Clone> LookUpWidgetAdapter<T> // + IsA<Widget> //WidgetExt + 
 {
 
     pub fn new(object: &T) -> Self
@@ -630,7 +638,7 @@ impl<T: Eq + ObjectExt + Clone> LookupWidgetAdapter<T> // + IsA<Widget> //Widget
 
 }
 
-impl<T: Eq + ObjectExt + WidgetExt> LookupWidgetObject for LookupWidgetAdapter<T> // + PartialEq<T> // + Cast + MayDowncastTo<Widget> + IsA<Widget> //IsA<T> + //WidgetExt + //MayDowncastTo<Widget> 
+impl<T: Eq + ObjectExt + WidgetExt> LookupWidgetObject for LookUpWidgetAdapter<T> // + PartialEq<T> // + Cast + MayDowncastTo<Widget> + IsA<Widget> //IsA<T> + //WidgetExt + //MayDowncastTo<Widget> 
 {
 
     //IsA<Widget> + 
@@ -701,6 +709,7 @@ impl<T: Eq + ObjectExt + WidgetExt> LookupWidgetObject for LookupWidgetAdapter<T
 
 }
 
+/*
 impl<T: IsA<Widget>> AsAny for LookupWidgetAdapter<T> //WidgetExt
 {
 
@@ -712,4 +721,5 @@ impl<T: IsA<Widget>> AsAny for LookupWidgetAdapter<T> //WidgetExt
     }
 
 }
+*/
 

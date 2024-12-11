@@ -21,7 +21,7 @@ pub struct AdwWindowState //<T>
 {
 
     weak_self: Weak<Self>,
-    adapter: Rc<WidgetAdapter<Window, AdwWindowState>> //<T>>>
+    widget_adapter: Rc<WidgetAdapter<Window, AdwWindowState>> //<T>>>
 
 }
 
@@ -41,7 +41,7 @@ impl AdwWindowState //<T>
             {
 
                 weak_self: weak_self.clone(),
-                adapter: WidgetAdapter::new(&window_fn(), weak_self)
+                widget_adapter: WidgetAdapter::new(&window_fn(), weak_self)
 
             }
 
@@ -84,7 +84,7 @@ impl AdwWindowState //<T>
             {
 
                 weak_self: weak_self.clone(),
-                adapter: WidgetAdapter::new(&window_fn(builder), weak_self)
+                widget_adapter: WidgetAdapter::new(&window_fn(builder), weak_self)
 
             }
 
@@ -122,17 +122,24 @@ impl AdwWindowState //<T>
 
     }
 
-    pub fn adapter(&self) -> Rc<WidgetAdapter<Window, AdwWindowState>> //<T>>>
+    pub fn window(&self) -> Rc<WidgetAdapter<Window, AdwWindowState>> //<T>>>
     {
         
-        self.adapter.clone()
+        self.widget_adapter.clone()
+
+    }
+
+    pub fn window_ref(&self) -> &WidgetAdapter<Window, AdwWindowState>
+    {
+
+        self.widget_adapter.as_ref()
 
     }
 
     pub fn content(&self) -> Option<Rc<dyn WidgetStateContainer>>
     {
 
-        if let Some(widget) = self.adapter.widget().content()
+        if let Some(widget) = self.widget_adapter.widget().content()
         {
 
             return StateContainers::get().find_widget_state(&widget);
@@ -149,7 +156,7 @@ impl AdwWindowState //<T>
         if let Some(state) = child_state
         {
 
-            self.adapter.widget().set_content(Some(&state.dyn_adapter().widget()))
+            self.widget_adapter.widget().set_content(Some(&state.dyn_adapter().widget()))
             
         }
         /*
@@ -186,7 +193,7 @@ impl AdwWindowState //<T>
     pub fn set_content<WSC: WidgetStateContainer>(&self, child_state: &Rc<WSC>) //&Rc<dyn WidgetStateContainer>)
     {
 
-        self.adapter.widget().set_content(Some(&child_state.dyn_adapter().widget()))
+        self.widget_adapter.widget().set_content(Some(&child_state.dyn_adapter().widget()))
 
     }
 
@@ -235,6 +242,7 @@ impl<T> AdwWindowState<T>
 }
 */
 
+/*
 impl AsAny for AdwWindowState //<T>
     //where T: GtkWindowExt + WidgetExt,
           //P: WidgetStateContainer
@@ -248,6 +256,7 @@ impl AsAny for AdwWindowState //<T>
     }
 
 }
+*/
 
 impl WidgetStateContainer for AdwWindowState //<T>
     //where T: GtkWindowExt + WidgetExt, //+ MayDowncastTo<Widget> + IsA<T>
@@ -257,7 +266,14 @@ impl WidgetStateContainer for AdwWindowState //<T>
     fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>
     {
         
-        self.adapter.clone()
+        self.widget_adapter.clone()
+
+    }
+
+    fn dyn_adapter_ref(&self) -> &dyn StoredWidgetObject
+    {
+
+        self.widget_adapter.as_ref()
 
     }
 

@@ -53,7 +53,7 @@ impl WidgetStateContainers
     pub fn capacity(&self) -> usize
     {
 
-        self.capacity()
+        self.widget_state.capacity()
 
     }
 
