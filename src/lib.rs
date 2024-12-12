@@ -2,6 +2,8 @@
 
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
+use cfg_if::cfg_if;
+
 mod scoped_signal_handler_id;
 
 pub use scoped_signal_handler_id::*; 
@@ -51,16 +53,22 @@ mod gtk_window_state;
 
 pub use gtk_window_state::*;
 
-#[cfg(feature="adw")]
-mod adw_window_state;
+cfg_if!
+{
 
-#[cfg(feature="adw")]
-pub use adw_window_state::*;
+    if #[cfg(feature = "adw")]
+    {
 
-#[cfg(feature="adw")]
-mod adw_application_window_state;
+        mod adw_window_state;
 
-#[cfg(feature="adw")]
-pub use adw_application_window_state::*;
+        pub use adw_window_state::*;
+
+        mod adw_application_window_state;
+        
+        pub use adw_application_window_state::*;
+
+    }
+
+}
 
 pub mod rc_conversions;

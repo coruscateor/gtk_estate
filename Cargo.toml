@@ -15,20 +15,22 @@ categories = ["gui"]
 [dependencies]
 #corlib = { path="../corlib" } #Do not remove
 corlib = "0.3.0"
-delegate = "0.*"
-gtk4 = "0.8.*"
-paste = "1.0.*"
+delegate = "0.13.1"
+gtk4 = "0.9.4"
 cfg-if = "1.0.0"
+paste = "1.0.15"
 
 [dependencies.adw]
 package = "libadwaita"
-version = "0.6.*"
+version = "0.7.1"
 optional = true
 
 [features]
 
 #GTK
 
+gtk_v4_18 = ["gtk4/v4_18"]
+gtk_v4_16 = ["gtk4/v4_16"]
 gtk_v4_14 = ["gtk4/v4_14"]
 gtk_v4_12 = ["gtk4/v4_12"]
 gtk_v4_10 = ["gtk4/v4_10"]
@@ -36,6 +38,8 @@ gtk_v4_8 = ["gtk4/v4_8"]
 gtk_v4_6 = ["gtk4/v4_6"]
 gtk_v4_4 = ["gtk4/v4_4"]
 gtk_v4_2 = ["gtk4/v4_2"]
+gtk_gnome_47 = ["gtk4/gnome_47"]
+gtk_gnome_46 = ["gtk4/gnome_46"]
 gtk_gnome_45 = ["gtk4/gnome_45"]
 gtk_gnome_44 = ["gtk4/gnome_44"]
 gtk_gnome_43 = ["gtk4/gnome_43"]
@@ -48,15 +52,18 @@ gtk_blueprint = ["gtk4/blueprint"]
 
 adw = ["dep:adw"]
 adw_gtk_v4_2 = ["adw/gtk_v4_2"]
-adw_gtk_v4_4 = ["adw/gtk_v4_4"]
+#adw_gtk_v4_4 = ["adw/gtk_v4_4"]
 adw_gtk_v4_6 = ["adw/gtk_v4_6"]
-adw_gtk_v4_8 = ["adw/gtk_v4_8"]
-adw_gtk_v4_10 = ["adw/gtk_v4_10"]
-adw_gtk_v4_12 = ["adw/gtk_v4_12"]
+#adw_gtk_v4_8 = ["adw/gtk_v4_8"]
+#adw_gtk_v4_10 = ["adw/gtk_v4_10"]
+#adw_gtk_v4_12 = ["adw/gtk_v4_12"]
+adw_gio_v2_80 = ["adw/gio_v2_80"]
 adw_v1_2 = ["adw/v1_2"]
 adw_v1_3 = ["adw/v1_3"]
 adw_v1_4 = ["adw/v1_4"]
 adw_v1_5 = ["adw/v1_5"]
+adw_v1_6 = ["adw/v1_6"]
+adw_v1_7 = ["adw/v1_7"]
 
 #docs.rs
 

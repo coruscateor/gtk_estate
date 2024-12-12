@@ -16,15 +16,9 @@ use crate::{ApplicationStateContainer, StateContainers, WidgetStateContainer};
 
 use std::hash::{Hash, Hasher};
 
-//use corlib::collections::DynHash;
-
-//use corlib::AsAny; //{AsAny, impl_as_any};
-
-//use gtk::glib::object::{IsA, MayDowncastTo, ObjectExt};
-
 use gtk::glib::Type;
 
-use gtk::glib::object::{Cast, IsA, ObjectExt, ObjectType}; //MayDowncastTo, 
+use gtk::glib::object::{Cast, IsA, ObjectExt, ObjectType}; 
 
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
@@ -53,11 +47,10 @@ pub trait StoredApplicationObject : LookUpApplicationObject //+ Any
 
 }
 
-
 ///
 /// Implement on an object which stores a Widget object for the purpose of dynmically comparing with other objects.
 /// 
-pub trait LookupWidgetObject //: AsAny + Any //+ DynHash //+ Eq //Hash  //: WidgetExt + Deref
+pub trait LookupWidgetObject
 {
 
     fn dyn_widget(&self) -> &dyn Any; //_as_any
@@ -78,42 +71,9 @@ pub trait LookupWidgetObject //: AsAny + Any //+ DynHash //+ Eq //Hash  //: Widg
 
     fn widget(&self) -> Widget; //&dyn IsA<Widget>;
 
+    fn widget_ref(&self) -> &Widget;
+
 }
-
-//Oops - I tred to downcast when I should've been upcasting.
-
-/*
-
-Turns out trying to cast a generic widget to Widget via Glib/GTK was a bas idea:
-
-error[E0277]: the trait bound `gtk_estate::gtk4::Widget: IsA<gtk_estate::libadwaita::ApplicationWindow>` is not satisfied
-   --> src/applicaion_state.rs:63:13
-    |
-63  |             AdwApplcationWindowState::builder(|builder| {
-    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `IsA<gtk_estate::libadwaita::ApplicationWindow>` is not implemented for `gtk_estate::gtk4::Widget`
-    |
-    = help: the following other types implement trait `IsA<T>`:
-              <gtk_estate::gtk4::Widget as IsA<gtk_estate::gtk4::glib::Object>>
-              <gtk_estate::gtk4::Widget as IsA<Accessible>>
-              <gtk_estate::gtk4::Widget as IsA<Buildable>>
-              <gtk_estate::gtk4::Widget as IsA<ConstraintTarget>>
-              <gtk_estate::gtk4::Widget as IsA<gtk_estate::gtk4::Widget>>
-    = note: required for `gtk_estate::libadwaita::ApplicationWindow` to implement `MayDowncastTo<gtk_estate::gtk4::Widget>`
-note: required by a bound in `AdwApplcationWindowState::<T>::builder`
-   --> /run/media/paul/Main Stuff/SoftwareProjects/Rust/gtk_estate/src/adw_application_window_state.rs:100:55
-    |
-100 |     where T: GtkWindowExt + AdwApplicationWindowExt + MayDowncastTo<Widget> + IsA<Widget> //IsA<T> +  //WidgetExt + 
-    |                                                       ^^^^^^^^^^^^^^^^^^^^^ required by this bound in `AdwApplcationWindowState::<T>::builder`
-...
-145 |     pub fn builder<F>(window_fn: F) -> Rc<Self>
-    |            ------- required by a bound in this associated function
-
-For more information about this error, try `rustc --explain E0277`.
-warning: `simple_unix_time_outputer` (bin "simple_unix_time_outputer") generated 8 warnings
-error: could not compile `simple_unix_time_outputer` (bin "simple_unix_time_outputer") due to 1 previous error; 8 warnings emitted
-
-*/
-
 
 ///
 /// Indicates that the LookupWidgetObject stored somewhere, perhaps in a Hashmap.
@@ -127,18 +87,11 @@ pub trait StoredWidgetObject : LookupWidgetObject //+ Any
 
 }
 
-/*
-pub fn to_wsc_super<T: WidgetStateContainer>(value: Rc<T>) -> Rc<dyn WidgetStateContainer>
-{
-
-    value
-
-}
-*/
-
 //ApplicationAdapter
 
-pub struct ApplicationAdapter<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer>
+pub struct ApplicationAdapter<T, P>
+    where T: ApplicationExt + Eq + ObjectExt + Clone,
+          P: ApplicationStateContainer
 {
 
     object: T,
@@ -148,7 +101,9 @@ pub struct ApplicationAdapter<T: ApplicationExt + Eq + ObjectExt + Clone, P: App
 
 }
 
-impl<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer> ApplicationAdapter<T, P>
+impl<T, P> ApplicationAdapter<T, P>
+    where T: ApplicationExt + Eq + ObjectExt + Clone,
+          P: ApplicationStateContainer
 {
 
     pub fn new(object: &T, weak_parent: &Weak<P>) -> Rc<Self> //parent: &Weak<dyn ApplicationStateContainer>) -> Self
@@ -170,22 +125,14 @@ impl<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer> A
 
     }
 
-    /*
-    pub fn new_mv(object: &T, parent: Weak<P>)
+    pub fn application(&self) -> T
     {
 
-        Self
-        {
-
-            object: object.clone(),
-            parent: parent
-
-        }
+        self.object.clone()
 
     }
-    */
 
-    pub fn application(&self) -> &T
+    pub fn application_ref(&self) -> &T
     {
 
         &self.object
@@ -210,6 +157,27 @@ impl<T: ApplicationExt + Eq + ObjectExt + Clone, P: ApplicationStateContainer> A
     {
 
         self.weak_parent.clone()
+
+    }
+
+    pub fn weak_parent_ref(&self) -> &Weak<P>
+    {
+
+        &self.weak_parent
+
+    }
+
+    pub fn weak_self(&self) -> Weak<Self>
+    {
+
+        self.weak_self.clone()
+
+    }
+
+    pub fn weak_self_ref(&self) -> &Weak<Self>
+    {
+
+        &self.weak_self
 
     }
 
@@ -300,60 +268,29 @@ impl<T, P> StoredApplicationObject for ApplicationAdapter<T, P>
 
 }
 
-//impl_as_any!(ApplicationAdapter, T);
-
-/*
-impl<T: ApplicationExt, P: ApplicationStateContainer> AsAny for ApplicationAdapter<T, P>
-{
-
-    fn as_any(&self) -> &dyn Any
-    {
-
-        self
-        
-    }
-
-}
-*/
-
 //WidgetAdapter
 
 #[derive(Clone)]
-pub struct WidgetAdapter<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> // + IsA<Widget> //WidgetExt + 
+pub struct WidgetAdapter<T, P>
+    where T: Eq + ObjectExt + Clone,
+          P: WidgetStateContainer
+
 {
 
     object: T,
     //parent: Weak<dyn WidgetStateContainer>
-    parent: Weak<P>,
+    weak_parent: Weak<P>,
     weak_self: Weak<Self>
 
 }
 
-impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // + IsA<Widget> //WidgetExt + 
+impl<T, P> WidgetAdapter<T, P>
+    where T: Eq + ObjectExt + Clone,
+          P: WidgetStateContainer
 {
 
-    /*
-    pub fn dyn_new(object: T, parent: &Weak<dyn WidgetStateContainer>) -> Self
+    pub fn new(object: &T, weak_parent: &Weak<P>) -> Rc<Self>
     {
-
-        Self
-        {
-
-            object,
-            parent: parent.clone()
-
-        }
-
-    }
-    */
-
-    pub fn new(object: &T, parent: &Weak<P>) -> Rc<Self> //<WSC> //Weak<dyn WidgetStateContainer>
-        //where WSC: WidgetStateContainer
-    {
-
-        //let any_wsc: &dyn Any = parent;
-
-        //let casted_wsc = any_wsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().expect("GTK Estate - Error: Weak<dyn WidgetStateContainer> cast failed.");
 
         Rc::new_cyclic(|weak_self|
         {    
@@ -362,7 +299,7 @@ impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // 
             {
 
                 object: object.clone(),
-                parent: parent.clone(), //casted_wsc.clone()
+                weak_parent: weak_parent.clone(),
                 weak_self: weak_self.clone()
 
             }
@@ -371,7 +308,14 @@ impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // 
 
     }
 
-    pub fn widget(&self) -> &T
+    pub fn widget(&self) -> T
+    {
+
+        self.object.clone()
+
+    }
+
+    pub fn widget_ref(&self) -> &T
     {
 
         &self.object
@@ -395,10 +339,31 @@ impl<T: Eq + ObjectExt + Clone, P: WidgetStateContainer> WidgetAdapter<T, P> // 
     pub fn weak_parent(&self) -> Weak<P>
     {
 
-        self.parent.clone()
+        self.weak_parent.clone()
 
     }
 
+    pub fn weak_parent_ref(&self) -> &Weak<P>
+    {
+
+        &self.weak_parent
+
+    }
+
+    pub fn weak_self(&self) -> Weak<Self>
+    {
+
+        self.weak_self.clone()
+
+    }
+
+    pub fn weak_self_ref(&self) -> &Weak<Self>
+    {
+
+        &self.weak_self
+
+    }
+    
 }
 
 impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Widget> + IsA<Widget> + /MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
@@ -418,7 +383,7 @@ impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Wid
     fn connect_destroy(&self, sc: Weak<StateContainers>)
     {
 
-        let parent = self.parent.clone();
+        let weak_parent = self.weak_parent.clone();
 
         //let wsc_parent: &Rc<dyn WidgetStateContainer> = &self.parent.clone();
 
@@ -432,10 +397,10 @@ impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Wid
 
                 //Upgrade the current state container.
                 
-                if let Some(rc_parent) = parent.upgrade()
+                if let Some(parent) = weak_parent.upgrade()
                 {
 
-                    let wsc_parent: Rc<dyn WidgetStateContainer> = to_rc_dyn_wsc(rc_parent); //to_wsc_super(rc_parent); //&rc_parent;
+                    let wsc_parent: Rc<dyn WidgetStateContainer> = to_rc_dyn_wsc(parent); //to_wsc_super(rc_parent); //&rc_parent;
 
                     //Don't remove right now but soon.
 
@@ -470,7 +435,9 @@ impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Wid
 
 }
 
-impl<T: Eq + ObjectExt + Clone + WidgetExt, P: WidgetStateContainer> LookupWidgetObject for WidgetAdapter<T, P> //+ Cast + MayDowncastTo<Widget> + IsA<Widget> //MayDowncastTo<Widget> + //IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
+impl<T, P> LookupWidgetObject for WidgetAdapter<T, P>
+    where T: Eq + ObjectExt + WidgetExt,
+          P: WidgetStateContainer + 'static
 {
 
     fn dyn_widget(&self) -> &dyn Any
@@ -480,7 +447,8 @@ impl<T: Eq + ObjectExt + Clone + WidgetExt, P: WidgetStateContainer> LookupWidge
     
     }
     
-    fn dyn_has_in_other(&self, other: &dyn LookupWidgetObject) -> bool {
+    fn dyn_has_in_other(&self, other: &dyn LookupWidgetObject) -> bool
+    {
         
         self.dyn_has(other.dyn_widget())
 
@@ -555,6 +523,13 @@ impl<T: Eq + ObjectExt + Clone + WidgetExt, P: WidgetStateContainer> LookupWidge
         
     }
 
+    fn widget_ref(&self) -> &Widget
+    {
+
+        self.object.upcast_ref::<Widget>()
+        
+    }
+
 }
 
 /*
@@ -592,14 +567,16 @@ impl<T: IsA<Widget>, P: WidgetStateContainer> AsAny for WidgetAdapter<T, P> //Wi
 ///
 ///A WidgetAdapter for checking on the existance of state objects.
 ///
-pub struct LookUpWidgetAdapter<T: Eq + ObjectExt + Clone> // + IsA<Widget> //WidgetExt + 
+pub struct LookUpWidgetAdapter<T>
+    where T: Eq + ObjectExt + Clone
 {
 
     object: T
 
 }
 
-impl<T: Eq + ObjectExt + Clone> LookUpWidgetAdapter<T> // + IsA<Widget> //WidgetExt + 
+impl<T> LookUpWidgetAdapter<T>
+    where T: Eq + ObjectExt + Clone
 {
 
     pub fn new(object: &T) -> Self
@@ -613,8 +590,15 @@ impl<T: Eq + ObjectExt + Clone> LookUpWidgetAdapter<T> // + IsA<Widget> //Widget
         }
 
     }
+    
+    pub fn widget(&self) -> T
+    {
 
-    pub fn widget(&self) -> &T
+        self.object.clone()
+
+    }
+
+    pub fn widget_ref(&self) -> &T
     {
 
         &self.object
@@ -638,10 +622,9 @@ impl<T: Eq + ObjectExt + Clone> LookUpWidgetAdapter<T> // + IsA<Widget> //Widget
 
 }
 
-impl<T: Eq + ObjectExt + WidgetExt> LookupWidgetObject for LookUpWidgetAdapter<T> // + PartialEq<T> // + Cast + MayDowncastTo<Widget> + IsA<Widget> //IsA<T> + //WidgetExt + //MayDowncastTo<Widget> 
+impl<T> LookupWidgetObject for LookUpWidgetAdapter<T>
+    where T: Eq + ObjectExt + WidgetExt
 {
-
-    //IsA<Widget> + 
 
     fn dyn_widget(&self) -> &dyn Any
     {
@@ -695,6 +678,13 @@ impl<T: Eq + ObjectExt + WidgetExt> LookupWidgetObject for LookUpWidgetAdapter<T
     {
 
         self.object.upcast_ref::<Widget>().clone()
+        
+    }
+
+    fn widget_ref(&self) -> &Widget
+    {
+
+        self.object.upcast_ref::<Widget>()
         
     }
 

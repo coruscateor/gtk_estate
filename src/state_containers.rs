@@ -13,6 +13,7 @@ use gtk::gio::prelude::ApplicationExt;
 use gtk::prelude::WidgetExt;
 
 use gtk::Widget;
+
 use paste::paste;
 
 use std::collections::{HashMap, HashSet};
@@ -56,9 +57,9 @@ pub trait ApplicationStateContainer //: AsAny + Any //<'a>
 
     //fn dyn_adapted_application(&self) -> Rc<dyn StoredApplicationObject>;
 
-    fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>;
+    fn dyn_application_adapter(&self) -> Rc<dyn StoredApplicationObject>;
 
-    fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject;
+    fn dyn_application_adapter_ref(&self) -> &dyn StoredApplicationObject;
 
 }
 
@@ -74,14 +75,14 @@ macro_rules! impl_application_state_container
         impl ApplicationStateContainer for ApplicationState
         {
 
-            fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>
+            fn dyn_application_adapter(&self) -> Rc<dyn StoredApplicationObject>
             {
 
                 self.application_adapter.clone()
 
             }
 
-            fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject
+            fn dyn_application_adapter_ref(&self) -> &dyn StoredApplicationObject
             {
 
                 self.application_adapter.as_ref()
@@ -97,14 +98,14 @@ macro_rules! impl_application_state_container
         impl ApplicationStateContainer for ApplicationState
         {
 
-            fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>
+            fn dyn_application_adapter(&self) -> Rc<dyn StoredApplicationObject>
             {
 
                 self.$application_adapter.clone()
 
             }
 
-            fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject
+            fn dyn_application_adapter_ref(&self) -> &dyn StoredApplicationObject
             {
 
                 self.$application_adapter.as_ref()
@@ -145,14 +146,14 @@ macro_rules! impl_application_state_container
         impl ApplicationStateContainer for $application_state_container_type
         {
 
-            fn dyn_adapter(&self) -> Rc<dyn StoredApplicationObject>
+            fn dyn_application_adapter(&self) -> Rc<dyn StoredApplicationObject>
             {
 
                 self.$application_adapter.clone()
 
             }
 
-            fn dyn_adapter_ref(&self) -> &dyn StoredApplicationObject
+            fn dyn_application_adapter_ref(&self) -> &dyn StoredApplicationObject
             {
 
                 self.$application_adapter.as_ref()
@@ -177,9 +178,9 @@ pub trait WidgetStateContainer //: AsAny + Any //<'a>
 
     //fn dyn_adapted_widget(&self) -> Rc<dyn StoredWidgetObject>;
 
-    fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>;
+    fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>;
 
-    fn dyn_adapter_ref(&self) -> &dyn StoredWidgetObject;
+    fn dyn_widget_adapter_ref(&self) -> &dyn StoredWidgetObject;
 
 }
 
@@ -218,14 +219,14 @@ macro_rules! impl_widget_state_container
         impl WidgetStateContainer for $widget_state_container_type
         {
 
-            fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>
+            fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>
             {
 
                 self.$widget_adapter.clone()
 
             }
 
-            fn dyn_adapter_ref(&self) -> &dyn StoredWidgetObject
+            fn dyn_widget_adapter_ref(&self) -> &dyn StoredWidgetObject
             {
 
                 self.$widget_adapter.as_ref()
@@ -325,7 +326,7 @@ fn set_state_containers(state_containers: &Rc<StateContainers>)
     STATE_CONTAINERS.with(|containers|
     {
 
-        let mut opt_mut = unsafe{ containers.get().as_mut() };
+        let mut opt_mut = unsafe { containers.get().as_mut() };
 
         let mut_ref = get_some!(opt_mut);
 
