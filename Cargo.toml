@@ -27,6 +27,10 @@ optional = true
 
 [features]
 
+default = ["thread_local_state"]
+
+thread_local_state = []
+
 #GTK
 
 gtk_v4_18 = ["gtk4/v4_18"]

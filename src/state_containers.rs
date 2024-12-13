@@ -37,6 +37,8 @@ use crate::rc_conversions::to_rc_dyn_wsc;
 
 use crate::{adapters::*, RcSimpleTimeOut, WidgetStateContainers, SimpleTimeOut};
 
+use cfg_if::cfg_if;
+
 /*
 object.rs(27, 7): for a trait to be "object safe" it needs to allow building a vtable to allow the call to be resolvable dynamically; for more information visit <https://doc.rust-lang.org/reference/items/traits.html#object-safety>
 only auto traits can be used as additional traits in a trait object
@@ -243,112 +245,151 @@ macro_rules! impl_widget_state_container
 
 //static mut STATE_CONTAINERS: NonOption<Rc<StateContainers>> = NonOption::invalid(); 
 
-thread_local!
+cfg_if!
 {
 
-    static STATE_CONTAINERS: UnsafeCell<Option<Rc<StateContainers>>> = UnsafeCell::new(None); 
-
-}
-
-///
-/// Clone a copy of the StateContainers state.
-/// 
-fn get_state_containers() -> Rc<StateContainers>
-{
-
-    //check is correct thread?
-
-    STATE_CONTAINERS.with(|containers|
+    if #[cfg(feature = "thread_local_state")]
     {
 
-        let mut opt_ref = unsafe { containers.get().as_ref() };
-
-        if let Some(res) = get_some!(opt_ref)
+        thread_local!
         {
 
-            res.clone()
-
-        }
-        else
-        {
-
-            StateContainers::init()
+            static STATE_CONTAINERS: UnsafeCell<Option<Rc<StateContainers>>> = UnsafeCell::new(None); 
 
         }
 
-    })
-
-
-}
-
-///
-/// Try to clone a copy of the StateContainers state.
-/// 
-fn try_get_state_containers() -> Option<Rc<StateContainers>>
-{
-
-    //check is correct thread?
-
-    STATE_CONTAINERS.with(|containers|
-    {
-
-        //let opt = unsafe { containers.get().as_ref() }; //STATE_CONTAINERS.as_ref(); //.try_get_ref();
-
-        let mut opt_ref = unsafe { containers.get().as_ref() };
-
-        get_some!(opt_ref).clone()
-
-        /*
-        if let Some(sc) = get_some!(opt_ref)
+        ///
+        /// Clone a copy of the StateContainers state.
+        /// 
+        fn get_state_containers() -> Rc<StateContainers>
         {
 
-            return Some(sc.clone());
+            //check is correct thread?
+
+            STATE_CONTAINERS.with(|containers|
+            {
+
+                let mut opt_ref = unsafe { containers.get().as_ref() };
+
+                if let Some(res) = get_some!(opt_ref)
+                {
+
+                    res.clone()
+
+                }
+                else
+                {
+
+                    StateContainers::init()
+
+                }
+
+            })
+
 
         }
-        else
+
+        ///
+        /// Try to clone a copy of the StateContainers state.
+        /// 
+        fn try_get_state_containers() -> Option<Rc<StateContainers>>
         {
 
-            None
-            
+            //check is correct thread?
+
+            STATE_CONTAINERS.with(|containers|
+            {
+
+                //let opt = unsafe { containers.get().as_ref() }; //STATE_CONTAINERS.as_ref(); //.try_get_ref();
+
+                let mut opt_ref = unsafe { containers.get().as_ref() };
+
+                get_some!(opt_ref).clone()
+
+                /*
+                if let Some(sc) = get_some!(opt_ref)
+                {
+
+                    return Some(sc.clone());
+
+                }
+                else
+                {
+
+                    None
+                    
+                }
+                */
+
+            })
+
         }
-        */
 
-    })
-
-}
-
-///
-/// Set the StateContainers state if it is invalid.
-/// 
-fn set_state_containers(state_containers: &Rc<StateContainers>)
-{
-
-    STATE_CONTAINERS.with(|containers|
-    {
-
-        let mut opt_mut = unsafe { containers.get().as_mut() };
-
-        let mut_ref = get_some!(opt_mut);
-
-        *mut_ref = Some(state_containers.clone());
-
-    });
-
-    //Check if the current thread is correct?
-
-    /*
-    unsafe
-    {
-
-        if !STATE_CONTAINERS.is_some() //.is_valid()
+        ///
+        /// Set the StateContainers state if it is invalid.
+        /// 
+        fn set_state_containers(state_containers: &Rc<StateContainers>) -> bool
         {
 
-            STATE_CONTAINERS = Some(state_containers.clone()); //.set(state_containers.clone())
+            STATE_CONTAINERS.with(|containers|
+            {
+
+                let mut opt_mut = unsafe { containers.get().as_mut() };
+
+                let mut_ref = get_some!(opt_mut);
+
+                if mut_ref.is_none()
+                {
+
+                    *mut_ref = Some(state_containers.clone());
+
+                    true
+
+                }
+                else
+                {
+
+                    false
+                    
+                }
+
+            })
+
+            //Check if the current thread is correct?
+
+            /*
+            unsafe
+            {
+
+                if !STATE_CONTAINERS.is_some() //.is_valid()
+                {
+
+                    STATE_CONTAINERS = Some(state_containers.clone()); //.set(state_containers.clone())
+
+                }
+
+            }
+            */
+
+        }
+
+        fn state_containers_is_set() -> bool
+        {
+
+            STATE_CONTAINERS.with(|containers|
+            {
+
+                let mut opt_mut = unsafe { containers.get().as_ref() };
+
+                let mut_ref = get_some!(opt_mut);
+
+                mut_ref.is_some()
+
+            })
 
         }
 
     }
-    */
 
 }
 
@@ -409,6 +450,7 @@ impl StateContainers
 
         //Check if StateContainers  has already been intialised.
 
+        #[cfg(feature = "thread_local_state")]
         if let Some(state_containers) = try_get_state_containers()
         {
 
@@ -455,29 +497,40 @@ impl StateContainers
 
         });
 
+        #[cfg(feature = "thread_local_state")]
         set_state_containers(&sc);
 
         sc
 
     }
 
-    ///
-    /// Get the StateContainers singleton.
-    /// 
-    pub fn get() -> Rc<StateContainers>
+    cfg_if!
     {
 
-        get_state_containers()
+        if #[cfg(feature = "thread_local_state")]
+        {
 
-    }
+            ///
+            /// Get the StateContainers singleton.
+            /// 
+            pub fn get() -> Rc<StateContainers>
+            {
 
-    ///
-    /// Try to get the StateContainers singleton.
-    /// 
-    pub fn try_get() -> Option<Rc<StateContainers>>
-    {
+                get_state_containers()
 
-        try_get_state_containers()
+            }
+
+            ///
+            /// Try to get the StateContainers singleton.
+            /// 
+            pub fn try_get() -> Option<Rc<StateContainers>>
+            {
+
+                try_get_state_containers()
+
+            }
+
+        }
 
     }
 
@@ -494,7 +547,7 @@ impl StateContainers
     ///
     /// Set the application state. Returns false if an ApplicationStateContainer is already present.
     /// 
-    pub fn set_application_state<T>(&self, state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
+    pub fn try_set_application_state<T>(&self, state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
         where T: ApplicationStateContainer + 'static
     {
 
@@ -520,11 +573,11 @@ impl StateContainers
     ///
     /// Set the application state or panic.
     /// 
-    pub fn set_application_state_or_panic<T>(&self, state:&Rc<T>) //&Rc<dyn ApplicationStateContainer>)
+    pub fn set_application_state<T>(&self, state:&Rc<T>) //&Rc<dyn ApplicationStateContainer>)
         where T: ApplicationStateContainer + 'static
     {
 
-        if !self.set_application_state(state)
+        if !self.try_set_application_state(state)
         {
 
             panic!("GTK Estate - Error: Cound not set applicaton state!")
@@ -540,6 +593,27 @@ impl StateContainers
     {
 
         self.nc_internals.borrow().application_state.get_ref().clone()
+
+    }
+
+    ///
+    /// Try and get the application state or panic.
+    /// 
+    pub fn try_get_application_state(&self) -> Option<Rc<dyn ApplicationStateContainer>>
+    {
+
+        match self.nc_internals.borrow().application_state.try_get_ref()
+        {
+
+            Some(val) =>
+            {
+
+                Some(val.clone())
+
+            }
+            None => None
+
+        }
 
     }
 
@@ -671,37 +745,47 @@ impl StateContainers
 
 }
 
-///
-/// This macro gets a StateContainers Rc instance and calls "set_application_state_or_panic" on it, passing "$this", to set the application state.
-/// 
-#[macro_export]
-macro_rules! scs_set_app
+cfg_if!
 {
 
-    ($this:ident) =>
+    if #[cfg(feature = "thread_local_state")]
     {
 
-        let scs = StateContainers::get();
+        ///
+        /// This macro gets a StateContainers Rc instance and calls "set_application_state" on it, passing "$this", to set the application state.
+        /// 
+        #[macro_export]
+        macro_rules! scs_set_application_state
+        {
 
-        scs.set_application_state_or_panic(&$this);
+            ($this:ident) =>
+            {
 
-    }
+                let scs = StateContainers::get();
 
-}
+                scs.set_application_state(&$this);
 
-///
-/// This macro gets a StateContainers Rc instance and adds the "$this" widget state to it  
-/// 
-#[macro_export]
-macro_rules! scs_add
-{
+            }
 
-    ($this:ident) =>
-    {
+        }
 
-        let scs = StateContainers::get();
+        ///
+        /// This macro gets a StateContainers Rc instance and adds the "$this" widget state to it  
+        /// 
+        #[macro_export]
+        macro_rules! scs_add
+        {
 
-        scs.add(&$this);
+            ($this:ident) =>
+            {
+
+                let scs = StateContainers::get();
+
+                scs.add(&$this);
+
+            }
+
+        }
 
     }
 
