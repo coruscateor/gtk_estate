@@ -87,6 +87,8 @@ pub trait StoredWidgetObject : LookupWidgetObject //+ Any
 
 }
 
+pub type RcApplicationAdapter<T, P> = Rc<ApplicationAdapter<T, P>>;
+
 //ApplicationAdapter
 
 pub struct ApplicationAdapter<T, P>
@@ -267,6 +269,8 @@ impl<T, P> StoredApplicationObject for ApplicationAdapter<T, P>
 
 
 }
+
+pub type RcWidgetAdapter<T, P> = Rc<WidgetAdapter<T, P>>;
 
 //WidgetAdapter
 
@@ -713,3 +717,40 @@ impl<T: IsA<Widget>> AsAny for LookupWidgetAdapter<T> //WidgetExt
 }
 */
 
+/*
+#[macro_export]
+macro_rules! impl_adapter_accessors
+{
+
+    ($field:ident, $adapter_type:ty) => //$adapter_lc:ident, $state_container_type:ty, 
+    {
+
+        paste!
+        {
+
+            //pub fn [<$adapter_lc _adapter>](&self) -> Rc<WidgetAdapter<$adapter_type, $state_container_type>>
+            pub fn $field(&self) -> Rc<WidgetAdapter<$adapter_type, Self>>
+            {
+
+                //self. [<$adapter_lc _adapter>] .clone()
+
+                self.$field.clone()
+
+            }
+
+            //pub fn [<$adapter_lc _adapter_ref>](&self) -> &WidgetAdapter<$adapter_type, $state_container_type>
+            pub fn [<$field _ref>] (&self) -> &WidgetAdapter<$adapter_type, Self>
+            {
+
+                //self. [<$adapter_lc _adapter>] .as_ref()
+
+                &self.$field
+
+            }
+
+        }
+
+    };
+
+}
+*/
