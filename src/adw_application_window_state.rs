@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, ApplicationStateContainer, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
+use crate::{gtk4 as gtk, impl_weak_self_methods, ApplicationStateContainer, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
 
 use adw::builders::{ApplicationWindowBuilder, WindowBuilder};
 use adw::ffi::AdwApplicationWindow;
@@ -189,12 +189,7 @@ impl AdwApplcationWindowState //<T>
 
     //
 
-    pub fn weak_self(&self) -> Weak<Self>
-    {
-
-        self.weak_self.clone()
-
-    }
+    impl_weak_self_methods!(window_adapter);
 
     pub fn window(&self) -> Rc<WidgetAdapter<ApplicationWindow, AdwApplcationWindowState>> //<T>>>
     {

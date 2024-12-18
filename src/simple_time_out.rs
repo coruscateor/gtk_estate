@@ -12,7 +12,9 @@ use gtk::{glib::ControlFlow};
 
 use corlib::events::{ListEvent, SenderEventFunc};
 
-use corlib::{impl_get_ref, impl_get_weak_self_ref, impl_rfc_borrow_get}; 
+use corlib::{impl_get_ref, impl_rfc_borrow_get};
+
+use crate::impl_weak_self_methods; 
 
 pub struct PrivateSimpleTimeOutFileds
 {
@@ -194,7 +196,7 @@ impl<T> SimpleTimeOut<T>
 
     }
 
-    impl_get_weak_self_ref!();
+    impl_weak_self_methods!();
 
     impl_rfc_borrow_get!(fields, interval, Duration);
 

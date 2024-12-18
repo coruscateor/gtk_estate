@@ -13,8 +13,8 @@ categories = ["gui"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-#corlib = { path="../corlib" } #Do not remove
-corlib = "0.3.0"
+corlib = { path="../corlib" } #Do not remove
+#corlib = "0.3.0"
 delegate = "0.13.1"
 gtk4 = "0.9.4"
 cfg-if = "1.0.0"

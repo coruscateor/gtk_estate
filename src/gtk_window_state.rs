@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, impl_widget_state_container, StateContainers, WidgetAdapter, WidgetStateContainer, StoredWidgetObject};
+use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
 
 use gtk4::Window;
 use corlib::AsAny;
@@ -52,12 +52,7 @@ impl GtkWindowState
 
     }
 
-    pub fn weak_self(&self) -> Weak<Self>
-    {
-
-        self.weak_self.clone()
-
-    }
+    impl_weak_self_methods!(window_adapter);
 
     pub fn window_adapter(&self) -> Rc<WidgetAdapter<Window, GtkWindowState>>
     {

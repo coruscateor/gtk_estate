@@ -12,9 +12,11 @@ use gtk::{glib::ControlFlow};
 
 use corlib::events::{ListEvent, SenderEventFunc};
 
-use corlib::{impl_get_ref, impl_get_weak_self_ref, impl_rfc_borrow_get, impl_rfc_borrow_mut_set, impl_rfc_borrow_mut_subscribe, impl_rfc_borrow_mut_subscription, impl_rfc_borrow_mut_unsubscribe}; 
+use corlib::{impl_get_ref, impl_rfc_borrow_get, impl_rfc_borrow_mut_set, impl_rfc_borrow_mut_subscribe, impl_rfc_borrow_mut_subscription, impl_rfc_borrow_mut_unsubscribe}; 
 
 use paste::paste;
+
+use crate::impl_weak_self_methods;
 
 struct PrivateTimeOutFileds<T>
     where T: 'static
@@ -198,7 +200,7 @@ impl<T> TimeOut<T>
 
     }
 
-    impl_get_weak_self_ref!();
+    impl_weak_self_methods!();
 
     impl_rfc_borrow_get!(fields, interval, Duration);
     

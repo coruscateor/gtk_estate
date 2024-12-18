@@ -211,7 +211,8 @@ impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookUpApp
         
     }
     
-    fn dyn_has_in_other(&self, other: &dyn LookUpApplicationObject) -> bool {
+    fn dyn_has_in_other(&self, other: &dyn LookUpApplicationObject) -> bool
+    {
 
         self.dyn_has(other.dyn_application())
 
@@ -698,6 +699,54 @@ impl<T> LookupWidgetObject for LookUpWidgetAdapter<T>
         //self.object == *widget 
 
         *widget == self.object
+
+    }
+
+}
+
+///
+/// Implements weak_self methods on your state container object.
+/// 
+/// Requires std::rc::Weak or similar to be in scope.
+/// 
+#[macro_export]
+macro_rules! impl_weak_self_methods
+{
+
+    () =>
+    {
+
+        pub fn weak_self(&self) -> Weak<Self>
+        {
+    
+            self.weak_self.clone()
+    
+        }
+    
+        pub fn weak_self_ref(&self) -> &Weak<Self>
+        {
+    
+            &self.weak_self
+    
+        }
+
+    };
+    ($adapter_field:ident) =>
+    {
+
+        pub fn weak_self(&self) -> Weak<Self>
+        {
+    
+            self.$adapter_field.weak_parent()
+    
+        }
+    
+        pub fn weak_self_ref(&self) -> &Weak<Self>
+        {
+    
+            self.$adapter_field.weak_parent_ref()
+    
+        }
 
     }
 
