@@ -4,10 +4,10 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, impl_weak_self_methods, ApplicationStateContainer, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
+use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynApplicationStateContainer, DynWidgetStateContainer, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
 
 use adw::builders::{ApplicationWindowBuilder, WindowBuilder};
-use adw::ffi::AdwApplicationWindow;
+//use adw::ffi::AdwApplicationWindow;
 use adw::ApplicationWindow;
 use corlib::AsAny;
 use gtk::glib::object::IsA; //{IsA, MayDowncastTo};
@@ -17,17 +17,17 @@ use gtk::Widget;
 use adw::prelude::AdwApplicationWindowExt;
 
 #[derive(Clone)]
-pub struct AdwApplcationWindowState //<T>
+pub struct AdwApplicationWindowState //<T>
     //where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, //+ IsA<ApplicationWindow> //+ WidgetExt
           //P: WidgetStateContainer
 {
 
-    weak_self: Weak<Self>,
+    //weak_self: Weak<Self>,
     //window_adapter: Rc<WidgetAdapter<T, AdwApplcationWindowState<T>>>
-    window_adapter: Rc<WidgetAdapter<ApplicationWindow, AdwApplcationWindowState>>
+    widget_adapter: Rc<WidgetAdapter<ApplicationWindow, AdwApplicationWindowState>>
 }
 
-impl AdwApplcationWindowState //<T>
+impl AdwApplicationWindowState //<T>
     //where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, // + MayDowncastTo<Widget> //+ IsA<ApplicationWindow>  // + WidgetExt
           //P: WidgetStateContainer + Clone
 {
@@ -36,18 +36,23 @@ impl AdwApplcationWindowState //<T>
         where F: FnOnce()-> ApplicationWindow
     {
 
-        let aws = Rc::new_cyclic(|weak_self|
+        let this = Rc::new_cyclic(|weak_self|
         {
 
             Self
             {
 
-                weak_self: weak_self.clone(),
-                window_adapter: WidgetAdapter::new(&window_fn(), weak_self)
+                //weak_self: weak_self.clone(),
+                widget_adapter: WidgetAdapter::new(&window_fn(), weak_self)
 
             }
 
         });
+
+        #[cfg(feature = "thread_local_state")]
+        scs_add!(this);
+
+        this
 
         //let any_this: &dyn Any = &aws;
 
@@ -55,9 +60,9 @@ impl AdwApplcationWindowState //<T>
 
         //StateContainers::get().add(wsc);
 
-        StateContainers::get().add(&aws);
+        //StateContainers::get().add(&aws);
 
-        aws
+        //aws
 
     }
 
@@ -67,7 +72,7 @@ impl AdwApplcationWindowState //<T>
 
         let sc = Self::new(window_fn);
 
-        sc.window_adapter.widget().set_visible(true);
+        sc.widget_adapter.widget().set_visible(true);
 
         sc
 
@@ -75,7 +80,7 @@ impl AdwApplcationWindowState //<T>
 
     pub fn with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce() -> ApplicationWindow,
-            WSC: WidgetStateContainer
+            WSC: DynWidgetStateContainer
     {
 
         let sc = Self::new(window_fn);
@@ -88,12 +93,12 @@ impl AdwApplcationWindowState //<T>
 
     pub fn with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce() -> ApplicationWindow,
-            WSC: WidgetStateContainer
+            WSC: DynWidgetStateContainer
     {
 
         let sc = Self::with_content(window_fn, content_state);
 
-        sc.window_adapter.widget().set_visible(true);
+        sc.widget_adapter.widget().set_visible(true);
 
         sc
 
@@ -110,8 +115,8 @@ impl AdwApplcationWindowState //<T>
             Self
             {
 
-                weak_self: weak_self.clone(),
-                window_adapter: WidgetAdapter::new(&window_fn(builder), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
+                //weak_self: weak_self.clone(),
+                widget_adapter: WidgetAdapter::new(&window_fn(builder), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
 
             }
 
@@ -133,7 +138,7 @@ impl AdwApplcationWindowState //<T>
         
         let sc = Self::builder(window_fn);
 
-        sc.window_adapter.widget().set_visible(true);
+        sc.widget_adapter.widget().set_visible(true);
 
         sc
 
@@ -141,7 +146,7 @@ impl AdwApplcationWindowState //<T>
 
     pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
-            WSC: WidgetStateContainer
+            WSC: DynWidgetStateContainer
     {
 
         let sc = Self::builder(window_fn);
@@ -154,12 +159,12 @@ impl AdwApplcationWindowState //<T>
 
     pub fn builder_with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
-            WSC: WidgetStateContainer
+            WSC: DynWidgetStateContainer
     {
 
         let sc = Self::builder_with_content(window_fn, content_state);
 
-        sc.window_adapter.widget().set_visible(true);
+        sc.widget_adapter.widget().set_visible(true);
 
         sc
 
@@ -174,8 +179,8 @@ impl AdwApplcationWindowState //<T>
             Self
             {
 
-                weak_self: weak_self.clone(),
-                window_adapter: WidgetAdapter::new(&window, weak_self)
+                //weak_self: weak_self.clone(),
+                widget_adapter: WidgetAdapter::new(&window, weak_self)
 
             }
 
@@ -189,8 +194,9 @@ impl AdwApplcationWindowState //<T>
 
     //
 
-    impl_weak_self_methods!(window_adapter);
+    impl_weak_self_methods!(widget_adapter);
 
+    /*
     pub fn window(&self) -> Rc<WidgetAdapter<ApplicationWindow, AdwApplcationWindowState>> //<T>>>
     {
 
@@ -204,11 +210,12 @@ impl AdwApplcationWindowState //<T>
         self.window_adapter.as_ref()
 
     }
+    */
 
-    pub fn content(&self) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn content(&self) -> Option<Rc<dyn DynWidgetStateContainer>>
     {
 
-        if let Some(widget) = self.window_adapter.widget().content()
+        if let Some(widget) = self.widget_adapter.widget().content()
         {
 
             return StateContainers::get().find_widget_state(&widget);
@@ -233,7 +240,7 @@ impl AdwApplcationWindowState //<T>
     }
     */
 
-    pub fn set_content<WSC: WidgetStateContainer>(&self, child_state: &Rc<WSC>) //Option<&Rc<WSC>>)
+    pub fn set_content<WSC: DynWidgetStateContainer>(&self, child_state: &Rc<WSC>) //Option<&Rc<WSC>>)
     {
 
         /*
@@ -245,11 +252,13 @@ impl AdwApplcationWindowState //<T>
         }
         */
 
-        self.window_adapter.widget().set_content(Some(&child_state.dyn_widget_adapter().widget()))
+        self.widget_adapter.widget().set_content(Some(&child_state.dyn_widget_adapter().widget()))
 
     }
 
 }
+
+impl_widget_state_container_traits!(ApplicationWindow, AdwApplicationWindowState);
 
 
 //impl<T> AdwApplcationWindowState<T>
@@ -284,7 +293,8 @@ gtk_estate::adw_application_window_state::AdwApplcationWindowState
 
  */
 
-impl WidgetStateContainer for AdwApplcationWindowState
+ /*
+impl DynWidgetStateContainer for AdwApplcationWindowState
     //where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, //MayDowncastTo<Widget> + //IsA<T> + //WidgetExt +
           //P: WidgetStateContainer
 {
@@ -315,5 +325,5 @@ impl WidgetStateContainer for AdwApplcationWindowState
     }
 
 }
-
+*/
 

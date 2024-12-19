@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use crate::{StoredApplicationObject, StoredWidgetObject, WidgetStateContainer};
+use crate::{StoredApplicationObject, StoredWidgetObject, DynWidgetStateContainer};
 
-pub fn to_rc_dyn_wsc<T>(value: Rc<T>) -> Rc<dyn WidgetStateContainer>
-    where T: WidgetStateContainer + 'static
+pub fn to_rc_dyn_wsc<T>(value: Rc<T>) -> Rc<dyn DynWidgetStateContainer>
+    where T: DynWidgetStateContainer + 'static
 {
 
     value

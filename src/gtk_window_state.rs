@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
+use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
 
 use gtk4::Window;
 use corlib::AsAny;
@@ -16,8 +16,8 @@ use gtk::Widget;
 pub struct GtkWindowState
 {
 
-    weak_self: Weak<Self>,
-    window_adapter: Rc<WidgetAdapter<Window, GtkWindowState>>
+    //weak_self: Weak<Self>,
+    widget_adapter: Rc<WidgetAdapter<Window, GtkWindowState>>
     //window_title: WindowTitle,
     //hb: HeaderBar,
     //contents: Box 
@@ -31,7 +31,7 @@ impl GtkWindowState
         where F: FnOnce()-> Window
     {
 
-        Rc::new_cyclic(|weak_self|
+        let this = Rc::new_cyclic(|weak_self|
         {
 
             //let wsc = weak_self.clone();
@@ -43,17 +43,23 @@ impl GtkWindowState
             Self
             {
 
-                weak_self: weak_self.clone(),
-                window_adapter: WidgetAdapter::new(&window_fn(), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
+                //weak_self: weak_self.clone(),
+                widget_adapter: WidgetAdapter::new(&window_fn(), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
 
             }
 
-        })
+        });
+
+        #[cfg(feature = "thread_local_state")]
+        scs_add!(this);
+
+        this
 
     }
 
-    impl_weak_self_methods!(window_adapter);
+    impl_weak_self_methods!(widget_adapter);
 
+    /*
     pub fn window_adapter(&self) -> Rc<WidgetAdapter<Window, GtkWindowState>>
     {
 
@@ -67,11 +73,12 @@ impl GtkWindowState
         self.window_adapter.as_ref()
 
     }
+    */
 
-    pub fn child(&self) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn child(&self) -> Option<Rc<dyn DynWidgetStateContainer>>
     {
 
-        if let Some(widget) = self.window_adapter.widget().child()
+        if let Some(widget) = self.widget_adapter.widget().child()
         {
 
             return StateContainers::get().find_widget_state(&widget);
@@ -96,15 +103,16 @@ impl GtkWindowState
     }
     */
 
-    pub fn set_child(&self, child_state: &Rc<dyn WidgetStateContainer>)
+    pub fn set_child(&self, child_state: &Rc<dyn DynWidgetStateContainer>)
     {
 
-        self.window_adapter.widget().set_child(Some(&child_state.dyn_widget_adapter().widget()))
+        self.widget_adapter.widget().set_child(Some(&child_state.dyn_widget_adapter().widget()))
 
     }
 
 }
 
+impl_widget_state_container_traits!(Window, GtkWindowState);
 
 //impl<T> GtkWindowState<T>
 //    where T: GtkWindowExt + WidgetExt + IsA<T>, //+ MayDowncastTo<Widget>,
@@ -130,7 +138,8 @@ impl<T> AsAny for GtkWindowState<T>
 
 //impl_widget_state_container!(GtkWindowState<T>);
 
-impl WidgetStateContainer for GtkWindowState
+/*
+impl DynWidgetStateContainer for GtkWindowState
 {
 
     fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>
@@ -148,5 +157,6 @@ impl WidgetStateContainer for GtkWindowState
     }
 
 }
+*/
 
 

@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, impl_weak_self_methods, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
+use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
 
 use adw::builders::WindowBuilder;
 use adw::prelude::{AdwWindowExt, AdwApplicationWindowExt};
@@ -20,8 +20,8 @@ pub struct AdwWindowState //<T>
           //P: WidgetStateContainer
 {
 
-    weak_self: Weak<Self>,
-    window_adapter: Rc<WidgetAdapter<Window, AdwWindowState>> //<T>>>
+    //weak_self: Weak<Self>,
+    widget_adapter: Rc<WidgetAdapter<Window, AdwWindowState>> //<T>>>
 
 }
 
@@ -34,18 +34,23 @@ impl AdwWindowState //<T>
         where F: FnOnce()-> Window
     {
 
-        let aws = Rc::new_cyclic(|weak_self|
+        let this = Rc::new_cyclic(|weak_self|
         {
 
             Self
             {
 
-                weak_self: weak_self.clone(),
-                window_adapter: WidgetAdapter::new(&window_fn(), weak_self)
+                //weak_self: weak_self.clone(),
+                widget_adapter: WidgetAdapter::new(&window_fn(), weak_self)
 
             }
 
         });
+
+        #[cfg(feature = "thread_local_state")]
+        scs_add!(this);
+
+        this
 
         //let any_this: &dyn Any = &aws;
 
@@ -53,15 +58,15 @@ impl AdwWindowState //<T>
 
         //StateContainers::get().add(wsc);
 
-        StateContainers::get().add(&aws);
+        //StateContainers::get().add(&aws);
 
-        aws
+        //aws
 
     }
 
     pub fn with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce()-> Window,
-            WSC: WidgetStateContainer
+            WSC: DynWidgetStateContainer
     {
 
         let sc = Self::new(window_fn);
@@ -83,8 +88,8 @@ impl AdwWindowState //<T>
             Self
             {
 
-                weak_self: weak_self.clone(),
-                window_adapter: WidgetAdapter::new(&window_fn(builder), weak_self)
+                //weak_self: weak_self.clone(),
+                widget_adapter: WidgetAdapter::new(&window_fn(builder), weak_self)
 
             }
 
@@ -104,7 +109,7 @@ impl AdwWindowState //<T>
 
     pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce(WindowBuilder) -> Window,
-            WSC: WidgetStateContainer
+            WSC: DynWidgetStateContainer
     {
 
         let sc = Self::builder(window_fn);
@@ -115,8 +120,9 @@ impl AdwWindowState //<T>
 
     }
 
-    impl_weak_self_methods!(window_adapter);
+    impl_weak_self_methods!(widget_adapter);
 
+    /*
     pub fn window(&self) -> Rc<WidgetAdapter<Window, AdwWindowState>> //<T>>>
     {
         
@@ -130,11 +136,12 @@ impl AdwWindowState //<T>
         self.window_adapter.as_ref()
 
     }
+    */
 
-    pub fn content(&self) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn content(&self) -> Option<Rc<dyn DynWidgetStateContainer>>
     {
 
-        if let Some(widget) = self.window_adapter.widget().content()
+        if let Some(widget) = self.widget_adapter.widget().content()
         {
 
             return StateContainers::get().find_widget_state(&widget);
@@ -187,15 +194,16 @@ impl AdwWindowState //<T>
 
     //}
 
-    pub fn set_content<WSC: WidgetStateContainer>(&self, child_state: &Rc<WSC>) //&Rc<dyn WidgetStateContainer>)
+    pub fn set_content<WSC: DynWidgetStateContainer>(&self, child_state: &Rc<WSC>) //&Rc<dyn WidgetStateContainer>)
     {
 
-        self.window_adapter.widget().set_content(Some(&child_state.dyn_widget_adapter().widget()))
+        self.widget_adapter.widget().set_content(Some(&child_state.dyn_widget_adapter().widget()))
 
     }
 
 }
 
+impl_widget_state_container_traits!(Window, AdwWindowState);
 
 //impl<T> AdwWindowState<T>
 //    where T: GtkWindowExt + WidgetExt + AdwWindowExt, //+ IsA<T>, //+ MayDowncastTo<Widget>,
@@ -254,7 +262,8 @@ impl AsAny for AdwWindowState //<T>
 }
 */
 
-impl WidgetStateContainer for AdwWindowState //<T>
+/*
+impl DynWidgetStateContainer for AdwWindowState //<T>
     //where T: GtkWindowExt + WidgetExt, //+ MayDowncastTo<Widget> + IsA<T>
           //P: WidgetStateContainer
 {
@@ -274,5 +283,5 @@ impl WidgetStateContainer for AdwWindowState //<T>
     }
 
 }
-
+*/
 

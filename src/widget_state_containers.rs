@@ -11,12 +11,12 @@ use gtk4 as gtk;
 
 use gtk::glib::Type;
 
-use crate::{StateContainers, LookupWidgetObject, StoredWidgetObject, WidgetStateContainer};
+use crate::{StateContainers, LookupWidgetObject, StoredWidgetObject, DynWidgetStateContainer};
 
 pub struct WidgetStateContainers
 {
 
-    widget_state: HashMap<Type, HashSet<RcByPtr<dyn WidgetStateContainer>>>,
+    widget_state: HashMap<Type, HashSet<RcByPtr<dyn DynWidgetStateContainer>>>,
     weak_parent: Weak<StateContainers>
 
 }
@@ -57,7 +57,7 @@ impl WidgetStateContainers
 
     }
 
-    pub fn add(&mut self, sc: &Rc<dyn WidgetStateContainer>) -> bool
+    pub fn add(&mut self, sc: &Rc<dyn DynWidgetStateContainer>) -> bool
     {
 
         //let wt_id = sc.widget().type_id();
@@ -79,7 +79,7 @@ impl WidgetStateContainers
         if let Some(wsc_set) = self.widget_state.get_mut(&glt) //(&wt_id) // !self.widget_state.contains_key(&wt_id)
         {
 
-            let rbp_sc_2: RcByPtr<dyn WidgetStateContainer> = rbp_sc.clone();
+            let rbp_sc_2: RcByPtr<dyn DynWidgetStateContainer> = rbp_sc.clone();
 
             if wsc_set.insert(rbp_sc)
             {
@@ -114,7 +114,7 @@ impl WidgetStateContainers
 
     }
 
-    fn on_destroy(&self, rbp_sc: &RcByPtr<dyn WidgetStateContainer>)
+    fn on_destroy(&self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>)
     {
 
         //Make sure the added state gets removed when its widget gets destroyed.
@@ -123,7 +123,7 @@ impl WidgetStateContainers
 
     }
 
-    pub fn remove(&mut self, sc: &Rc<dyn WidgetStateContainer>) -> bool
+    pub fn remove(&mut self, sc: &Rc<dyn DynWidgetStateContainer>) -> bool
     {
 
         let rbp_sc = RcByPtr::new(sc);
@@ -141,7 +141,7 @@ impl WidgetStateContainers
 
     }
 
-    pub fn remove_by_rc_by_ptr(&mut self, rbp_sc: &RcByPtr<dyn WidgetStateContainer>) -> bool
+    pub fn remove_by_rc_by_ptr(&mut self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>) -> bool
     {
 
         let glt = rbp_sc.contents().dyn_widget_adapter_ref().glib_type(); //.type_id();
@@ -157,7 +157,7 @@ impl WidgetStateContainers
 
     }
 
-    pub fn contains(&self, sc: &Rc<dyn WidgetStateContainer>) -> bool
+    pub fn contains(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> bool
     {
 
         let rbp_sc = RcByPtr::new(sc);
@@ -184,7 +184,7 @@ impl WidgetStateContainers
 
     }
 
-    pub fn contains_widget_type_in(&self, sc: &Rc<dyn WidgetStateContainer>) -> bool
+    pub fn contains_widget_type_in(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> bool
     {
 
         let glt = sc.dyn_widget_adapter_ref().glib_type(); //.type_id();
@@ -232,7 +232,7 @@ impl WidgetStateContainers
 
     }
 
-    pub fn dyn_find_state(&self, widget: &dyn LookupWidgetObject) -> Option<Rc<dyn WidgetStateContainer>>
+    pub fn dyn_find_state(&self, widget: &dyn LookupWidgetObject) -> Option<Rc<dyn DynWidgetStateContainer>>
     {
 
         let glt = widget.glib_type(); //.type_(); //.type_id();

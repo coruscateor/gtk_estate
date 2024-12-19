@@ -12,7 +12,8 @@ use gtk::gio::prelude::ApplicationExt;
 use gtk::prelude::WidgetExt;
 
 use crate::rc_conversions::to_rc_dyn_wsc;
-use crate::{ApplicationStateContainer, StateContainers, WidgetStateContainer};
+
+use crate::{DynApplicationStateContainer, StateContainers, DynWidgetStateContainer};
 
 use std::hash::{Hash, Hasher};
 
@@ -93,7 +94,7 @@ pub type RcApplicationAdapter<T, P> = Rc<ApplicationAdapter<T, P>>;
 
 pub struct ApplicationAdapter<T, P>
     where T: ApplicationExt + Eq + ObjectExt + Clone,
-          P: ApplicationStateContainer
+          P: DynApplicationStateContainer
 {
 
     object: T,
@@ -105,7 +106,7 @@ pub struct ApplicationAdapter<T, P>
 
 impl<T, P> ApplicationAdapter<T, P>
     where T: ApplicationExt + Eq + ObjectExt + Clone,
-          P: ApplicationStateContainer
+          P: DynApplicationStateContainer
 {
 
     pub fn new(object: &T, weak_parent: &Weak<P>) -> Rc<Self> //parent: &Weak<dyn ApplicationStateContainer>) -> Self
@@ -201,7 +202,7 @@ impl<T, P> ApplicationAdapter<T, P>
 
 //}
 
-impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookUpApplicationObject for ApplicationAdapter<T, P>
+impl<T: ApplicationExt + Eq + ObjectExt, P: DynApplicationStateContainer> LookUpApplicationObject for ApplicationAdapter<T, P>
 {
 
     fn dyn_application(&self) -> &dyn Any
@@ -264,7 +265,7 @@ impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> LookUpApp
 
 impl<T, P> StoredApplicationObject for ApplicationAdapter<T, P>
     where T: ApplicationExt + Eq + ObjectExt,
-          P: ApplicationStateContainer + 'static
+          P: DynApplicationStateContainer + 'static
 {
 
 
@@ -278,12 +279,12 @@ pub type RcWidgetAdapter<T, P> = Rc<WidgetAdapter<T, P>>;
 #[derive(Clone)]
 pub struct WidgetAdapter<T, P>
     where T: Eq + ObjectExt + Clone,
-          P: WidgetStateContainer
+          P: DynWidgetStateContainer
 
 {
 
     object: T,
-    //parent: Weak<dyn WidgetStateContainer>
+    //parent: Weak<dyn DynWidgetStateContainer>
     weak_parent: Weak<P>,
     weak_self: Weak<Self>
 
@@ -291,7 +292,7 @@ pub struct WidgetAdapter<T, P>
 
 impl<T, P> WidgetAdapter<T, P>
     where T: Eq + ObjectExt + Clone,
-          P: WidgetStateContainer
+          P: DynWidgetStateContainer
 {
 
     pub fn new(object: &T, weak_parent: &Weak<P>) -> Rc<Self>
@@ -373,7 +374,7 @@ impl<T, P> WidgetAdapter<T, P>
 
 impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Widget> + IsA<Widget> + /MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
     where T: Eq + ObjectExt + WidgetExt,
-          P: WidgetStateContainer + 'static
+          P: DynWidgetStateContainer + 'static
 {
 
     /*
@@ -405,7 +406,7 @@ impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Wid
                 if let Some(parent) = weak_parent.upgrade()
                 {
 
-                    let wsc_parent: Rc<dyn WidgetStateContainer> = to_rc_dyn_wsc(parent); //to_wsc_super(rc_parent); //&rc_parent;
+                    let wsc_parent: Rc<dyn DynWidgetStateContainer> = to_rc_dyn_wsc(parent); //to_wsc_super(rc_parent); //&rc_parent;
 
                     //Don't remove right now but soon.
 
@@ -442,7 +443,7 @@ impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Wid
 
 impl<T, P> LookupWidgetObject for WidgetAdapter<T, P>
     where T: Eq + ObjectExt + WidgetExt,
-          P: WidgetStateContainer + 'static
+          P: DynWidgetStateContainer + 'static
 {
 
     fn dyn_widget(&self) -> &dyn Any
@@ -611,7 +612,7 @@ impl<T> LookUpWidgetAdapter<T>
     }
 
     fn has_in_other<P>(&self, other: &WidgetAdapter<T, P>) -> bool
-        where P: WidgetStateContainer
+        where P: DynWidgetStateContainer
     {
         
         self.object == other.object
