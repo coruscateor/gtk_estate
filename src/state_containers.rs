@@ -6,7 +6,9 @@ use std::{rc::*, any::Any};
 
 use std::cell::{Ref, RefCell, RefMut, UnsafeCell};
 
-use corlib::{get_some, impl_rfc_borrow_2, impl_rfc_borrow_and_mut_2, impl_rfc_borrow_call, impl_rfc_borrow_mut_2, impl_rfc_borrow_mut_call, AsAny};
+use corlib::{get_some, impl_rfc_borrow_2, impl_rfc_borrow_and_mut_2, impl_rfc_borrow_call, impl_rfc_borrow_mut_2, impl_rfc_borrow_mut_call};
+
+use corlib::convert::AsAnyRef;
 
 use gtk::gio::prelude::ApplicationExt;
 
@@ -48,7 +50,7 @@ consider creating a new trait with all of these as supertraits and using that tr
 ///
 /// Indicates that the implementing object stores application related data.
 /// 
-pub trait DynApplicationStateContainer //: AsAny + Any //<'a>
+pub trait DynApplicationStateContainer : AsAnyRef
 {
 
     //fn application() -> &'a (dyn Any + ApplicationExt);
@@ -85,6 +87,18 @@ macro_rules! impl_application_state_container_traits
 
     () =>
     {
+
+        impl AsAnyRef for ApplicationState
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
 
         impl DynApplicationStateContainer for ApplicationState
         {
@@ -125,10 +139,22 @@ macro_rules! impl_application_state_container_traits
         }
 
     };
-    ($application_type:ty, $application_state_type:ty) =>
+    ($application_type:ty, $application_state_container_type:ty) =>
     {
 
-        impl DynApplicationStateContainer for $application_state_type
+        impl AsAnyRef for $application_state_container_type
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
+
+        impl DynApplicationStateContainer for $application_state_container_type
         {
 
             fn dyn_application_adapter(&self) -> Rc<dyn StoredApplicationObject>
@@ -147,17 +173,17 @@ macro_rules! impl_application_state_container_traits
 
         }
 
-        impl ApplicationStateContainer<$application_type, $application_state_type> for $application_state_type
+        impl ApplicationStateContainer<$application_type, $application_state_container_type> for $application_state_container_type
         {
 
-            fn application_adapter(&self) -> Rc<ApplicationAdapter<$application_type, $application_state_type>>
+            fn application_adapter(&self) -> Rc<ApplicationAdapter<$application_type, $application_state_container_type>>
             {
 
                 self.application_adapter.clone()
 
             }
 
-            fn application_adapter_ref(&self) -> &ApplicationAdapter<$application_type, $application_state_type>
+            fn application_adapter_ref(&self) -> &ApplicationAdapter<$application_type, $application_state_container_type>
             {
 
                 self.application_adapter.as_ref()
@@ -167,10 +193,22 @@ macro_rules! impl_application_state_container_traits
         }
 
     };
-    ($application_type:ty, $application_state_type:ty, $application_adapter:ident) =>
+    ($application_type:ty, $application_state_container_type:ty, $application_adapter:ident) =>
     {
 
-        impl DynApplicationStateContainer for $application_state_type
+        impl AsAnyRef for $application_state_container_type
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
+
+        impl DynApplicationStateContainer for $application_state_container_type
         {
 
             fn dyn_application_adapter(&self) -> Rc<dyn StoredApplicationObject>
@@ -189,17 +227,17 @@ macro_rules! impl_application_state_container_traits
 
         }
 
-        impl ApplicationStateContainer<$application_type, $application_state_type> for $application_state_type
+        impl ApplicationStateContainer<$application_type, $application_state_container_type> for $application_state_container_type
         {
 
-            fn application_adapter(&self) -> Rc<ApplicationAdapter<$application_type, $application_state_type>>
+            fn application_adapter(&self) -> Rc<ApplicationAdapter<$application_type, $application_state_container_type>>
             {
 
                 self.$application_adapter.clone()
 
             }
 
-            fn application_adapter_ref(&self) -> &ApplicationAdapter<$application_type, $application_state_type>
+            fn application_adapter_ref(&self) -> &ApplicationAdapter<$application_type, $application_state_container_type>
             {
 
                 self.$application_adapter.as_ref()
@@ -240,7 +278,7 @@ macro_rules! impl_application_state_container_traits
 ///
 /// Indicates that the implementing object stores widget related data.
 /// 
-pub trait DynWidgetStateContainer //: AsAny + Any //<'a>
+pub trait DynWidgetStateContainer : AsAnyRef
 {
 
     //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
@@ -298,6 +336,18 @@ macro_rules! impl_widget_state_container_traits
     ($widget_type:ty, $widget_state_container_type:ty) =>
     {
 
+        impl AsAnyRef for $widget_state_container_type
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
+
         impl DynWidgetStateContainer for $widget_state_container_type
         {
 
@@ -339,6 +389,18 @@ macro_rules! impl_widget_state_container_traits
     };
     ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
     {
+
+        impl AsAnyRef for $widget_state_container_type
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
 
         impl DynWidgetStateContainer for $widget_state_container_type
         {
@@ -734,6 +796,34 @@ impl StateContainers
     {
 
         self.nc_internals.borrow().application_state.get_ref().clone()
+
+    }
+
+    //cannot return value referencing temporary value
+    //returns a value referencing data owned by the current function
+
+    pub fn dyn_application_state_ref<T, F, R>(&self, mut func: F) -> Option<R>
+        where F: FnMut(&T) -> R,
+              T: 'static
+    {
+
+        let rc_dyn_application_state_ref = self.nc_internals.borrow().application_state.get_ref().clone();
+
+        let app_state = rc_dyn_application_state_ref.as_any_ref();
+
+        let downcast_ref_opt = app_state.downcast_ref::<T>();
+        
+        match downcast_ref_opt
+        {
+
+            Some(res) =>
+            {
+
+                Some(func(res))
+
+            }
+            None => None
+        }
 
     }
 

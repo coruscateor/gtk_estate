@@ -21,10 +21,14 @@ use gtk::glib::Type;
 
 use gtk::glib::object::{Cast, IsA, ObjectExt, ObjectType}; 
 
+use corlib::convert::AsAnyRef;
+
+use corlib::{impl_as_any_ref, impl_as_any_ref_method};
+
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
 /// 
-pub trait LookUpApplicationObject //: AsAny + Any //: Deref //Any + ApplicationExt +
+pub trait LookUpApplicationObject : AsAnyRef //: AsAny + Any //: Deref //Any + ApplicationExt +
 {
 
     fn dyn_application(&self) -> &dyn Any;
@@ -51,7 +55,7 @@ pub trait StoredApplicationObject : LookUpApplicationObject //+ Any
 ///
 /// Implement on an object which stores a Widget object for the purpose of dynmically comparing with other objects.
 /// 
-pub trait LookupWidgetObject
+pub trait LookupWidgetObject : AsAnyRef
 {
 
     fn dyn_widget(&self) -> &dyn Any; //_as_any
@@ -202,7 +206,21 @@ impl<T, P> ApplicationAdapter<T, P>
 
 //}
 
-impl<T: ApplicationExt + Eq + ObjectExt, P: DynApplicationStateContainer> LookUpApplicationObject for ApplicationAdapter<T, P>
+//impl_as_any_ref!(ApplicationAdapter, T, P);
+
+impl<T, P> AsAnyRef for ApplicationAdapter<T, P>
+    where T: ApplicationExt + Eq + ObjectExt + Clone,
+          P: DynApplicationStateContainer + 'static
+{
+
+    impl_as_any_ref_method!();
+
+}
+
+impl<T, P> LookUpApplicationObject for ApplicationAdapter<T, P>
+    where T: ApplicationExt + Eq + ObjectExt,
+          P: DynApplicationStateContainer + 'static
+          
 {
 
     fn dyn_application(&self) -> &dyn Any
@@ -441,8 +459,19 @@ impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Wid
 
 }
 
+//impl_as_any_ref!(WidgetAdapter, T, P);
+
+impl<T, P> AsAnyRef for WidgetAdapter<T, P>
+    where T: WidgetExt + Eq + ObjectExt + Clone,
+          P: DynWidgetStateContainer + 'static
+{
+
+    impl_as_any_ref_method!();
+
+}
+
 impl<T, P> LookupWidgetObject for WidgetAdapter<T, P>
-    where T: Eq + ObjectExt + WidgetExt,
+    where T: WidgetExt + Eq + ObjectExt,
           P: DynWidgetStateContainer + 'static
 {
 
@@ -625,6 +654,14 @@ impl<T> LookUpWidgetAdapter<T>
         self.object == *widget
 
     }
+
+}
+
+impl<T> AsAnyRef for LookUpWidgetAdapter<T>
+    where T: WidgetExt + Eq + ObjectExt + Clone
+{
+
+    impl_as_any_ref_method!();
 
 }
 

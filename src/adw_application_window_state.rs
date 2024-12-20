@@ -9,7 +9,9 @@ use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_tra
 use adw::builders::{ApplicationWindowBuilder, WindowBuilder};
 //use adw::ffi::AdwApplicationWindow;
 use adw::ApplicationWindow;
-use corlib::AsAny;
+
+use corlib::convert::AsAnyRef;
+
 use gtk::glib::object::IsA; //{IsA, MayDowncastTo};
 use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;

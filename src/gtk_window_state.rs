@@ -7,7 +7,9 @@ use std::rc::{Weak, Rc};
 use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
 
 use gtk4::Window;
-use corlib::AsAny;
+
+use corlib::convert::AsAnyRef;
+
 use gtk::glib::object::IsA; //{IsA, MayDowncastTo};
 use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;
