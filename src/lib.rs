@@ -53,6 +53,10 @@ mod gtk_window_state;
 
 pub use gtk_window_state::*;
 
+mod widget_container;
+
+pub use widget_container::*;
+
 cfg_if!
 {
 
