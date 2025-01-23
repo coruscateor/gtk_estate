@@ -57,6 +57,10 @@ mod widget_container;
 
 pub use widget_container::*;
 
+mod contents;
+
+pub use contents::*;
+
 cfg_if!
 {
 
