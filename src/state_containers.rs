@@ -802,7 +802,7 @@ impl StateContainers
     //cannot return value referencing temporary value
     //returns a value referencing data owned by the current function
 
-    pub fn dyn_application_state_ref<T, F, R>(&self, mut func: F) -> Option<R>
+    pub fn application_state_ref_func<T, F, R>(&self, mut func: F) -> Option<R>
         where F: FnMut(&T) -> R,
               T: 'static
     {
@@ -823,14 +823,42 @@ impl StateContainers
 
             }
             None => None
+
         }
 
     }
 
+    /*
+    pub fn application_state<T>(&self) -> Option<Rc<T>>
+        where T: 'static
+    {
+
+        let rc_dyn_application_state_ref = self.nc_internals.borrow().application_state.get_ref().clone();
+
+        let app_state = rc_dyn_application_state_ref.as_any_ref();
+
+        let downcast_ref_opt = app_state.downcast_ref::<T>();
+        
+        match downcast_ref_opt
+        {
+
+            Some(res) =>
+            {
+
+                Some(func(res))
+
+            }
+            None => None
+
+        }
+
+    }
+    */
+
     ///
     /// Try and get the application state or panic.
     /// 
-    pub fn try_get_application_state(&self) -> Option<Rc<dyn DynApplicationStateContainer>>
+    pub fn try_get_dyn_application_state(&self) -> Option<Rc<dyn DynApplicationStateContainer>>
     {
 
         match self.nc_internals.borrow().application_state.try_get_ref()
