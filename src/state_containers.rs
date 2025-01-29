@@ -802,7 +802,7 @@ impl StateContainers
     //cannot return value referencing temporary value
     //returns a value referencing data owned by the current function
 
-    pub fn application_state_ref_func<T, F, R>(&self, mut func: F) -> Option<R>
+    pub fn try_application_state_ref_func<T, F, R>(&self, mut func: F) -> Option<R>
         where F: FnMut(&T) -> R,
               T: 'static
     {
@@ -825,6 +825,15 @@ impl StateContainers
             None => None
 
         }
+
+    }
+
+    pub fn application_state_ref_func<T, F, R>(&self, func: F) -> R
+        where F: FnMut(&T) -> R,
+              T: 'static
+    {
+
+        self.try_application_state_ref_func(func).expect("Error: Invalid DynApplicationStateContainer cast.")
 
     }
 
