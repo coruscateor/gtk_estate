@@ -27,11 +27,11 @@ mod time_out;
 
 pub use time_out::*;
 
+mod time_out_with_parent;
+
+pub use time_out_with_parent::*;
+
 pub mod helpers;
-
-mod simple_time_out;
-
-pub use simple_time_out::*;
 
 mod diy;
 
