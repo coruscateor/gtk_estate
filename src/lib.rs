@@ -27,10 +27,6 @@ mod time_out;
 
 pub use time_out::*;
 
-mod time_out_with_parent;
-
-pub use time_out_with_parent::*;
-
 pub mod helpers;
 
 mod diy;

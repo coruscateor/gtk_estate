@@ -37,7 +37,7 @@ use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo,
 
 use crate::rc_conversions::to_rc_dyn_wsc;
 
-use crate::{adapters::*, RcTimeOut, WidgetStateContainers, TimeOut};
+use crate::{adapters::*, RcTimeOut, TimeOut, TimeOutRunType, WidgetStateContainers};
 
 use cfg_if::cfg_if;
 
@@ -674,7 +674,7 @@ impl StateContainers
 
                 //Delays removal of widget state so that it can be used in all connect_destroy signal handlers. 
 
-                widget_state_removal_timeout: TimeOut::with_fn(Duration::new(1, 0), |_rc_self|
+                widget_state_removal_timeout: TimeOut::with_fn(TimeOutRunType::Seconds(1), weak_self,|_rc_self, parent|
                 {
 
                     let sc = StateContainers::get();
