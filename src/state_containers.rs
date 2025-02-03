@@ -37,7 +37,7 @@ use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo,
 
 use crate::rc_conversions::to_rc_dyn_wsc;
 
-use crate::{adapters::*, RcTimeOut, TimeOut, TimeOutRunType, WidgetStateContainers};
+use crate::{adapters::*, TimeOut, TimeOutRunType, WidgetStateContainers};
 
 use cfg_if::cfg_if;
 
@@ -636,7 +636,7 @@ pub struct StateContainers
 
     nc_internals: RefCell<InternalNonCollectionStateContainers>,
     widget_state: RefCell<WidgetStateContainers>,
-    widget_state_removal_timeout: RcTimeOut<Self>,
+    widget_state_removal_timeout: TimeOut<Self>,
 
 }
 
@@ -674,27 +674,27 @@ impl StateContainers
 
                 //Delays removal of widget state so that it can be used in all connect_destroy signal handlers. 
 
-                widget_state_removal_timeout: TimeOut::with_fn(TimeOutRunType::Seconds(1), weak_self,|_rc_self, parent|
+                widget_state_removal_timeout: TimeOut::with_fn(TimeOutRunType::Seconds(1), weak_self, Rc::new(|parent: Rc<Self>|
                 {
 
-                    let sc = StateContainers::get();
+                    //let sc = StateContainers::get();
 
+                    //{
+
+                    let mut nc_internals_mut = parent.nc_internals.borrow_mut();
+
+                    for state in nc_internals_mut.widget_states_to_remove.drain()
                     {
 
-                        let mut nc_internals_mut = sc.nc_internals.borrow_mut();
-
-                        for state in nc_internals_mut.widget_states_to_remove.drain()
-                        {
-    
-                            sc.remove_by_rc_by_ptr(&state);
-    
-                        }
+                        parent.remove_by_rc_by_ptr(&state);
 
                     }
 
+                    //}
+
                     false
 
-                })
+                }))
 
             }
 

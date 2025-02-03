@@ -4,8 +4,10 @@ use std::rc::Rc;
 
 use std::cell::{Cell, RefCell, Ref};
 
-use adw::glib::clone::Downgrade;
+//use adw::glib::clone::{self, Downgrade};
+
 use adw::glib::{timeout_add_local_full, timeout_add_seconds_local, Priority};
+
 use gtk4 as gtk;
 
 use gtk::{glib::source::{timeout_add_local, SourceId}};
@@ -16,7 +18,9 @@ use corlib::events::{ListEvent, SenderEventFunc};
 
 use corlib::{get_some, impl_get_ref, impl_rfc_borrow_get};
 
-use corlib::cell::RefCellStore;
+use corlib::cell::{RcRefCellStore, RefCellStore};
+
+use gtk4::glib::clone;
 
 use crate::impl_weak_self_methods;
 
@@ -30,11 +34,15 @@ pub enum TimeOutRunType
 
 }
 
-pub type RcTimeOut<P> = Rc<TimeOut<P>>;
+pub type TimeOutFn<P> = dyn Fn(Rc<P>) -> bool;
 
-pub type TimeOutFnMut<P> = dyn FnMut(&RcTimeOut<P>, Rc<P>) -> bool;
+pub type RcTimeOutFn<P> = Rc<TimeOutFn<P>>;
 
-pub type BoxTimeOutFnMut<P> = Box<TimeOutFnMut<P>>;
+//pub type RcTimeOut<P> = Rc<TimeOut<P>>;
+
+//pub type TimeOutFnMut<P> = dyn FnMut(&RcTimeOut<P>, Rc<P>) -> bool;
+
+//pub type BoxTimeOutFnMut<P> = Box<TimeOutFnMut<P>>;
 
 /*
 pub type RcTimeOut = Rc<TimeOut>;
@@ -46,38 +54,6 @@ pub type BoxTimeOutFn = Box<TimeOutFn>;
 
 //pub type RcTimeOutFn<P> = Rc<TimeOutFn<P>>;
 
-pub struct TimeOutMutState<P>
-    where P: 'static
-{
-
-    //pub run_type: TimeOutRunType,
-    //pub interval: Duration,
-    pub source_id: Option<SourceId>,
-    pub time_out_fn: Option<BoxTimeOutFnMut<P>> //Option<Box<dyn FnMut(Rc<Self>, Rc<P>)>>
-
-}
-
-impl<P> TimeOutMutState<P>
-    where P: 'static
-{
-
-    pub fn new(time_out_fn: Option<BoxTimeOutFnMut<P>>) -> Self //run_type: TimeOutRunType,  //interval: Duration,
-    {
-
-        Self
-        {
-
-            //run_type,
-            //interval,
-            source_id: None,
-            time_out_fn
-
-        }
-
-    }
-
-}
-
 ///
 /// Wraps a glib::source::timeout_add_local function and a glib::source::SourceId struct into a single easy to use object.
 /// 
@@ -87,10 +63,9 @@ pub struct TimeOut<P>
     where P: 'static
 {
 
-    mut_state: RefCellStore<TimeOutMutState<P>>,
+    source_id:  RcRefCellStore<Option<SourceId>>,
+    time_out_fn: RefCellStore<Option<RcTimeOutFn<P>>>,
     run_type: Cell<TimeOutRunType>,
-    //on_time_out_fn: RefCell<Option<Box<dyn FnMut(T)>>>,
-    weak_self: Weak<Self>,
     weak_parent: Weak<P>
 
 }
@@ -99,114 +74,110 @@ impl<P> TimeOut<P>
     where P: 'static
 {
 
-    pub fn new(run_type: TimeOutRunType, weak_parent: &Weak<P>) -> Rc<Self>
-    {   
+    pub fn new(run_type: TimeOutRunType, weak_parent: &Weak<P>) -> Self
+    {  
 
-        Rc::new_cyclic(|weak_self|
+        Self
         {
 
-            Self
-            {
-    
-                mut_state: RefCellStore::new(TimeOutMutState::new( None)), //run_type,
-                run_type: Cell::new(run_type),
-                weak_self: weak_self.clone(),
-                weak_parent: weak_parent.clone()
-    
-            }
+            source_id:  Rc::new(RefCellStore::new(None)),
+            time_out_fn: RefCellStore::new(None),
+            run_type: Cell::new(run_type),
+            weak_parent: weak_parent.clone()
 
-        })
+        }
 
     }
 
-    pub fn seconds(interval: u32, weak_parent: &Weak<P>) -> Rc<Self>
+    pub fn seconds(interval: u32, weak_parent: &Weak<P>) -> Self
     {   
 
       Self::new(TimeOutRunType::Seconds(interval), weak_parent)
 
     }
 
-    pub fn milliseconds(interval: Duration, weak_parent: &Weak<P>) -> Rc<Self>
+    pub fn milliseconds(interval: Duration, weak_parent: &Weak<P>) -> Self
     {   
 
       Self::new(TimeOutRunType::Milliseconds(interval), weak_parent)
 
     }
 
-    pub fn full(interval: Duration, priority: Priority, weak_parent: &Weak<P>) -> Rc<Self>
+    pub fn full(interval: Duration, priority: Priority, weak_parent: &Weak<P>) -> Self
     {   
 
       Self::new(TimeOutRunType::Full(interval, priority), weak_parent)
 
     }
 
-    pub fn with_fn<F>(run_type: TimeOutRunType, weak_parent: &Weak<P>, time_out_fn: F) -> Rc<Self>
-        where F: Fn(&Rc<TimeOut<P>>, Rc<P>) -> bool + 'static
+    pub fn with_fn<F>(run_type: TimeOutRunType, weak_parent: &Weak<P>, time_out_fn: Rc<F>) -> Self
+        where F: Fn(Rc<P>) -> bool + 'static
     {
 
-        Rc::new_cyclic(|weak_self|
+        Self
         {
 
-            Self
-            {
+            source_id:  Rc::new(RefCellStore::new(None)),
+            time_out_fn: RefCellStore::new(Some(time_out_fn)),
+            run_type: Cell::new(run_type),
+            weak_parent: weak_parent.clone()
 
-                mut_state: RefCellStore::new(TimeOutMutState::new(Some(Box::new(time_out_fn)))), //run_type, 
-                run_type: Cell::new(run_type),
-                weak_self: weak_self.clone(),
-                weak_parent: weak_parent.clone()
-
-            }
-
-        })
+        }
 
     }
 
-    pub fn with_parent(run_type: TimeOutRunType, parent: &Rc<P>) -> Rc<Self>
+    pub fn with_parent(run_type: TimeOutRunType, parent: &Rc<P>) -> Self
     {   
 
-        Rc::new_cyclic(|weak_self|
+        Self
         {
 
-            Self
-            {
-    
-                mut_state: RefCellStore::new(TimeOutMutState::new(None)), //run_type, 
-                run_type: Cell::new(run_type),
-                weak_self: weak_self.clone(),
-                weak_parent: parent.downgrade()
-    
-            }
+            source_id:  Rc::new(RefCellStore::new(None)),
+            time_out_fn: RefCellStore::new(None),
+            run_type: Cell::new(run_type),
+            weak_parent: Rc::downgrade(parent)
 
-        })
+        }
 
     }
 
-    pub fn with_parent_and_fn<F>(run_type: TimeOutRunType, parent: &Rc<P>, time_out_fn: F) -> Rc<Self>
-        where F: Fn(&Rc<TimeOut<P>>, Rc<P>) -> bool + 'static
+    pub fn with_parent_and_fn<F>(run_type: TimeOutRunType, parent: &Rc<P>, time_out_fn: Rc<F>) -> Self
+        where F: Fn(Rc<P>) -> bool + 'static
     {
 
-        Rc::new_cyclic(|weak_self|
+        Self
         {
 
-            Self
-            {
+            source_id:  Rc::new(RefCellStore::new(None)),
+            time_out_fn: RefCellStore::new(Some(time_out_fn)),
+            run_type: Cell::new(run_type),
+            weak_parent: Rc::downgrade(parent)
 
-                mut_state: RefCellStore::new(TimeOutMutState::new(Some(Box::new(time_out_fn)))), //run_type,
-                run_type: Cell::new(run_type),
-                weak_self: weak_self.clone(),
-                weak_parent: parent.downgrade()
-
-            }
-
-        })
+        }
 
     }
-
-    impl_weak_self_methods!();
 
     //No more borrowing from RefCells directly.
 
     //impl_rfc_borrow_get!(fields, interval, Duration);
+
+    pub fn restart(&self) -> bool
+    {
+
+        if self.stop()
+        {
+
+            self.start()
+
+        }
+        else
+        {
+         
+            false
+            
+        }
+
+    }
 
     pub fn set_run_type(&self, value: TimeOutRunType) -> bool
     {
@@ -226,18 +197,7 @@ impl<P> TimeOut<P>
 
         //Retart the timer if it was active
 
-        if self.stop()
-        {
-
-            self.start()
-
-        }
-        else
-        {
-         
-            false
-            
-        }
+        self.restart()
 
     }
 
@@ -293,10 +253,10 @@ impl<P> TimeOut<P>
 
         //Wrong, use a Cell<bool>.
 
-        self.mut_state.borrow(|state|
+        self.source_id.borrow(|state|
         {
 
-            state.source_id.is_some()
+            state.is_some()
 
         })
 
@@ -304,43 +264,87 @@ impl<P> TimeOut<P>
 
     //impl_get_ref!(state, T);
 
-    pub fn set_time_out_fn<F>(&self, time_out_fn: F)
-        where F: Fn(&Rc<TimeOut<P>>, Rc<P>) -> bool  + 'static
+    pub fn set_time_out_fn<F>(&self, time_out_fn: Rc<F>) -> bool
+        where F: Fn(Rc<P>) -> bool  + 'static
     {
 
-        self.mut_state.borrow_mut_with_param(time_out_fn, |mut state, time_out_fn|
+        self.time_out_fn.set(Some(time_out_fn));
+
+        /*
+        self.time_out_fn.borrow_mut_with_param(time_out_fn, |mut state, time_out_fn|
         {
 
             state.time_out_fn = Some(Box::new(time_out_fn));
             
         });
+        */
+
+        self.restart()
+
+    }
+
+    pub fn set_run_type_and_time_out_fn<F>(&self, value: TimeOutRunType, time_out_fn: Rc<F>) -> bool
+        where F: Fn(Rc<P>) -> bool  + 'static
+    {
+
+        self.run_type.set(value);
+
+        self.time_out_fn.set(Some(time_out_fn));
+
+        //Retart the timer if it was active
+
+        self.restart()
 
     }
 
     pub fn has_time_out_fn(&self) -> bool
     {
 
-        self.mut_state.borrow(|state|
+        self.time_out_fn.borrow(|state|
         {
 
-            state.time_out_fn.is_some()
+            state.is_some()
 
         })
 
     }
 
-    pub fn remove_time_out_fn(&self)
+    pub fn time_out_fn<F>(&self) -> Option<Rc<dyn Fn(Rc<P>) -> bool  + 'static>>
     {
 
-        self.mut_state.borrow_mut(|mut state|
-        {
-
-            state.time_out_fn.take();
-
-        });
+        self.time_out_fn.get()
 
     }
 
+    pub fn remove_time_out_fn<F>(&self)
+    {
+
+        self.time_out_fn.set(None);
+
+    }
+
+    pub fn take_time_out_fn<F>(&self) -> Option<Rc<dyn Fn(Rc<P>) -> bool  + 'static>>
+    {
+
+        let opt_time_out_fn = self.time_out_fn.borrow_mut(|mut state|
+        {
+
+            state.take()
+
+        });
+
+        if opt_time_out_fn.is_some()
+        {
+
+            self.stop();
+
+        }
+
+        opt_time_out_fn
+
+    }
+
+    /*
     pub fn try_remove_time_out_fn(&self) -> bool
     {
 
@@ -365,6 +369,7 @@ impl<P> TimeOut<P>
         })
 
     }
+    */
 
     ///
     /// Starts the TimeOut.
@@ -374,116 +379,115 @@ impl<P> TimeOut<P>
     pub fn start(&self) -> bool
     {
 
-        self.mut_state.borrow_mut(|mut state|
+        if !self.is_active()
         {
 
-            if state.source_id.is_none()
+            let time_out_fn;
+
+            if let Some(val) = self.time_out_fn.get()
             {
 
-                let weak_self = self.weak_self.clone();
-
-                //let weak_parent = self.weak_parent.clone();
-
-                let func = move ||
-                {
-
-                    let this;
-
-                    if let Some(val) =  weak_self.upgrade()
-                    {
-
-                        this = val;
-
-                    }
-                    else
-                    {
-
-                        return ControlFlow::Break;
-                        
-                    }
-
-                    this.mut_state.borrow_mut(|mut state|
-                    {
-
-                        let parent;
-
-                        let mut control_flow = ControlFlow::Break;
-
-                        if let Some(this_parent) = this.weak_parent.upgrade()
-                        {
-    
-                            parent = this_parent;
-    
-                        }
-                        else
-                        {
-
-                            state.source_id = None;
-
-                            return control_flow;
-                            
-                        }
-                        
-                        if let Some(time_out_fn) = state.time_out_fn.as_mut()
-                        {
-
-                            if time_out_fn(&this, parent)
-                            {
-
-                                control_flow = ControlFlow::Continue
-
-                            }
-
-                        }
-
-                        if control_flow.is_break()
-                        {
-
-                            state.source_id = None;
-
-                        }
-
-                        control_flow
-
-                    })
-
-                };
-
-                match self.run_type() //state.run_type
-                {
-
-                    TimeOutRunType::Seconds(seconds) =>
-                    {
-
-                        state.source_id = Some(timeout_add_seconds_local(seconds, func));
-
-                    }
-                    TimeOutRunType::Milliseconds(duration) =>
-                    {
-
-                        state.source_id = Some(timeout_add_local(duration, func));
-
-                    }
-                    TimeOutRunType::Full(duration, priority) =>
-                    {
-
-                        state.source_id = Some(timeout_add_local_full(duration, priority, func));
-
-                    }
-
-                }
-
-                true
+                time_out_fn = val;
 
             }
             else
             {
 
-                false
+                return false;
+                
+            }
+
+            if self.weak_parent.strong_count() == 0
+            {
+
+                return false;
 
             }
 
-        })
+            let weak_parent = self.weak_parent.clone();
+
+            let source_id = self.source_id.clone();
+
+            let func = clone!( #[strong] source_id, move ||
+            {
+
+                let parent;
+
+                let mut control_flow = ControlFlow::Break;
+
+                if let Some(this_parent) = weak_parent.upgrade()
+                {
+
+                    parent = this_parent;
+
+                }
+                else
+                {
+
+                    source_id.set(None);
+
+                    return control_flow;
+                    
+                }
+
+                if time_out_fn(parent)
+                {
+
+                    control_flow = ControlFlow::Continue
+
+                }
+                else
+                {
+
+                    control_flow = ControlFlow::Break;
+                    
+                }
+
+                if control_flow.is_break()
+                {
+
+                    source_id.set(None);
+
+                }
+
+                control_flow
+
+            });
+
+            match self.run_type() //state.run_type
+            {
+
+                TimeOutRunType::Seconds(seconds) =>
+                {
+
+                    source_id.set(Some(timeout_add_seconds_local(seconds, func)));
+
+                }
+                TimeOutRunType::Milliseconds(duration) =>
+                {
+
+                    source_id.set(Some(timeout_add_local(duration, func)));
+
+                }
+                TimeOutRunType::Full(duration, priority) =>
+                {
+
+                    source_id.set(Some(timeout_add_local_full(duration, priority, func)));
+
+                }
+
+            }
+
+            true
+
+        }
+        else
+        {
+
+            false
+
+        }
+
 
         /*
         let mut fields_mut = self.fields.borrow_mut();
@@ -553,10 +557,10 @@ impl<P> TimeOut<P>
     pub fn stop(&self) -> bool
     {
 
-        self.mut_state.borrow_mut(|mut state|
+        self.source_id.borrow_mut(|mut state|
         {
 
-            if let Some(source_id) = state.source_id.take()
+            if let Some(source_id) = state.take()
             {
 
                 source_id.remove();
