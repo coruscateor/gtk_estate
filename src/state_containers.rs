@@ -636,7 +636,7 @@ pub struct StateContainers
 
     nc_internals: RefCell<InternalNonCollectionStateContainers>,
     widget_state: RefCell<WidgetStateContainers>,
-    widget_state_removal_timeout: TimeOut<Self>,
+    //widget_state_removal_timeout: TimeOut<Self>,
 
 }
 
@@ -674,6 +674,7 @@ impl StateContainers
 
                 //Delays removal of widget state so that it can be used in all connect_destroy signal handlers. 
 
+                /*
                 widget_state_removal_timeout: TimeOut::with_fn(TimeOutRunType::Seconds(1), weak_self, Rc::new(|parent: Rc<Self>|
                 {
 
@@ -695,6 +696,7 @@ impl StateContainers
                     false
 
                 }))
+                */
 
             }
 
@@ -942,7 +944,8 @@ impl StateContainers
 
     ///
     /// Remove a widget - delayed by a short period.
-    /// 
+    ///
+    /*
     pub fn delayed_removal(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> bool
     {
 
@@ -962,6 +965,7 @@ impl StateContainers
         }
 
     }
+    */
 
     ///
     /// Remove a widget - via an RcByPtr.
@@ -972,6 +976,15 @@ impl StateContainers
         self.widget_state.borrow_mut().remove_by_rc_by_ptr(rbp_sc)
 
     }
+
+    pub fn remove_by_widget_ref<W>(&self, widget_ref: &W) -> bool
+        where W: WidgetExt + ObjectExt + Eq
+    {
+        
+        self.widget_state.borrow_mut().remove_by_widget_ref(widget_ref)
+
+    }
+
 
     impl_rfc_borrow_and_mut_2!(widget_state, WidgetStateContainers);
 
@@ -1008,6 +1021,13 @@ impl StateContainers
             ws.dyn_find_state(&lwa)
 
         }
+
+    }
+
+    pub fn clear(&self)
+    {
+
+        self.widget_state.borrow_mut().clear();
 
     }
 

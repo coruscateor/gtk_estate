@@ -6,7 +6,7 @@ use std::cell::{Cell, RefCell, Ref};
 
 //use adw::glib::clone::{self, Downgrade};
 
-use adw::glib::{timeout_add_local_full, timeout_add_seconds_local, Priority};
+use gtk4::glib::{timeout_add_local_full, timeout_add_seconds_local, Priority};
 
 use gtk4 as gtk;
 

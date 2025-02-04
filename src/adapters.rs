@@ -23,7 +23,7 @@ use gtk::glib::object::{Cast, IsA, ObjectExt, ObjectType};
 
 use corlib::convert::AsAnyRef;
 
-use corlib::{impl_as_any_ref, impl_as_any_ref_method};
+use corlib::{impl_as_any_ref, impl_as_any_ref_method, RcByPtr};
 
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
@@ -426,9 +426,13 @@ impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Wid
 
                     let wsc_parent: Rc<dyn DynWidgetStateContainer> = to_rc_dyn_wsc(parent); //to_wsc_super(rc_parent); //&rc_parent;
 
+                    //Remove now
+
+                    rc_sc.remove_by_rc_by_ptr(&RcByPtr::new(&wsc_parent));
+
                     //Don't remove right now but soon.
 
-                    rc_sc.delayed_removal(&wsc_parent); //&rc_parent); //remove(&rc_parent);
+                    //rc_sc.delayed_removal(&wsc_parent); //&rc_parent); //remove(&rc_parent);
 
                 }
 

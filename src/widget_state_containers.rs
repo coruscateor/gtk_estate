@@ -7,6 +7,7 @@ use std::rc::{Rc, Weak};
 use corlib::RcByPtr;
 
 use gtk::glib::object::ObjectExt;
+use gtk4::prelude::WidgetExt;
 use gtk4 as gtk;
 
 use gtk::glib::Type;
@@ -157,6 +158,44 @@ impl WidgetStateContainers
 
     }
 
+    pub fn remove_by_widget_ref<W>(&mut self, widget: &W) -> bool
+        where W: WidgetExt + ObjectExt + Eq
+    {
+
+        let glib_type = widget.type_();
+
+        if let Some(wsc_set) = self.widget_state.get_mut(&glib_type) //(&wt_id)
+        {
+
+            let mut found_wsc = None;
+
+            for item in wsc_set.iter()
+            {
+
+                if item.contents().dyn_widget_adapter_ref().widget_ref() == widget
+                {
+
+                    found_wsc = Some(item.clone());
+
+                    break;
+
+                }
+
+            }
+
+            if let Some(wsc) = found_wsc
+            {
+
+                return wsc_set.remove(&wsc);
+
+            }
+
+        }
+
+        false
+
+    }
+
     pub fn contains(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> bool
     {
 
@@ -293,6 +332,13 @@ impl WidgetStateContainers
         }
 
         false
+
+    }
+
+    pub fn clear(&mut self)
+    {
+
+        self.widget_state.clear();
 
     }
 
