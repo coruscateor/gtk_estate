@@ -18,7 +18,7 @@ use gtk::Widget;
 
 use adw::prelude::AdwApplicationWindowExt;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AdwApplicationWindowState //<T>
     //where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, //+ IsA<ApplicationWindow> //+ WidgetExt
           //P: WidgetStateContainer

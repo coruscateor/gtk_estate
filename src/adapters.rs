@@ -96,6 +96,7 @@ pub type RcApplicationAdapter<T, P> = Rc<ApplicationAdapter<T, P>>;
 
 //ApplicationAdapter
 
+#[derive(Debug)]
 pub struct ApplicationAdapter<T, P>
     where T: ApplicationExt + Eq + ObjectExt + Clone,
           P: DynApplicationStateContainer
@@ -294,7 +295,7 @@ pub type RcWidgetAdapter<T, P> = Rc<WidgetAdapter<T, P>>;
 
 //WidgetAdapter
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct WidgetAdapter<T, P>
     where T: Eq + ObjectExt + Clone,
           P: DynWidgetStateContainer

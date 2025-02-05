@@ -14,6 +14,7 @@ use gtk::glib::Type;
 
 use crate::{StateContainers, LookupWidgetObject, StoredWidgetObject, DynWidgetStateContainer};
 
+#[derive(Debug)]
 pub struct WidgetStateContainers
 {
 
@@ -332,6 +333,56 @@ impl WidgetStateContainers
         }
 
         false
+
+    }
+
+    pub fn buckets_len(&self) -> usize
+    {
+
+        self.widget_state.len()
+
+    }
+
+    pub fn buckets_capacity(&self) -> usize
+    {
+
+        self.widget_state.capacity()
+
+    }
+
+    pub fn bucket_len(&self, type_of_bucket: &Type) -> Option<usize>
+    {
+
+        if let Some(bucket) = self.widget_state.get(type_of_bucket)
+        {
+
+            Some(bucket.len())
+
+        }
+        else
+        {
+
+            None
+            
+        }
+
+    }
+
+    pub fn bucket_capacity(&self, type_of_bucket: &Type) -> Option<usize>
+    {
+
+        if let Some(bucket) = self.widget_state.get(type_of_bucket)
+        {
+
+            Some(bucket.capacity())
+
+        }
+        else
+        {
+
+            None
+            
+        }
 
     }
 

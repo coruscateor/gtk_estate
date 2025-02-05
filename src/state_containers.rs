@@ -6,6 +6,7 @@ use std::{rc::*, any::Any};
 
 use std::cell::{Ref, RefCell, RefMut, UnsafeCell};
 
+use adw::glib::Type;
 use corlib::{get_some, impl_rfc_borrow_2, impl_rfc_borrow_and_mut_2, impl_rfc_borrow_call, impl_rfc_borrow_mut_2, impl_rfc_borrow_mut_call};
 
 use corlib::convert::AsAnyRef;
@@ -19,6 +20,8 @@ use gtk::Widget;
 use paste::paste;
 
 use std::collections::{HashMap, HashSet};
+
+use std::fmt::Debug;
 
 use corlib::
 {
@@ -50,7 +53,7 @@ consider creating a new trait with all of these as supertraits and using that tr
 ///
 /// Indicates that the implementing object stores application related data.
 /// 
-pub trait DynApplicationStateContainer : AsAnyRef
+pub trait DynApplicationStateContainer : AsAnyRef + Debug
 {
 
     //fn application() -> &'a (dyn Any + ApplicationExt);
@@ -278,7 +281,7 @@ macro_rules! impl_application_state_container_traits
 ///
 /// Indicates that the implementing object stores widget related data.
 /// 
-pub trait DynWidgetStateContainer : AsAnyRef
+pub trait DynWidgetStateContainer : AsAnyRef + Debug
 {
 
     //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
@@ -598,13 +601,14 @@ cfg_if!
 
 //StateContainers internal, externally mutable state.
 
+#[derive(Debug)]
 struct InternalNonCollectionStateContainers
 {
 
     pub application_state: NonOption<Rc<dyn DynApplicationStateContainer>>,
     //widget_state: HashMap<TypeId, HashSet<RcByPtr<Rc<dyn WidgetStateContainer>>>>,
     pub weak_self: Weak<StateContainers>, //Self is a Reference Type!
-    pub widget_states_to_remove: HashSet<RcByPtr<dyn DynWidgetStateContainer>> //Vec<Rc<dyn WidgetStateContainer>>
+    //pub widget_states_to_remove: HashSet<RcByPtr<dyn DynWidgetStateContainer>> //Vec<Rc<dyn WidgetStateContainer>>
 
 }
 
@@ -620,7 +624,7 @@ impl InternalNonCollectionStateContainers
             application_state: NonOption::invalid(),
             //widget_state: HashMap::new(),
             weak_self: weak_self.clone(),
-            widget_states_to_remove: HashSet::new()
+            //widget_states_to_remove: HashSet::new()
 
         }
 
@@ -631,6 +635,7 @@ impl InternalNonCollectionStateContainers
 ///
 /// The struct within which all widget states are centrally located.
 /// 
+#[derive(Debug)]
 pub struct StateContainers
 {
 
@@ -1024,6 +1029,34 @@ impl StateContainers
 
     }
 
+    pub fn buckets_len(&self) -> usize
+    {
+
+        self.widget_state.borrow().buckets_len()
+
+    }
+
+    pub fn buckets_capacity(&self) -> usize
+    {
+
+        self.widget_state.borrow().buckets_capacity()
+
+    }
+
+    pub fn bucket_len(&self, type_of_bucket: &Type) -> Option<usize>
+    {
+
+        self.widget_state.borrow().bucket_len(type_of_bucket)
+
+    }
+
+    pub fn bucket_capacity(&self, type_of_bucket: &Type) -> Option<usize>
+    {
+
+        self.widget_state.borrow().bucket_capacity(type_of_bucket)
+
+    }
+    
     pub fn clear(&self)
     {
 

@@ -14,7 +14,7 @@ use gtk::glib::object::IsA; //{IsA, MayDowncastTo};
 use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GtkWindowState
 {
 

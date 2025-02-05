@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::{time::Duration, rc::Weak};
 
 use std::rc::Rc;
@@ -24,7 +25,7 @@ use gtk4::glib::clone;
 
 use crate::impl_weak_self_methods;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum TimeOutRunType
 {
 
@@ -601,6 +602,21 @@ impl<P> TimeOut<P>
 
     }
 
+}
+
+impl<P> Debug for TimeOut<P>
+    where P: Debug
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+        f.debug_struct("TimeOut")
+        .field("source_id", &self.source_id)
+        //.field("time_out_fn", &self.time_out_fn)
+        .field("time_out_fn", &"Exculded")
+        .field("run_type", &self.run_type)
+        .field("weak_parent", &self.weak_parent)
+        .finish()
+    }
 }
 
 impl<P> Drop for TimeOut<P>
