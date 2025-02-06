@@ -281,7 +281,7 @@ macro_rules! impl_application_state_container_traits
 ///
 /// Indicates that the implementing object stores widget related data.
 /// 
-pub trait DynWidgetStateContainer : AsAnyRef + Debug
+pub trait DynWidgetStateContainer : AsAnyRef //+ Debug
 {
 
     //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
@@ -605,7 +605,7 @@ cfg_if!
 struct InternalNonCollectionStateContainers
 {
 
-    pub application_state: NonOption<Rc<dyn DynApplicationStateContainer>>,
+    pub application_state: NonOption<Rc<dyn Any>>, //<dyn DynApplicationStateContainer>>,
     //widget_state: HashMap<TypeId, HashSet<RcByPtr<Rc<dyn WidgetStateContainer>>>>,
     pub weak_self: Weak<StateContainers>, //Self is a Reference Type!
     //pub widget_states_to_remove: HashSet<RcByPtr<dyn DynWidgetStateContainer>> //Vec<Rc<dyn WidgetStateContainer>>
@@ -635,7 +635,7 @@ impl InternalNonCollectionStateContainers
 ///
 /// The struct within which all widget states are centrally located.
 /// 
-#[derive(Debug)]
+//#[derive(Debug)]
 pub struct StateContainers
 {
 
@@ -757,8 +757,8 @@ impl StateContainers
     ///
     /// Set the application state. Returns false if a DynApplicationStateContainer is already present.
     /// 
-    pub fn try_set_application_state<T>(&self, state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
-        where T: DynApplicationStateContainer + 'static
+    pub fn try_set_application_state(&self, state: &Rc<dyn Any>) -> bool //<T> //state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
+        //where T: DynApplicationStateContainer + 'static
     {
 
         {
@@ -783,8 +783,8 @@ impl StateContainers
     ///
     /// Set the application state or panic.
     /// 
-    pub fn set_application_state<T>(&self, state:&Rc<T>) //&Rc<dyn ApplicationStateContainer>)
-        where T: DynApplicationStateContainer + 'static
+    pub fn set_application_state(&self, state: &Rc<dyn Any>) //<T> //state: &Rc<T>) //&Rc<dyn ApplicationStateContainer>)
+        //where T: DynApplicationStateContainer + 'static
     {
 
         if !self.try_set_application_state(state)
@@ -799,7 +799,7 @@ impl StateContainers
     ///
     /// Get the application state or panic.
     /// 
-    pub fn dyn_application_state(&self) -> Rc<dyn DynApplicationStateContainer>
+    pub fn dyn_application_state(&self) -> Rc<dyn Any> //Rc<dyn DynApplicationStateContainer>
     {
 
         self.nc_internals.borrow().application_state.get_ref().clone()
@@ -816,9 +816,9 @@ impl StateContainers
 
         let rc_dyn_application_state_ref = self.nc_internals.borrow().application_state.get_ref().clone();
 
-        let app_state = rc_dyn_application_state_ref.as_any_ref();
+        //let app_state = rc_dyn_application_state_ref.as_any_ref();
 
-        let downcast_ref_opt = app_state.downcast_ref::<T>();
+        let downcast_ref_opt = rc_dyn_application_state_ref.downcast_ref::<T>(); //app_state.downcast_ref::<T>();
         
         match downcast_ref_opt
         {
@@ -874,7 +874,7 @@ impl StateContainers
     ///
     /// Try and get the application state or panic.
     /// 
-    pub fn try_get_dyn_application_state(&self) -> Option<Rc<dyn DynApplicationStateContainer>>
+    pub fn try_get_dyn_application_state(&self) -> Option<Rc<dyn Any>> //Option<Rc<dyn DynApplicationStateContainer>>
     {
 
         match self.nc_internals.borrow().application_state.try_get_ref()

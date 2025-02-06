@@ -61,6 +61,14 @@ mod clear_state_containers_on_drop;
 
 pub use clear_state_containers_on_drop::*;
 
+mod weak_adapters;
+
+pub use weak_adapters::*;
+
+mod weak_state_containers;
+
+pub use weak_state_containers::*;
+
 cfg_if!
 {
 

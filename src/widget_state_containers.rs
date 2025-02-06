@@ -12,9 +12,16 @@ use gtk4 as gtk;
 
 use gtk::glib::Type;
 
+use crate::rc_conversions::to_rc_dyn_wsc;
 use crate::{StateContainers, LookupWidgetObject, StoredWidgetObject, DynWidgetStateContainer};
 
-#[derive(Debug)]
+use gtk4::glib;
+
+use gtk4::glib::clone;
+
+//use gtk4::glib::glib_macros::clone;
+
+//#[derive(Debug)]
 pub struct WidgetStateContainers
 {
 
@@ -88,7 +95,7 @@ impl WidgetStateContainers
 
                 //rbp_sc_2.contents().widget().connect_destroy(self.weak_self.clone());
 
-                self.on_destroy(&rbp_sc_2);
+                //self.on_destroy(&rbp_sc_2);
 
                 return true;
                 
@@ -102,7 +109,7 @@ impl WidgetStateContainers
 
             //rbp_sc.contents().widget().connect_destroy(self.weak_self.clone());
 
-            self.on_destroy(&rbp_sc);
+            //self.on_destroy(&rbp_sc);
 
             hs.insert(rbp_sc);
 
@@ -116,14 +123,53 @@ impl WidgetStateContainers
 
     }
 
+    //Disabled
+
+    /*
     fn on_destroy(&self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>)
     {
 
+        let wbp_sc = rbp_sc.downgrade();
+
+        //let rc_sc = rbp_sc.contents().clone();
+
+        //let weak_sc = Rc::downgrade(rbp_sc.contents());
+
+        let widget = rbp_sc.contents().dyn_widget_adapter_ref().widget();
+
+        //let weak_rc_sc = Rc::downgrade(&rbp_sc.contents());
+
+        let weak_parent = self.weak_parent.clone();
+
+        //clone!( #[weak] rc_sc,
+
+        widget.connect_destroy(move |_widget|
+        {
+
+            //Upgrade the current state container.
+
+            if let Some(parent) = weak_parent.upgrade()
+            {
+
+                if let Some(rbp_sc) = wbp_sc.upgrade()
+                {
+
+                    //let wsc: Rc<dyn DynWidgetStateContainer> = to_rc_dyn_wsc(rc_sc); //to_wsc_super(rc_parent); //&rc_parent;
+
+                    parent.remove_by_rc_by_ptr(&rbp_sc); //&RcByPtr::new(&rc_sc)); //&wsc));
+
+                }
+
+            }
+
+        });
+
         //Make sure the added state gets removed when its widget gets destroyed.
 
-        rbp_sc.contents().dyn_widget_adapter_ref().connect_destroy(self.weak_parent.clone());
+        //rbp_sc.contents().dyn_widget_adapter_ref().connect_destroy(self.weak_parent.clone());
 
     }
+    */
 
     pub fn remove(&mut self, sc: &Rc<dyn DynWidgetStateContainer>) -> bool
     {
@@ -394,3 +440,4 @@ impl WidgetStateContainers
     }
 
 }
+
