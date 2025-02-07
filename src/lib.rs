@@ -65,9 +65,9 @@ mod weak_adapters;
 
 pub use weak_adapters::*;
 
-mod weak_state_containers;
+mod weak_widget_state_containers;
 
-pub use weak_state_containers::*;
+pub use weak_widget_state_containers::*;
 
 cfg_if!
 {
