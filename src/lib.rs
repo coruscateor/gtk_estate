@@ -37,9 +37,9 @@ mod scoped_source_id;
 
 pub use scoped_source_id::*;
 
-mod adapters;
+mod strong_adapters;
 
-pub use adapters::*;
+pub use strong_adapters::*;
 
 mod strong_widget_state_containers;
 
@@ -63,13 +63,18 @@ pub use contents::*;
 
 //pub use clear_state_containers_on_drop::*;
 
-mod weak_adapters;
+mod adapters;
 
-pub use weak_adapters::*;
+pub use adapters::*;
 
 mod widget_state_containers;
 
 pub use widget_state_containers::*;
+
+mod strong_gtk_window_state;
+
+pub use strong_gtk_window_state::*;
+
 
 cfg_if!
 {

@@ -40,7 +40,7 @@ use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo,
 
 use crate::rc_conversions::to_rc_dyn_wsc;
 
-use crate::{adapters::*, TimeOut, TimeOutRunType, WidgetStateContainers, StrongWidgetStateContainers};
+use crate::{strong_adapters::*, TimeOut, TimeOutRunType, WidgetStateContainers, StrongWidgetStateContainers};
 
 use cfg_if::cfg_if;
 
@@ -312,7 +312,7 @@ pub trait WidgetStateContainer<T, P>
 */
 
 #[macro_export]
-macro_rules! impl_widget_state_container_traits
+macro_rules! impl_strong_widget_state_container_traits
 {
 
     /*
@@ -647,7 +647,7 @@ pub struct StateContainers
     //widget_state: RefCell<WidgetStateContainers>,
     //widget_state_removal_timeout: TimeOut<Self>,
     weak_self: Weak<StateContainers>,
-    widget_state: WeakWidgetStateContainers,
+    widget_state: WidgetStateContainers,
     strong_widget_state: WidgetStateContainers,
 
 }
@@ -683,7 +683,7 @@ impl StateContainers
 
                 nc_internals: RefCell::new(isc),
                 weak_self: weak_self.clone(),
-                widget_state: WeakWidgetStateContainers::new(weak_self),
+                widget_state: WidgetStateContainers::new(weak_self),
                 strong_widget_state: WidgetStateContainers::new(weak_self)
 
                 //widget_state: RefCell::new(WidgetStateContainers::new(weak_self)),
@@ -915,7 +915,7 @@ impl StateContainers
 
     }
 
-    pub fn widget_state_ref(&self) -> &WeakWidgetStateContainers
+    pub fn widget_state_ref(&self) -> &WidgetStateContainers
     {
 
         &self.widget_state
@@ -931,9 +931,11 @@ impl StateContainers
 
     //Disabled
 
+    /*
     ///
     /// Add a Rc<dyn WidgetStateContainer> to the widgets states.
-    /// 
+    ///
+    */ 
     /*
     pub fn dyn_add(&self, sc: &Rc<dyn DynWidgetStateContainer>)
     {
@@ -943,9 +945,11 @@ impl StateContainers
     }
     */
 
+    /*
     ///
     /// Add a Rc<WSC: WidgetStateContainer> to the widgets states.
     ///
+    */
     /*
     pub fn add<WSC>(&self, sc: &Rc<WSC>)
         where WSC: DynWidgetStateContainer + 'static
@@ -980,9 +984,11 @@ impl StateContainers
     }
     */
 
+    /*
     ///
     /// Remove a widget - delayed by a short period.
     ///
+    */
     /*
     pub fn delayed_removal(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> bool
     {
@@ -1005,9 +1011,11 @@ impl StateContainers
     }
     */
 
+    /*
     ///
     /// Remove a widget - via an RcByPtr.
     ///
+    */
     /*
     pub fn remove_by_rc_by_ptr(&self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>) -> bool
     {
@@ -1027,9 +1035,11 @@ impl StateContainers
 
     //impl_rfc_borrow_and_mut_2!(widget_state, WidgetStateContainers);
 
+    /*
     ///
     /// Does the widget state exist?
     ///
+    */
     /*
     pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> bool // + MayDowncastTo<Widget>
     {
@@ -1047,9 +1057,11 @@ impl StateContainers
     }
     */
 
+    /*
     ///
     /// Try find the widget state based on the widget instance.
     ///
+    */
     /*
     pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> Option<Rc<dyn DynWidgetStateContainer>> // + MayDowncastTo<Widget>
     {
