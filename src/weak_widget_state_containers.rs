@@ -4,26 +4,141 @@ use gtk4::prelude::WidgetExt;
 
 use std::{collections::{HashMap, HashSet}, fmt::Debug, rc::{Rc, Weak}};
 
-use crate::{StateContainers, WeakWidgetObject, WidgetUpgradeResult};
+use crate::{StateContainers, WidgetObject, WidgetUpgradeResult};
 
-pub trait DynWeakWidgetStateContainer : AsAnyRef + Debug
+pub trait DynWidgetStateContainer : AsAnyRef + Debug
 {
 
-    fn dyn_widget_adapter(&self) -> Rc<dyn WeakWidgetObject>;
+    fn dyn_widget_adapter(&self) -> Rc<dyn WidgetObject>;
 
-    fn dyn_widget_adapter_ref(&self) -> &dyn WeakWidgetObject;
+    fn dyn_widget_adapter_ref(&self) -> &dyn WidgetObject;
 
 }
 
-pub struct WeakWidgetStateContainers
+#[macro_export]
+macro_rules! impl_widget_state_container_traits
 {
 
-    widget_state: HashMap<Type, HashSet<RcByPtr<dyn DynWeakWidgetStateContainer>>>,
+    ($widget_type:ty, $widget_state_container_type:ty) =>
+    {
+
+        impl AsAnyRef for $widget_state_container_type
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
+
+        impl DynWidgetStateContainer for $widget_state_container_type
+        {
+
+            fn dyn_widget_adapter(&self) -> Rc<dyn WidgetObject>
+            {
+
+                self.widget_adapter.clone()
+
+            }
+
+            fn dyn_widget_adapter_ref(&self) -> &dyn WidgetObject
+            {
+
+                self.widget_adapter.as_ref()
+
+            }
+
+        }
+
+        impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
+        {
+
+            fn widget_adapter(&self) -> Rc<WidgetAdapter<$widget_type, $widget_state_container_type>>
+            {
+
+                self.widget_adapter.clone()
+
+            }
+
+            fn widget_adapter_ref(&self) -> &WidgetAdapter<$widget_type, $widget_state_container_type>
+            {
+
+                self.widget_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+    ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
+    {
+
+        impl AsAnyRef for $widget_state_container_type
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
+
+        impl DynWidgetStateContainer for $widget_state_container_type
+        {
+
+            fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>
+            {
+
+                self.$widget_adapter.clone()
+
+            }
+
+            fn dyn_widget_adapter_ref(&self) -> &dyn StoredWidgetObject
+            {
+
+                self.$widget_adapter.as_ref()
+
+            }
+
+        }
+
+        impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
+        {
+
+            fn widget_adapter(&self) -> Rc<WidgetAdapter<$widget_type, $widget_state_container_type>>
+            {
+
+                self.$widget_adapter.clone()
+
+            }
+
+            fn widget_adapter_ref(&self) -> &WidgetAdapter<$widget_type, $widget_state_container_type>
+            {
+
+                self.$widget_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+
+}
+
+pub struct WidgetStateContainers
+{
+
+    widget_state: HashMap<Type, HashSet<RcByPtr<dyn DynWidgetStateContainer>>>,
     weak_parent: Weak<StateContainers>
 
 }
 
-impl WeakWidgetStateContainers
+impl WidgetStateContainers
 {
 
     pub fn new(weak_parent: &Weak<StateContainers>) -> Self
@@ -59,7 +174,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    pub fn add(&mut self, sc: &Rc<dyn DynWeakWidgetStateContainer>) -> WidgetUpgradeResult<bool>
+    pub fn add(&mut self, sc: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
     {
 
         let glt = sc.dyn_widget_adapter_ref().glib_type()?;
@@ -69,7 +184,7 @@ impl WeakWidgetStateContainers
         if let Some(wsc_set) = self.widget_state.get_mut(&glt)
         {
 
-            let rbp_sc_2: RcByPtr<dyn DynWeakWidgetStateContainer> = rbp_sc.clone();
+            let rbp_sc_2: RcByPtr<dyn DynWidgetStateContainer> = rbp_sc.clone();
 
             if wsc_set.insert(rbp_sc)
             {
@@ -100,7 +215,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    fn on_destroy(&self, rbp_sc: &RcByPtr<dyn DynWeakWidgetStateContainer>) -> WidgetUpgradeResult
+    fn on_destroy(&self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult
     {
 
         let wbp_sc = rbp_sc.downgrade();
@@ -132,7 +247,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    pub fn remove(&mut self, sc: &Rc<dyn DynWeakWidgetStateContainer>) -> WidgetUpgradeResult<bool>
+    pub fn remove(&mut self, sc: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
     {
 
         let rbp_sc = RcByPtr::new(sc);
@@ -150,7 +265,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    pub fn remove_by_rc_by_ptr(&mut self, rbp_sc: &RcByPtr<dyn DynWeakWidgetStateContainer>) -> WidgetUpgradeResult<bool>
+    pub fn remove_by_rc_by_ptr(&mut self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
     {
 
         let glt = rbp_sc.contents().dyn_widget_adapter_ref().glib_type()?;
@@ -204,7 +319,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    pub fn contains(&self, sc: &Rc<dyn DynWeakWidgetStateContainer>) -> WidgetUpgradeResult<bool>
+    pub fn contains(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
     {
 
         let rbp_sc = RcByPtr::new(sc);
@@ -222,7 +337,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    pub fn contains_widget_type(&self, wo: &(dyn WeakWidgetObject)) -> WidgetUpgradeResult<bool>
+    pub fn contains_widget_type(&self, wo: &(dyn WidgetObject)) -> WidgetUpgradeResult<bool>
     {
 
         let glt = wo.glib_type()?;
@@ -231,7 +346,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    pub fn contains_widget_type_in(&self, sc: &Rc<dyn DynWeakWidgetStateContainer>) -> WidgetUpgradeResult<bool>
+    pub fn contains_widget_type_in(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
     {
 
         let glt = sc.dyn_widget_adapter_ref().glib_type()?;
@@ -279,7 +394,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    pub fn dyn_find_state(&self, widget: &dyn WeakWidgetObject) -> WidgetUpgradeResult<Option<Rc<dyn DynWeakWidgetStateContainer>>>
+    pub fn dyn_find_state(&self, widget: &dyn WidgetObject) -> WidgetUpgradeResult<Option<Rc<dyn DynWidgetStateContainer>>>
     {
 
         let glt = widget.glib_type()?;
@@ -311,7 +426,7 @@ impl WeakWidgetStateContainers
 
     }
 
-    pub fn dyn_has_state(&self, widget: &dyn WeakWidgetObject) -> WidgetUpgradeResult<bool>
+    pub fn dyn_has_state(&self, widget: &dyn WidgetObject) -> WidgetUpgradeResult<bool>
     {
 
         let glt = widget.glib_type()?;

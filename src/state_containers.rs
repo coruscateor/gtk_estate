@@ -40,7 +40,7 @@ use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo,
 
 use crate::rc_conversions::to_rc_dyn_wsc;
 
-use crate::{adapters::*, TimeOut, TimeOutRunType, WidgetStateContainers};
+use crate::{adapters::*, TimeOut, TimeOutRunType, WidgetStateContainers, StrongWidgetStateContainers};
 
 use cfg_if::cfg_if;
 
@@ -281,7 +281,7 @@ macro_rules! impl_application_state_container_traits
 ///
 /// Indicates that the implementing object stores widget related data.
 /// 
-pub trait DynWidgetStateContainer : AsAnyRef //+ Debug
+pub trait DynStrongWidgetStateContainer : AsAnyRef //+ Debug
 {
 
     //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
@@ -296,9 +296,12 @@ pub trait DynWidgetStateContainer : AsAnyRef //+ Debug
 
 }
 
+//Disabled
+
+/*
 pub trait WidgetStateContainer<T, P>
     where T: Eq + ObjectExt + Clone,
-          P: DynWidgetStateContainer
+          P: DynStrongWidgetStateContainer
 {
 
     fn widget_adapter(&self) -> Rc<WidgetAdapter<T, P>>;
@@ -306,6 +309,7 @@ pub trait WidgetStateContainer<T, P>
     fn widget_adapter_ref(&self) -> &WidgetAdapter<T, P>;
 
 }
+*/
 
 #[macro_export]
 macro_rules! impl_widget_state_container_traits
@@ -351,7 +355,7 @@ macro_rules! impl_widget_state_container_traits
 
         }
 
-        impl DynWidgetStateContainer for $widget_state_container_type
+        impl DynStrongWidgetStateContainer for $widget_state_container_type
         {
 
             fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>
@@ -405,7 +409,7 @@ macro_rules! impl_widget_state_container_traits
 
         }
 
-        impl DynWidgetStateContainer for $widget_state_container_type
+        impl DynStrongWidgetStateContainer for $widget_state_container_type
         {
 
             fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>
@@ -607,7 +611,7 @@ struct InternalNonCollectionStateContainers
 
     pub application_state: NonOption<Rc<dyn Any>>, //<dyn DynApplicationStateContainer>>,
     //widget_state: HashMap<TypeId, HashSet<RcByPtr<Rc<dyn WidgetStateContainer>>>>,
-    pub weak_self: Weak<StateContainers>, //Self is a Reference Type!
+    //pub weak_self: Weak<StateContainers>, //Self is a Reference Type!
     //pub widget_states_to_remove: HashSet<RcByPtr<dyn DynWidgetStateContainer>> //Vec<Rc<dyn WidgetStateContainer>>
 
 }
@@ -615,7 +619,7 @@ struct InternalNonCollectionStateContainers
 impl InternalNonCollectionStateContainers
 {
 
-    pub fn new(weak_self: &Weak<StateContainers>) -> Self
+    pub fn new() -> Self //weak_self: &Weak<StateContainers>) -> Self
     {
 
         Self
@@ -623,7 +627,7 @@ impl InternalNonCollectionStateContainers
 
             application_state: NonOption::invalid(),
             //widget_state: HashMap::new(),
-            weak_self: weak_self.clone(),
+            //weak_self: weak_self.clone(),
             //widget_states_to_remove: HashSet::new()
 
         }
@@ -640,8 +644,11 @@ pub struct StateContainers
 {
 
     nc_internals: RefCell<InternalNonCollectionStateContainers>,
-    widget_state: RefCell<WidgetStateContainers>,
+    //widget_state: RefCell<WidgetStateContainers>,
     //widget_state_removal_timeout: TimeOut<Self>,
+    weak_self: Weak<StateContainers>,
+    widget_state: WeakWidgetStateContainers,
+    strong_widget_state: WidgetStateContainers,
 
 }
 
@@ -669,13 +676,17 @@ impl StateContainers
         let sc = Rc::new_cyclic(|weak_self|
         {
 
-            let isc = InternalNonCollectionStateContainers::new(weak_self);
+            let isc = InternalNonCollectionStateContainers::new();
 
             Self
             {
 
                 nc_internals: RefCell::new(isc),
-                widget_state: RefCell::new(WidgetStateContainers::new(weak_self)),
+                weak_self: weak_self.clone(),
+                widget_state: WeakWidgetStateContainers::new(weak_self),
+                strong_widget_state: WidgetStateContainers::new(weak_self)
+
+                //widget_state: RefCell::new(WidgetStateContainers::new(weak_self)),
 
                 //Delays removal of widget state so that it can be used in all connect_destroy signal handlers. 
 
@@ -750,7 +761,9 @@ impl StateContainers
     pub fn weak_self(&self) -> Weak<StateContainers>
     {
 
-        self.nc_internals.borrow().weak_self.clone()
+        self.weak_self.clone()
+
+        //self.nc_internals.borrow().weak_self.clone()
 
     }
 
@@ -902,19 +915,38 @@ impl StateContainers
 
     }
 
+    pub fn widget_state_ref(&self) -> &WeakWidgetStateContainers
+    {
+
+        &self.widget_state
+
+    }
+
+    pub fn strong_widget_state_ref(&self) -> &WidgetStateContainers
+    {
+
+        &self.strong_widget_state
+
+    }
+
+    //Disabled
+
     ///
     /// Add a Rc<dyn WidgetStateContainer> to the widgets states.
     /// 
+    /*
     pub fn dyn_add(&self, sc: &Rc<dyn DynWidgetStateContainer>)
     {
 
         self.widget_state.borrow_mut().add(sc);
         
     }
+    */
 
     ///
     /// Add a Rc<WSC: WidgetStateContainer> to the widgets states.
-    /// 
+    ///
+    /*
     pub fn add<WSC>(&self, sc: &Rc<WSC>)
         where WSC: DynWidgetStateContainer + 'static
     {
@@ -928,6 +960,7 @@ impl StateContainers
         self.widget_state.borrow_mut().add(&wsc);
         
     }
+    */
 
     /* 
         no rules expected the token `&`
@@ -974,7 +1007,8 @@ impl StateContainers
 
     ///
     /// Remove a widget - via an RcByPtr.
-    /// 
+    ///
+    /*
     pub fn remove_by_rc_by_ptr(&self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>) -> bool
     {
 
@@ -989,13 +1023,14 @@ impl StateContainers
         self.widget_state.borrow_mut().remove_by_widget_ref(widget_ref)
 
     }
+    */
 
-
-    impl_rfc_borrow_and_mut_2!(widget_state, WidgetStateContainers);
+    //impl_rfc_borrow_and_mut_2!(widget_state, WidgetStateContainers);
 
     ///
     /// Does the widget state exist?
-    /// 
+    ///
+    /*
     pub fn has_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> bool // + MayDowncastTo<Widget>
     {
 
@@ -1010,10 +1045,12 @@ impl StateContainers
         }
 
     }
+    */
 
     ///
     /// Try find the widget state based on the widget instance.
-    /// 
+    ///
+    /*
     pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> Option<Rc<dyn DynWidgetStateContainer>> // + MayDowncastTo<Widget>
     {
 
@@ -1028,7 +1065,9 @@ impl StateContainers
         }
 
     }
+    */
 
+    /*
     pub fn buckets_len(&self) -> usize
     {
 
@@ -1063,6 +1102,7 @@ impl StateContainers
         self.widget_state.borrow_mut().clear();
 
     }
+    */
 
 }
 
@@ -1140,7 +1180,7 @@ macro_rules! scs_add
 
         let scs = StateContainers::get();
 
-        scs.add(&$this);
+        scs.widget_state_ref().add(&$this);
 
     }
 

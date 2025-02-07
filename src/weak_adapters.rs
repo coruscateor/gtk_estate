@@ -10,7 +10,7 @@ use corlib::impl_as_any_ref_method;
 use gtk4::prelude::WidgetExt;
 use gtk4::Widget;
 
-use crate::DynWeakWidgetStateContainer;
+use crate::DynWidgetStateContainer;
 
 use std::any::Any;
 
@@ -66,7 +66,7 @@ impl Error for WidgetUpgradeError
 
 pub type WidgetUpgradeResult<T = ()> = std::result::Result<T, WidgetUpgradeError>;
 
-pub trait WeakWidgetObject : AsAnyRef
+pub trait WidgetObject : AsAnyRef
 {
 
     fn glib_type(&self) -> WidgetUpgradeResult<Type>;
@@ -78,9 +78,9 @@ pub trait WeakWidgetObject : AsAnyRef
 }
 
 #[derive(Clone, Debug)]
-pub struct WeakWidgetAdapter<T, P>
+pub struct WidgetAdapter<T, P>
     where T: WidgetExt + ObjectExt + Eq + Clone,
-          P: DynWeakWidgetStateContainer
+          P: DynWidgetStateContainer
 
 {
 
@@ -90,9 +90,9 @@ pub struct WeakWidgetAdapter<T, P>
 
 }
 
-impl<T, P> WeakWidgetAdapter<T, P>
+impl<T, P> WidgetAdapter<T, P>
     where T: WidgetExt + ObjectExt + Eq + Clone,
-          P: DynWeakWidgetStateContainer 
+          P: DynWidgetStateContainer 
 {
 
     pub fn new(widget: &T, weak_parent: &Weak<P>) -> Rc<Self>
@@ -180,9 +180,9 @@ impl<T, P> WeakWidgetAdapter<T, P>
     
 }
 
-impl<T, P> AsAnyRef for WeakWidgetAdapter<T, P>
+impl<T, P> AsAnyRef for WidgetAdapter<T, P>
     where T: WidgetExt + Eq + ObjectExt + Clone,
-          P: DynWeakWidgetStateContainer + 'static
+          P: DynWidgetStateContainer + 'static
 {
 
     impl_as_any_ref_method!();
@@ -190,9 +190,9 @@ impl<T, P> AsAnyRef for WeakWidgetAdapter<T, P>
 }
 
 
-impl<T, P> WeakWidgetObject for WeakWidgetAdapter<T, P>
+impl<T, P> WidgetObject for WidgetAdapter<T, P>
     where T: WidgetExt + ObjectExt + Eq + Clone,
-          P: DynWeakWidgetStateContainer + 'static
+          P: DynWidgetStateContainer + 'static
 {
 
     fn glib_type(&self) -> WidgetUpgradeResult<Type>
