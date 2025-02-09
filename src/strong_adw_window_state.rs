@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, StrongWidgetObject, WidgetAdapter, WidgetObject, WidgetStateContainers, WidgetUpgradeError, WidgetUpgradeResult};
+use crate::{gtk4 as gtk, impl_strong_widget_state_container_traits, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, DynWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter};
 
 use adw::builders::WindowBuilder;
 use adw::prelude::{AdwWindowExt, AdwApplicationWindowExt};
@@ -17,17 +17,17 @@ use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;
 
 #[derive(Clone, Debug)]
-pub struct AdwWindowState //<T>
+pub struct StrongAdwWindowState //<T>
     //where T: GtkWindowExt + WidgetExt,
           //P: WidgetStateContainer
 {
 
     //weak_self: Weak<Self>,
-    widget_adapter: Rc<WidgetAdapter<Window, AdwWindowState>> //<T>>>
+    widget_adapter: Rc<StrongWidgetAdapter<Window, StrongAdwWindowState>> //<T>>>
 
 }
 
-impl AdwWindowState //<T>
+impl StrongAdwWindowState //<T>
     //where T: GtkWindowExt + WidgetExt + IsA<Widget> + AdwWindowExt //+ IsA<Widget>, //MayDowncastTo<Widget> +
           //P: WidgetStateContainer + Clone
 {
@@ -43,14 +43,14 @@ impl AdwWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window_fn(), weak_self)
+                widget_adapter: StrongWidgetAdapter::new(&window_fn(), weak_self)
 
             }
 
         });
 
         #[cfg(feature = "thread_local_state")]
-        scs_add!(this);
+        scs_strong_add!(this);
 
         this
 
@@ -68,7 +68,7 @@ impl AdwWindowState //<T>
 
     pub fn with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce()-> Window,
-            WSC: DynWidgetStateContainer
+            WSC: DynStrongWidgetStateContainer
     {
 
         let sc = Self::new(window_fn);
@@ -91,7 +91,7 @@ impl AdwWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window_fn(builder), weak_self)
+                widget_adapter: StrongWidgetAdapter::new(&window_fn(builder), weak_self)
 
             }
 
@@ -103,7 +103,7 @@ impl AdwWindowState //<T>
 
         //StateContainers::get().add(wsc);
 
-        StateContainers::get().widget_state_ref().add(&aws);
+        StateContainers::get().strong_widget_state_ref().add(&aws);
 
         aws
 
@@ -111,7 +111,7 @@ impl AdwWindowState //<T>
 
     pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce(WindowBuilder) -> Window,
-            WSC: DynWidgetStateContainer
+            WSC: DynStrongWidgetStateContainer
     {
 
         let sc = Self::builder(window_fn);
@@ -139,18 +139,18 @@ impl AdwWindowState //<T>
 
     }
     */
-    
-    pub fn content(&self) -> WidgetUpgradeResult<Option<Rc<dyn DynWidgetStateContainer>>>
+
+    pub fn content(&self) -> Option<Rc<dyn DynStrongWidgetStateContainer>>
     {
 
-        if let Some(widget) = self.widget_adapter.widget()?.content()
+        if let Some(widget) = self.widget_adapter.widget().content()
         {
 
-            return Ok(StateContainers::get().widget_state_ref().find_widget_state(&widget));
+            return StateContainers::get().strong_widget_state_ref().find_widget_state(&widget);
             
         }
 
-        Ok(None)
+        None
 
     }
 
@@ -196,18 +196,16 @@ impl AdwWindowState //<T>
 
     //}
 
-    pub fn set_content<WSC: DynWidgetStateContainer>(&self, child_state: &Rc<WSC>) -> WidgetUpgradeResult
+    pub fn set_content<WSC: DynStrongWidgetStateContainer>(&self, child_state: &Rc<WSC>) //&Rc<dyn WidgetStateContainer>)
     {
 
-        self.widget_adapter.widget()?.set_content(Some(&child_state.dyn_widget_adapter().widget()?));
-
-        Ok(())
+        self.widget_adapter.widget().set_content(Some(&child_state.dyn_widget_adapter().widget()))
 
     }
 
 }
 
-impl_widget_state_container_traits!(Window, AdwWindowState);
+impl_strong_widget_state_container_traits!(Window, StrongAdwWindowState);
 
 //impl<T> AdwWindowState<T>
 //    where T: GtkWindowExt + WidgetExt + AdwWindowExt, //+ IsA<T>, //+ MayDowncastTo<Widget>,

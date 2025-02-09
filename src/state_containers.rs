@@ -40,7 +40,7 @@ use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo,
 
 use crate::rc_conversions::to_rc_dyn_wsc;
 
-use crate::{strong_adapters::*, TimeOut, TimeOutRunType, WidgetStateContainers, StrongWidgetStateContainers};
+use crate::{strong_adapters::*, RcWidgetStateContainers, StrongWidgetStateContainers, TimeOut, TimeOutRunType, WidgetStateContainers};
 
 use cfg_if::cfg_if;
 
@@ -50,6 +50,9 @@ only auto traits can be used as additional traits in a trait object
 consider creating a new trait with all of these as supertraits and using that trait here instead: `trait NewTrait: std::any::Any + ApplicationExt {}`
 */
 
+//Disabled
+
+/*
 ///
 /// Indicates that the implementing object stores application related data.
 /// 
@@ -80,9 +83,13 @@ pub trait ApplicationStateContainer<T, P>
     fn application_adapter_ref(&self) -> &ApplicationAdapter<T, P>;
 
 }
-
+*/
 
 //gtk_estate::
+
+//Disabled
+
+/*
 
 #[macro_export]
 macro_rules! impl_application_state_container_traits
@@ -277,6 +284,7 @@ macro_rules! impl_application_state_container_traits
     */
 
 }
+*/
 
 ///
 /// Indicates that the implementing object stores widget related data.
@@ -290,9 +298,9 @@ pub trait DynStrongWidgetStateContainer : AsAnyRef //+ Debug
 
     //fn dyn_adapted_widget(&self) -> Rc<dyn StoredWidgetObject>;
 
-    fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>;
+    fn dyn_widget_adapter(&self) -> Rc<dyn StrongWidgetObject>;
 
-    fn dyn_widget_adapter_ref(&self) -> &dyn StoredWidgetObject;
+    fn dyn_widget_adapter_ref(&self) -> &dyn StrongWidgetObject;
 
 }
 
@@ -358,14 +366,14 @@ macro_rules! impl_strong_widget_state_container_traits
         impl DynStrongWidgetStateContainer for $widget_state_container_type
         {
 
-            fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>
+            fn dyn_widget_adapter(&self) -> Rc<dyn StrongWidgetObject>
             {
 
                 self.widget_adapter.clone()
 
             }
 
-            fn dyn_widget_adapter_ref(&self) -> &dyn StoredWidgetObject
+            fn dyn_widget_adapter_ref(&self) -> &dyn StrongWidgetObject
             {
 
                 self.widget_adapter.as_ref()
@@ -374,7 +382,10 @@ macro_rules! impl_strong_widget_state_container_traits
 
         }
 
-        impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
+        //Disabled
+
+        /* 
+        impl StrongWidgetStateContainers<$widget_type, $widget_state_container_type> for $widget_state_container_type
         {
 
             fn widget_adapter(&self) -> Rc<WidgetAdapter<$widget_type, $widget_state_container_type>>
@@ -392,6 +403,7 @@ macro_rules! impl_strong_widget_state_container_traits
             }
 
         }
+        */
 
     };
     ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
@@ -428,6 +440,9 @@ macro_rules! impl_strong_widget_state_container_traits
 
         }
 
+        //Disabled
+
+        /*
         impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
         {
 
@@ -446,6 +461,7 @@ macro_rules! impl_strong_widget_state_container_traits
             }
 
         }
+        */
 
     };
 
@@ -647,8 +663,8 @@ pub struct StateContainers
     //widget_state: RefCell<WidgetStateContainers>,
     //widget_state_removal_timeout: TimeOut<Self>,
     weak_self: Weak<StateContainers>,
-    widget_state: WidgetStateContainers,
-    strong_widget_state: WidgetStateContainers,
+    widget_state: RcWidgetStateContainers,
+    strong_widget_state: StrongWidgetStateContainers,
 
 }
 
@@ -684,7 +700,7 @@ impl StateContainers
                 nc_internals: RefCell::new(isc),
                 weak_self: weak_self.clone(),
                 widget_state: WidgetStateContainers::new(weak_self),
-                strong_widget_state: WidgetStateContainers::new(weak_self)
+                strong_widget_state: StrongWidgetStateContainers::new(weak_self)
 
                 //widget_state: RefCell::new(WidgetStateContainers::new(weak_self)),
 
@@ -922,7 +938,7 @@ impl StateContainers
 
     }
 
-    pub fn strong_widget_state_ref(&self) -> &WidgetStateContainers
+    pub fn strong_widget_state_ref(&self) -> &StrongWidgetStateContainers
     {
 
         &self.strong_widget_state
@@ -1193,6 +1209,22 @@ macro_rules! scs_add
         let scs = StateContainers::get();
 
         scs.widget_state_ref().add(&$this);
+
+    }
+
+}
+
+#[cfg(feature = "thread_local_state")]
+#[macro_export]
+macro_rules! scs_strong_add
+{
+
+    ($this:ident) =>
+    {
+
+        let scs = StateContainers::get();
+
+        scs.strong_widget_state_ref().add(&$this);
 
     }
 

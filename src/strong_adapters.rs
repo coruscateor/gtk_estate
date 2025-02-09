@@ -13,7 +13,7 @@ use gtk::prelude::WidgetExt;
 
 use crate::rc_conversions::to_rc_dyn_wsc;
 
-use crate::{DynApplicationStateContainer, StateContainers, DynWidgetStateContainer};
+use crate::{DynStrongWidgetStateContainer, DynWidgetStateContainer, StateContainers}; //DynApplicationStateContainer, 
 
 use std::hash::{Hash, Hasher};
 
@@ -25,6 +25,9 @@ use corlib::convert::AsAnyRef;
 
 use corlib::{impl_as_any_ref, impl_as_any_ref_method, RcByPtr};
 
+//Disabled
+
+/*
 ///
 /// Implement on an object which stores an Application object for the purpose of dynmically comparing with other objects.
 /// 
@@ -51,16 +54,17 @@ pub trait StoredApplicationObject : LookUpApplicationObject //+ Any
     //fn parent(&self) -> &Weak<dyn ApplicationStateContainer>;
 
 }
+*/
 
 ///
 /// Implement on an object which stores a Widget object for the purpose of dynmically comparing with other objects.
 /// 
-pub trait LookupWidgetObject : AsAnyRef
+pub trait StrongWidgetObject : AsAnyRef
 {
 
     fn dyn_widget(&self) -> &dyn Any; //_as_any
 
-    fn dyn_has_in_other(&self, other: &dyn LookupWidgetObject) -> bool;
+    fn dyn_has_in_other(&self, other: &dyn StrongWidgetObject) -> bool;
 
     fn dyn_has(&self, widget: &dyn Any) -> bool;
 
@@ -72,7 +76,7 @@ pub trait LookupWidgetObject : AsAnyRef
 
     //fn widget(&self) -> Widget;
 
-    fn is(&self, widget: &Widget) -> bool;
+    fn has(&self, widget: &Widget) -> bool;
 
     fn widget(&self) -> Widget; //&dyn IsA<Widget>;
 
@@ -80,6 +84,9 @@ pub trait LookupWidgetObject : AsAnyRef
 
 }
 
+//Disabled
+
+/*
 ///
 /// Indicates that the LookupWidgetObject stored somewhere, perhaps in a Hashmap.
 /// 
@@ -92,10 +99,16 @@ pub trait StoredWidgetObject : LookupWidgetObject //+ Any
 
 }
 
+
 pub type RcApplicationAdapter<T, P> = Rc<ApplicationAdapter<T, P>>;
+
+*/
+
+//Disabled
 
 //ApplicationAdapter
 
+/*
 #[derive(Debug)]
 pub struct ApplicationAdapter<T, P>
     where T: ApplicationExt + Eq + ObjectExt + Clone,
@@ -190,6 +203,7 @@ impl<T, P> ApplicationAdapter<T, P>
     }
 
 }
+*/
 
 //impl<T: ApplicationExt + Eq + ObjectExt, P: ApplicationStateContainer> StoredApplicationObject for ApplicationAdapter<T, P>
 //{
@@ -208,6 +222,10 @@ impl<T, P> ApplicationAdapter<T, P>
 //}
 
 //impl_as_any_ref!(ApplicationAdapter, T, P);
+
+//Disabled
+
+/*
 
 impl<T, P> AsAnyRef for ApplicationAdapter<T, P>
     where T: ApplicationExt + Eq + ObjectExt + Clone,
@@ -293,12 +311,14 @@ impl<T, P> StoredApplicationObject for ApplicationAdapter<T, P>
 
 pub type RcWidgetAdapter<T, P> = Rc<WidgetAdapter<T, P>>;
 
+*/
+
 //WidgetAdapter
 
 #[derive(Clone, Debug)]
-pub struct WidgetAdapter<T, P>
+pub struct StrongWidgetAdapter<T, P>
     where T: Eq + ObjectExt + Clone,
-          P: DynWidgetStateContainer
+          P: DynStrongWidgetStateContainer
 
 {
 
@@ -309,9 +329,9 @@ pub struct WidgetAdapter<T, P>
 
 }
 
-impl<T, P> WidgetAdapter<T, P>
+impl<T, P> StrongWidgetAdapter<T, P>
     where T: Eq + ObjectExt + Clone,
-          P: DynWidgetStateContainer
+          P: DynStrongWidgetStateContainer
 {
 
     pub fn new(object: &T, weak_parent: &Weak<P>) -> Rc<Self>
@@ -347,7 +367,7 @@ impl<T, P> WidgetAdapter<T, P>
 
     }
 
-    fn has_in_other(&self, other: &WidgetAdapter<T, P>) -> bool
+    fn has_in_other(&self, other: &StrongWidgetAdapter<T, P>) -> bool
     {
         
         self.object == other.object
@@ -391,6 +411,9 @@ impl<T, P> WidgetAdapter<T, P>
     
 }
 
+//Disabled
+
+/*
 impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Widget> + IsA<Widget> + /MayDowncastTo<Widget> + IsA<T> + //MayDowncastTo<Widget> //WidgetExt + 
     where T: Eq + ObjectExt + WidgetExt,
           P: DynWidgetStateContainer + 'static
@@ -463,21 +486,22 @@ impl<T, P> StoredWidgetObject for WidgetAdapter<T, P> //Cast + MayDowncastTo<Wid
     }
 
 }
+*/
 
 //impl_as_any_ref!(WidgetAdapter, T, P);
 
-impl<T, P> AsAnyRef for WidgetAdapter<T, P>
+impl<T, P> AsAnyRef for StrongWidgetAdapter<T, P>
     where T: WidgetExt + Eq + ObjectExt + Clone,
-          P: DynWidgetStateContainer + 'static
+          P: DynStrongWidgetStateContainer + 'static
 {
 
     impl_as_any_ref_method!();
 
 }
 
-impl<T, P> LookupWidgetObject for WidgetAdapter<T, P>
+impl<T, P> StrongWidgetObject for StrongWidgetAdapter<T, P>
     where T: WidgetExt + Eq + ObjectExt,
-          P: DynWidgetStateContainer + 'static
+          P: DynStrongWidgetStateContainer + 'static
 {
 
     fn dyn_widget(&self) -> &dyn Any
@@ -487,7 +511,7 @@ impl<T, P> LookupWidgetObject for WidgetAdapter<T, P>
     
     }
     
-    fn dyn_has_in_other(&self, other: &dyn LookupWidgetObject) -> bool
+    fn dyn_has_in_other(&self, other: &dyn StrongWidgetObject) -> bool
     {
         
         self.dyn_has(other.dyn_widget())
@@ -538,7 +562,7 @@ impl<T, P> LookupWidgetObject for WidgetAdapter<T, P>
 
     }
     
-    fn is(&self, widget: &Widget) -> bool
+    fn has(&self, widget: &Widget) -> bool
     {
 
         //self.object == widget 
@@ -604,6 +628,9 @@ impl<T: IsA<Widget>, P: WidgetStateContainer> AsAny for WidgetAdapter<T, P> //Wi
 }
 */
 
+//Disabled
+
+/*
 ///
 ///A WidgetAdapter for checking on the existance of state objects.
 ///
@@ -746,6 +773,7 @@ impl<T> LookupWidgetObject for LookUpWidgetAdapter<T>
     }
 
 }
+*/
 
 ///
 /// Implements weak_self methods on your state container object.

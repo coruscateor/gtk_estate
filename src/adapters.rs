@@ -81,7 +81,6 @@ pub trait WidgetObject : AsAnyRef
 pub struct WidgetAdapter<T, P>
     where T: WidgetExt + ObjectExt + Eq + Clone,
           P: DynWidgetStateContainer
-
 {
 
     weak_widget: WeakRef<T>,
@@ -188,7 +187,6 @@ impl<T, P> AsAnyRef for WidgetAdapter<T, P>
     impl_as_any_ref_method!();
 
 }
-
 
 impl<T, P> WidgetObject for WidgetAdapter<T, P>
     where T: WidgetExt + ObjectExt + Eq + Clone,

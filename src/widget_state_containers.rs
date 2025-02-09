@@ -1,10 +1,14 @@
-use adw::glib::{object::ObjectExt, Type};
-use corlib::{convert::AsAnyRef, RcByPtr};
-use gtk4::prelude::WidgetExt;
+use adw::glib::{object::{IsA, ObjectExt}, Type};
+
+use corlib::{convert::AsAnyRef, RcByPtr, cell::RefCellStore};
+
+use gtk4::{prelude::WidgetExt, Widget};
 
 use std::{collections::{HashMap, HashSet}, fmt::Debug, rc::{Rc, Weak}};
 
-use crate::{StateContainers, WidgetObject, WidgetUpgradeResult};
+use crate::{rc_conversions::to_rc_dyn_wsc, StateContainers, WidgetAdapter, WidgetObject, WidgetUpgradeResult};
+
+use gtk4::glib::object::Cast;
 
 pub trait DynWidgetStateContainer : AsAnyRef + Debug
 {
@@ -53,6 +57,9 @@ macro_rules! impl_widget_state_container_traits
 
         }
 
+        //Disabled
+
+        /*
         impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
         {
 
@@ -71,6 +78,7 @@ macro_rules! impl_widget_state_container_traits
             }
 
         }
+        */
 
     };
     ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
@@ -107,6 +115,8 @@ macro_rules! impl_widget_state_container_traits
 
         }
 
+        //Disabled
+        /*
         impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
         {
 
@@ -125,94 +135,125 @@ macro_rules! impl_widget_state_container_traits
             }
 
         }
+        */
 
     };
 
 }
 
+pub type RcWidgetStateContainers = Rc<WidgetStateContainers>;
+
 pub struct WidgetStateContainers
 {
 
-    widget_state: HashMap<Type, HashSet<RcByPtr<dyn DynWidgetStateContainer>>>,
-    weak_parent: Weak<StateContainers>
+    widget_state: RefCellStore<HashMap<Type, HashSet<RcByPtr<dyn DynWidgetStateContainer>>>>,
+    weak_parent: Weak<StateContainers>,
+    weak_self: Weak<WidgetStateContainers>
 
 }
 
 impl WidgetStateContainers
 {
 
-    pub fn new(weak_parent: &Weak<StateContainers>) -> Self
+    pub fn new(weak_parent: &Weak<StateContainers>) -> Rc<Self>
     {
 
-        Self
+        Rc::new_cyclic(|weak_self|
         {
 
-            widget_state: HashMap::new(),
-            weak_parent: weak_parent.clone()
+            Self
+            {
 
-        }
+                widget_state: RefCellStore::new(HashMap::new()),
+                weak_parent: weak_parent.clone(),
+                weak_self: weak_self.clone()
+
+            }
+
+        })
 
     }
 
-    pub fn with_capacity(weak_parent: &Weak<StateContainers>, capacity: usize) -> Self
+    pub fn with_capacity(weak_parent: &Weak<StateContainers>, capacity: usize) -> Rc<Self>
     {
 
-        Self
+        Rc::new_cyclic(|weak_self|
         {
+            
+            Self
+            {
 
-            widget_state: HashMap::with_capacity(capacity),
-            weak_parent: weak_parent.clone()
+                widget_state: RefCellStore::new(HashMap::with_capacity(capacity)),
+                weak_parent: weak_parent.clone(),
+                weak_self: weak_self.clone()
 
-        }
+            }
+
+        })
 
     }
 
     pub fn capacity(&self) -> usize
     {
 
-        self.widget_state.capacity()
+        self.widget_state.refcell_ref().borrow().capacity()
 
     }
 
-    pub fn add(&mut self, sc: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
+    pub fn dyn_add(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
     {
 
         let glt = sc.dyn_widget_adapter_ref().glib_type()?;
 
         let rbp_sc = RcByPtr::new(sc);
 
-        if let Some(wsc_set) = self.widget_state.get_mut(&glt)
+        self.widget_state.borrow_mut_with_param( rbp_sc, |mut state, rbp_sc|
         {
 
-            let rbp_sc_2: RcByPtr<dyn DynWidgetStateContainer> = rbp_sc.clone();
-
-            if wsc_set.insert(rbp_sc)
+            if let Some(wsc_set) = state.get_mut(&glt)
             {
 
-                self.on_destroy(&rbp_sc_2);
+                let rbp_sc_2: RcByPtr<dyn DynWidgetStateContainer> = rbp_sc.clone();
+
+                if wsc_set.insert(rbp_sc)
+                {
+
+                    self.on_destroy(&rbp_sc_2)?;
+
+                    return Ok(true);
+                    
+                }
+
+            }
+            else
+            {
+                
+                let mut hs = HashSet::new();
+
+                self.on_destroy(&rbp_sc)?;
+
+                hs.insert(rbp_sc);
+
+                state.insert(glt, hs);
 
                 return Ok(true);
-                
+
             }
 
-        }
-        else
-        {
-            
-            let mut hs = HashSet::new();
+            Ok(false)
 
-            self.on_destroy(&rbp_sc);
+        })
 
-            hs.insert(rbp_sc);
+    }
 
-            self.widget_state.insert(glt, hs);
+    pub fn add<WSC>(&self, sc: &Rc<WSC>) -> WidgetUpgradeResult<bool>
+        where WSC: DynWidgetStateContainer + 'static
+    {
 
-            return Ok(true);
+        let wsc = to_rc_dyn_wsc(sc.clone());
 
-        }
-
-        Ok(false)
-
+        self.dyn_add(&wsc)
+        
     }
 
     fn on_destroy(&self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult
@@ -222,20 +263,22 @@ impl WidgetStateContainers
 
         let widget = rbp_sc.contents().dyn_widget_adapter_ref().widget()?;
 
-        let weak_parent = self.weak_parent.clone();
+        let weak_self = self.weak_self.clone();
+
+        //let weak_parent = self.weak_parent.clone();
 
         widget.connect_destroy(move |_widget|
         {
 
             //Upgrade the current state container.
 
-            if let Some(parent) = weak_parent.upgrade()
+            if let Some(this) = weak_self.upgrade()
             {
 
                 if let Some(rbp_sc) = wbp_sc.upgrade()
                 {
 
-                    parent.remove_by_rc_by_ptr(&rbp_sc);
+                    this.remove_by_rc_by_ptr(&rbp_sc);
 
                 }
 
@@ -247,75 +290,90 @@ impl WidgetStateContainers
 
     }
 
-    pub fn remove(&mut self, sc: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
+    pub fn remove(&self, sc: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
     {
 
         let rbp_sc = RcByPtr::new(sc);
 
         let glt = rbp_sc.contents().dyn_widget_adapter_ref().glib_type()?;
 
-        if let Some(wsc_set) = self.widget_state.get_mut(&glt)
+        self.widget_state.borrow_mut_with_param( rbp_sc, |mut state, rbp_sc|
         {
+        
+            if let Some(wsc_set) = state.get_mut(&glt)
+            {
 
-            return Ok(wsc_set.remove(&rbp_sc));
+                return Ok(wsc_set.remove(&rbp_sc));
 
-        }
+            }
 
-        Ok(false)
+            Ok(false)
+
+        })
 
     }
 
-    pub fn remove_by_rc_by_ptr(&mut self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
+    pub fn remove_by_rc_by_ptr(&self, rbp_sc: &RcByPtr<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult<bool>
     {
 
         let glt = rbp_sc.contents().dyn_widget_adapter_ref().glib_type()?;
 
-        if let Some(wsc_set) = self.widget_state.get_mut(&glt)
+        self.widget_state.borrow_mut_with_param( rbp_sc, |mut state, rbp_sc|
         {
+                
+            if let Some(wsc_set) = state.get_mut(&glt)
+            {
 
-            return Ok(wsc_set.remove(rbp_sc));
+                return Ok(wsc_set.remove(rbp_sc));
 
-        }
+            }
 
-        Ok(false)
+            Ok(false)
+
+        })
 
     }
 
-    pub fn remove_by_widget_ref<W>(&mut self, widget: &W) -> WidgetUpgradeResult<bool>
+    pub fn remove_by_widget_ref<W>(&self, widget: &W) -> WidgetUpgradeResult<bool>
         where W: WidgetExt + ObjectExt + Eq
     {
 
-        let glib_type = widget.type_();
-
-        if let Some(wsc_set) = self.widget_state.get_mut(&glib_type)
+        self.widget_state.borrow_mut_with_param( widget, |mut state, widget|
         {
 
-            let mut found_wsc = None;
+            let glib_type = widget.type_();
 
-            for item in wsc_set.iter()
+            if let Some(wsc_set) = state.get_mut(&glib_type)
             {
 
-                if item.contents().dyn_widget_adapter_ref().widget()? == *widget
+                let mut found_wsc = None;
+
+                for item in wsc_set.iter()
                 {
 
-                    found_wsc = Some(item.clone());
+                    if item.contents().dyn_widget_adapter_ref().widget()? == *widget
+                    {
 
-                    break;
+                        found_wsc = Some(item.clone());
+
+                        break;
+
+                    }
+
+                }
+
+                if let Some(wsc) = found_wsc
+                {
+
+                    return Ok(wsc_set.remove(&wsc));
 
                 }
 
             }
 
-            if let Some(wsc) = found_wsc
-            {
+            Ok(false)
 
-                return Ok(wsc_set.remove(&wsc));
-
-            }
-
-        }
-
-        Ok(false)
+        })
 
     }
 
@@ -326,7 +384,7 @@ impl WidgetStateContainers
 
         let glt = rbp_sc.contents().dyn_widget_adapter_ref().glib_type()?;
 
-        if let Some(wsc_set) = self.widget_state.get(&glt)
+        if let Some(wsc_set) = self.widget_state.refcell_ref().borrow().get(&glt)
         {
 
             return Ok(wsc_set.contains(&rbp_sc));
@@ -342,7 +400,7 @@ impl WidgetStateContainers
 
         let glt = wo.glib_type()?;
 
-        Ok(self.widget_state.contains_key(&glt))
+        Ok(self.widget_state.refcell_ref().borrow().contains_key(&glt))
 
     }
 
@@ -351,14 +409,14 @@ impl WidgetStateContainers
 
         let glt = sc.dyn_widget_adapter_ref().glib_type()?;
 
-        Ok(self.widget_state.contains_key(&glt))
+        Ok(self.widget_state.refcell_ref().borrow().contains_key(&glt))
 
     }
 
     pub fn count_of_types(&self) -> usize
     {
 
-        self.widget_state.len()
+        self.widget_state.refcell_ref().borrow().len()
 
     }
 
@@ -367,7 +425,7 @@ impl WidgetStateContainers
 
         let mut total: u128 = 0;
 
-        for bucket in self.widget_state.iter()
+        for bucket in self.widget_state.refcell_ref().borrow().iter()
         {
 
             total += bucket.1.len() as u128;
@@ -381,101 +439,163 @@ impl WidgetStateContainers
     pub fn individual_counts_of_bucket_lens(&self) -> HashMap<Type, usize>
     {
 
-        let mut lens = HashMap::with_capacity(self.widget_state.len());
-
-        for bucket in self.widget_state.iter()
+        self.widget_state.borrow( |state|
         {
+            
+            let mut lens = HashMap::with_capacity(state.len());
 
-            lens.insert(bucket.0.clone(), bucket.1.len());
+            for bucket in state.iter()
+            {
 
-        }
+                lens.insert(bucket.0.clone(), bucket.1.len());
 
-        lens
+            }
+
+            lens
+
+        })
 
     }
 
     pub fn dyn_find_state(&self, widget: &dyn WidgetObject) -> WidgetUpgradeResult<Option<Rc<dyn DynWidgetStateContainer>>>
     {
 
-        let glt = widget.glib_type()?;
-
-        //Lookup ther bucket
-
-        if let Some(wsc_set) = self.widget_state.get(&glt)
+        self.widget_state.borrow_with_param( widget, |state, widget|
         {
 
-            //Iterate through the values trying find the state with the widget
+            let glt = widget.glib_type()?;
 
-            for ws in wsc_set.iter()
+            //Lookup ther bucket
+
+            if let Some(wsc_set) = state.get(&glt)
             {
 
-                let contents = ws.contents();
+                //Iterate through the values trying find the state with the widget
 
-                if contents.dyn_widget_adapter_ref().has(&widget.widget()?)? //contents.dyn_widget_adapter_ref().dyn_has(widget.dyn_widget())
+                for ws in wsc_set.iter()
                 {
 
-                    return Ok(Some(contents.clone()));
+                    let contents = ws.contents();
+
+                    if contents.dyn_widget_adapter_ref().has(&widget.widget()?)? //contents.dyn_widget_adapter_ref().dyn_has(widget.dyn_widget())
+                    {
+
+                        return Ok(Some(contents.clone()));
+
+                    }
 
                 }
 
             }
 
-        }
+            Ok(None)
 
-        Ok(None)
+        })
+
+    }
+
+    ///
+    /// Try find the widget state based on the widget instance.
+    ///
+    pub fn find_widget_state<T: WidgetExt + Eq + ObjectExt + Clone + IsA<T>>(&self, widget: &T) -> Option<Rc<dyn DynWidgetStateContainer>> // + MayDowncastTo<Widget>
+    {
+
+        self.widget_state.borrow_with_param( widget, |state, widget|
+        {
+
+            let glt = widget.type_();
+
+            let widget_widget = widget.upcast_ref::<Widget>();
+
+            //Lookup ther bucket
+
+            if let Some(wsc_set) = state.get(&glt)
+            {
+
+                //Iterate through the values trying find the state with the widget
+
+                for ws in wsc_set.iter()
+                {
+
+                    let contents = ws.contents();
+
+                    if let Ok(wi) = contents.dyn_widget_adapter_ref().has(widget_widget)
+                    {
+
+                        if wi
+                        {
+
+                            return Some(contents.clone());
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            None
+    
+        })
 
     }
 
     pub fn dyn_has_state(&self, widget: &dyn WidgetObject) -> WidgetUpgradeResult<bool>
     {
 
-        let glt = widget.glib_type()?;
-
-        //Lookup ther bucket
-
-        if let Some(wsc_set) = self.widget_state.get(&glt)
+        self.widget_state.borrow_with_param( widget, |state, widget|
         {
+        
+            let glt = widget.glib_type()?;
 
-            //Iterate through the values trying find the state with the widget
+            //Lookup ther bucket
 
-            for ws in wsc_set.iter()
+            if let Some(wsc_set) = state.get(&glt)
             {
 
-                let contents = ws.contents();
+                //Iterate through the values trying find the state with the widget
 
-                if contents.dyn_widget_adapter_ref().has(&widget.widget()?)? //contents.dyn_widget_adapter_ref().dyn_has(widget.dyn_widget())
+                for ws in wsc_set.iter()
                 {
 
-                    return Ok(true);
+                    let contents = ws.contents();
+
+                    if contents.dyn_widget_adapter_ref().has(&widget.widget()?)? //contents.dyn_widget_adapter_ref().dyn_has(widget.dyn_widget())
+                    {
+
+                        return Ok(true);
+
+                    }
 
                 }
 
             }
 
-        }
+            Ok(false)
 
-        Ok(false)
+        })
 
     }
 
     pub fn buckets_len(&self) -> usize
     {
 
-        self.widget_state.len()
+        self.widget_state.refcell_ref().borrow().len()
 
     }
 
     pub fn buckets_capacity(&self) -> usize
     {
 
-        self.widget_state.capacity()
+        self.widget_state.refcell_ref().borrow().capacity()
 
     }
 
     pub fn bucket_len(&self, type_of_bucket: &Type) -> Option<usize>
     {
 
-        if let Some(bucket) = self.widget_state.get(type_of_bucket)
+        if let Some(bucket) = self.widget_state.refcell_ref().borrow().get(type_of_bucket)
         {
 
             Some(bucket.len())
@@ -493,7 +613,7 @@ impl WidgetStateContainers
     pub fn bucket_capacity(&self, type_of_bucket: &Type) -> Option<usize>
     {
 
-        if let Some(bucket) = self.widget_state.get(type_of_bucket)
+        if let Some(bucket) = self.widget_state.refcell_ref().borrow().get(type_of_bucket)
         {
 
             Some(bucket.capacity())
@@ -508,10 +628,10 @@ impl WidgetStateContainers
 
     }
 
-    pub fn clear(&mut self)
+    pub fn clear(&self)
     {
 
-        self.widget_state.clear();
+        self.widget_state.refcell_ref().borrow_mut().clear();
 
     }
 

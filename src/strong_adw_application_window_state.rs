@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter, WidgetObject, WidgetUpgradeResult}; //DynApplicationStateContainer, 
+use crate::{gtk4 as gtk, impl_strong_widget_state_container_traits, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter}; //DynApplicationStateContainer, 
 
 use adw::builders::{ApplicationWindowBuilder, WindowBuilder};
 //use adw::ffi::AdwApplicationWindow;
@@ -18,20 +18,18 @@ use gtk::Widget;
 
 use adw::prelude::AdwApplicationWindowExt;
 
-static ERROR_APPLICATION_WINDOW_EXPECTED: &str = "Error: ApplicationWindow expected";
-
 #[derive(Clone, Debug)]
-pub struct AdwApplicationWindowState //<T>
+pub struct StrongAdwApplicationWindowState //<T>
     //where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, //+ IsA<ApplicationWindow> //+ WidgetExt
           //P: WidgetStateContainer
 {
 
     //weak_self: Weak<Self>,
     //window_adapter: Rc<WidgetAdapter<T, AdwApplcationWindowState<T>>>
-    widget_adapter: Rc<WidgetAdapter<ApplicationWindow, AdwApplicationWindowState>>
+    widget_adapter: Rc<StrongWidgetAdapter<ApplicationWindow, StrongAdwApplicationWindowState>>
 }
 
-impl AdwApplicationWindowState //<T>
+impl StrongAdwApplicationWindowState //<T>
     //where T: GtkWindowExt + AdwApplicationWindowExt + IsA<Widget>, // + MayDowncastTo<Widget> //+ IsA<ApplicationWindow>  // + WidgetExt
           //P: WidgetStateContainer + Clone
 {
@@ -47,14 +45,14 @@ impl AdwApplicationWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window_fn(), weak_self)
+                widget_adapter: StrongWidgetAdapter::new(&window_fn(), weak_self)
 
             }
 
         });
 
         #[cfg(feature = "thread_local_state")]
-        scs_add!(this);
+        scs_strong_add!(this);
 
         this
 
@@ -70,21 +68,21 @@ impl AdwApplicationWindowState //<T>
 
     }
 
-    pub fn new_visible<F, WSC>(window_fn: F) -> WidgetUpgradeResult<Rc<Self>>
+    pub fn new_visible<F, WSC>(window_fn: F) -> Rc<Self>
         where F: FnOnce() -> ApplicationWindow
     {
 
         let sc = Self::new(window_fn);
 
-        sc.widget_adapter.widget()?.set_visible(true);
+        sc.widget_adapter.widget().set_visible(true);
 
-        Ok(sc)
+        sc
 
     }
 
     pub fn with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce() -> ApplicationWindow,
-            WSC: DynWidgetStateContainer
+            WSC: DynStrongWidgetStateContainer
     {
 
         let sc = Self::new(window_fn);
@@ -97,12 +95,12 @@ impl AdwApplicationWindowState //<T>
 
     pub fn with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce() -> ApplicationWindow,
-            WSC: DynWidgetStateContainer
+            WSC: DynStrongWidgetStateContainer
     {
 
         let sc = Self::with_content(window_fn, content_state);
 
-        sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
+        sc.widget_adapter.widget().set_visible(true);
 
         sc
 
@@ -120,7 +118,7 @@ impl AdwApplicationWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window_fn(builder), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
+                widget_adapter: StrongWidgetAdapter::new(&window_fn(builder), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
 
             }
 
@@ -130,7 +128,7 @@ impl AdwApplicationWindowState //<T>
 
         //let wsc = any_this.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
 
-        StateContainers::get().widget_state_ref().add(&aws);//wsc);
+        StateContainers::get().strong_widget_state_ref().add(&aws);//wsc);
 
         aws
 
@@ -142,7 +140,7 @@ impl AdwApplicationWindowState //<T>
         
         let sc = Self::builder(window_fn);
 
-        sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
+        sc.widget_adapter.widget().set_visible(true);
 
         sc
 
@@ -150,7 +148,7 @@ impl AdwApplicationWindowState //<T>
 
     pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
-            WSC: DynWidgetStateContainer
+            WSC: DynStrongWidgetStateContainer
     {
 
         let sc = Self::builder(window_fn);
@@ -163,12 +161,12 @@ impl AdwApplicationWindowState //<T>
 
     pub fn builder_with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
-            WSC: DynWidgetStateContainer
+            WSC: DynStrongWidgetStateContainer
     {
 
         let sc = Self::builder_with_content(window_fn, content_state);
 
-        sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
+        sc.widget_adapter.widget().set_visible(true);
 
         sc
 
@@ -184,13 +182,13 @@ impl AdwApplicationWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window, weak_self)
+                widget_adapter: StrongWidgetAdapter::new(&window, weak_self)
 
             }
 
         });
 
-        StateContainers::get().widget_state_ref().add(&aws);
+        StateContainers::get().strong_widget_state_ref().add(&aws);
 
         aws
 
@@ -216,19 +214,23 @@ impl AdwApplicationWindowState //<T>
     }
     */
 
-    pub fn content(&self) -> WidgetUpgradeResult<Option<Rc<dyn DynWidgetStateContainer>>>
+    //Disabled
+
+    /*
+    pub fn content(&self) -> Option<Rc<dyn DynStrongWidgetStateContainer>>
     {
 
-        if let Some(widget) = self.widget_adapter.widget()?.content()
+        if let Some(widget) = self.widget_adapter.widget().content()
         {
 
-            return Ok(StateContainers::get().widget_state_ref().find_widget_state(&widget));
+            return StateContainers::get().find_widget_state(&widget);
             
         }
 
-        Ok(None)
+        None
 
     }
+    */
 
     /*
     pub fn dyn_set_content(&self, child_state: Option<&Rc<dyn WidgetStateContainer>>)
@@ -244,7 +246,7 @@ impl AdwApplicationWindowState //<T>
     }
     */
 
-    pub fn set_content<WSC: DynWidgetStateContainer>(&self, child_state: &Rc<WSC>) -> WidgetUpgradeResult
+    pub fn set_content<WSC: DynStrongWidgetStateContainer>(&self, child_state: &Rc<WSC>) //Option<&Rc<WSC>>)
     {
 
         /*
@@ -256,15 +258,13 @@ impl AdwApplicationWindowState //<T>
         }
         */
 
-        self.widget_adapter.widget()?.set_content(Some(&child_state.dyn_widget_adapter().widget()?));
-
-        Ok(())
+        self.widget_adapter.widget().set_content(Some(&child_state.dyn_widget_adapter().widget()))
 
     }
 
 }
 
-impl_widget_state_container_traits!(ApplicationWindow, AdwApplicationWindowState);
+impl_strong_widget_state_container_traits!(ApplicationWindow, StrongAdwApplicationWindowState);
 
 
 //impl<T> AdwApplcationWindowState<T>

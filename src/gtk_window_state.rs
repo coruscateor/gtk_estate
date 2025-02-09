@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, StoredWidgetObject, WidgetAdapter, WidgetStateContainer};
+use crate::{gtk4 as gtk, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, WidgetAdapter, WidgetObject, WidgetStateContainers, WidgetUpgradeResult};
 
 use gtk4::Window;
 
@@ -77,17 +77,17 @@ impl GtkWindowState
     }
     */
 
-    pub fn child(&self) -> Option<Rc<dyn DynWidgetStateContainer>>
+    pub fn child(&self) -> WidgetUpgradeResult<Option<Rc<dyn DynWidgetStateContainer>>>
     {
 
-        if let Some(widget) = self.widget_adapter.widget().child()
+        if let Some(widget) = self.widget_adapter.widget()?.child()
         {
 
-            return StateContainers::get().find_widget_state(&widget);
+            return Ok(StateContainers::get().widget_state_ref().find_widget_state(&widget));
             
         }
 
-        None
+        Ok(None)
 
     }
 
@@ -105,10 +105,12 @@ impl GtkWindowState
     }
     */
 
-    pub fn set_child(&self, child_state: &Rc<dyn DynWidgetStateContainer>)
+    pub fn set_child(&self, child_state: &Rc<dyn DynWidgetStateContainer>) -> WidgetUpgradeResult
     {
 
-        self.widget_adapter.widget().set_child(Some(&child_state.dyn_widget_adapter().widget()))
+        self.widget_adapter.widget()?.set_child(Some(&child_state.dyn_widget_adapter().widget()?));
+
+        Ok(())
 
     }
 

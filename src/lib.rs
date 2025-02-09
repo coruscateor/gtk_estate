@@ -57,6 +57,14 @@ mod contents;
 
 pub use contents::*;
 
+mod strong_adw_application_window_state;
+
+pub use strong_adw_application_window_state::*;
+
+mod strong_adw_window_state;
+
+pub use strong_adw_window_state::*;
+
 //Disabled
 
 //mod clear_state_containers_on_drop;
