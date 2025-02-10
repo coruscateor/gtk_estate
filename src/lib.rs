@@ -16,7 +16,7 @@ mod state_containers;
 
 pub use state_containers::*;
 
-pub extern crate gtk4;
+pub extern crate gtk;
 
 #[cfg(feature="adw")]
 pub extern crate adw;
@@ -57,14 +57,6 @@ mod contents;
 
 pub use contents::*;
 
-mod strong_adw_application_window_state;
-
-pub use strong_adw_application_window_state::*;
-
-mod strong_adw_window_state;
-
-pub use strong_adw_window_state::*;
-
 //Disabled
 
 //mod clear_state_containers_on_drop;
@@ -97,6 +89,14 @@ cfg_if!
         mod adw_application_window_state;
         
         pub use adw_application_window_state::*;
+
+        mod strong_adw_application_window_state;
+
+        pub use strong_adw_application_window_state::*;
+
+        mod strong_adw_window_state;
+
+        pub use strong_adw_window_state::*;
 
     }
 

@@ -4,23 +4,26 @@ use std::any::{Any, TypeId};
 
 use std::rc::{Rc, Weak};
 
-use adw::glib::object::IsA;
+use gtk::glib::object::IsA;
+
 use corlib::{RcByPtr, cell::RefCellStore};
 
 use gtk::glib::object::ObjectExt;
-use gtk4::prelude::WidgetExt;
-use gtk4::{self as gtk, Widget};
+
+use gtk::prelude::WidgetExt;
+
+use gtk::Widget;
 
 use gtk::glib::Type;
 
 use crate::rc_conversions::{to_rc_dyn_strong_wsc, to_rc_dyn_wsc};
 use crate::{StateContainers, StrongWidgetObject, DynStrongWidgetStateContainer}; //LookupWidgetObject,
 
-use gtk4::glib;
+use gtk::glib;
 
-use gtk4::glib::clone;
+use gtk::glib::clone;
 
-use gtk4::glib::object::Cast;
+use gtk::glib::object::Cast;
 
 //use gtk4::glib::glib_macros::clone;
 
@@ -29,34 +32,34 @@ pub struct StrongWidgetStateContainers
 {
 
     widget_state: RefCellStore<HashMap<Type, HashSet<RcByPtr<dyn DynStrongWidgetStateContainer>>>>,
-    weak_parent: Weak<StateContainers>
+    //weak_parent: Weak<StateContainers>
 
 }
 
 impl StrongWidgetStateContainers
 {
 
-    pub fn new(weak_parent: &Weak<StateContainers>) -> Self
+    pub fn new() -> Self //weak_parent: &Weak<StateContainers>) -> Self
     {
 
         Self
         {
 
             widget_state: RefCellStore::new(HashMap::new()),
-            weak_parent: weak_parent.clone()
+            //weak_parent: weak_parent.clone()
 
         }
 
     }
 
-    pub fn with_capacity(weak_parent: &Weak<StateContainers>, capacity: usize) -> Self
+    pub fn with_capacity(capacity: usize) -> Self //weak_parent: &Weak<StateContainers>, capacity: usize) -> Self
     {
 
         Self
         {
 
             widget_state: RefCellStore::new(HashMap::with_capacity(capacity)),
-            weak_parent: weak_parent.clone()
+            //weak_parent: weak_parent.clone()
 
         }
 
@@ -188,7 +191,7 @@ impl StrongWidgetStateContainers
 
         let rbp_sc = RcByPtr::new(sc);
 
-        let glt = rbp_sc.contents().dyn_widget_adapter_ref().glib_type();
+        let glt = rbp_sc.contents_ref().dyn_widget_adapter_ref().glib_type();
 
         self.widget_state.borrow_mut_with_param(glt, |mut state, glt|
         {
@@ -209,7 +212,7 @@ impl StrongWidgetStateContainers
     pub fn remove_by_rc_by_ptr(&self, rbp_sc: &RcByPtr<dyn DynStrongWidgetStateContainer>) -> bool
     {
 
-        let glt = rbp_sc.contents().dyn_widget_adapter_ref().glib_type(); //.type_id();
+        let glt = rbp_sc.contents_ref().dyn_widget_adapter_ref().glib_type(); //.type_id();
 
         self.widget_state.borrow_mut_with_param(glt, |mut state, glt|
         {
@@ -244,7 +247,7 @@ impl StrongWidgetStateContainers
                 for item in wsc_set.iter()
                 {
     
-                    if item.contents().dyn_widget_adapter_ref().widget_ref() == widget
+                    if item.contents_ref().dyn_widget_adapter_ref().widget_ref() == widget
                     {
     
                         found_wsc = Some(item.clone());
@@ -278,7 +281,7 @@ impl StrongWidgetStateContainers
 
             let rbp_sc = RcByPtr::new(sc);
 
-            let glt = rbp_sc.contents().dyn_widget_adapter_ref().glib_type();
+            let glt = rbp_sc.contents_ref().dyn_widget_adapter_ref().glib_type();
 
             if let Some(wsc_set) = state.get(&glt)
             {
@@ -373,7 +376,7 @@ impl StrongWidgetStateContainers
                 for ws in wsc_set.iter()
                 {
 
-                    let contents = ws.contents();
+                    let contents = ws.contents_ref();
 
                     if contents.dyn_widget_adapter_ref().dyn_has(widget.dyn_widget())
                     {
@@ -415,7 +418,7 @@ impl StrongWidgetStateContainers
                 for ws in wsc_set.iter()
                 {
 
-                    let contents = ws.contents();
+                    let contents = ws.contents_ref();
 
                     if contents.dyn_widget_adapter_ref().has(widget_widget)
                     {
@@ -452,7 +455,7 @@ impl StrongWidgetStateContainers
                 for ws in wsc_set.iter()
                 {
 
-                    let contents = ws.contents();
+                    let contents = ws.contents_ref();
 
                     if contents.dyn_widget_adapter_ref().dyn_has(widget.dyn_widget())
                     {

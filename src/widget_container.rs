@@ -1,4 +1,4 @@
-use gtk4::Widget;
+use gtk::Widget;
 
 ///
 /// For when your state-container directly contains the widget object.
@@ -44,6 +44,5 @@ macro_rules! impl_widget_container
         }
 
     }
-
 
 }

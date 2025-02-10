@@ -3,18 +3,18 @@ use std::error::Error;
 use std::fmt::Display;
 use std::rc::{Rc, Weak};
 
-use adw::glib::object::ObjectExt;
-use adw::glib::{Type, WeakRef};
+use gtk::glib::object::ObjectExt;
+use gtk::glib::{Type, WeakRef};
 use corlib::convert::AsAnyRef;
 use corlib::impl_as_any_ref_method;
-use gtk4::prelude::WidgetExt;
-use gtk4::Widget;
+use gtk::prelude::WidgetExt;
+use gtk::Widget;
 
 use crate::DynWidgetStateContainer;
 
 use std::any::Any;
 
-use gtk4::glib::object::Cast;
+use gtk::glib::object::Cast;
 
 #[derive(Debug)]
 pub struct WidgetUpgradeError
@@ -48,6 +48,7 @@ impl Display for WidgetUpgradeError
 impl Error for WidgetUpgradeError
 {
 
+    /*
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
     }
@@ -59,12 +60,125 @@ impl Error for WidgetUpgradeError
     fn cause(&self) -> Option<&dyn Error> {
         self.source()
     }
+    */
 
     //fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {}
 
 }
 
 pub type WidgetUpgradeResult<T = ()> = std::result::Result<T, WidgetUpgradeError>;
+
+//Disabled
+
+/*
+#[derive(Debug)]
+pub enum WidgetUpgradeErrorSide
+{
+
+    Left,
+    Right
+
+}
+
+/* */
+impl Display for WidgetUpgradeErrorSide
+{
+
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+
+        match self
+        {
+            WidgetUpgradeErrorSide::Left =>
+            {
+
+                write!(f, "Left")
+
+            }
+            WidgetUpgradeErrorSide::Right =>
+            {
+
+                write!(f, "Right")
+
+            }
+
+        }
+
+    }
+
+}
+
+#[derive(Debug)]
+pub struct WidgetUpgradeLeftRightError
+{
+
+    error_side: WidgetUpgradeErrorSide
+
+}
+
+impl WidgetUpgradeLeftRightError
+{
+
+    pub fn new(error_side: WidgetUpgradeErrorSide) -> Self
+    {
+
+        Self
+        {
+
+            error_side
+
+        }
+
+    }
+
+}
+
+impl Display for WidgetUpgradeLeftRightError
+{
+
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
+
+        match self.error_side
+        {
+
+            WidgetUpgradeErrorSide::Left =>
+            {
+
+                writeln!(f, "Error: failed to upgrade the weak Widget on the left side.")
+
+            }
+            WidgetUpgradeErrorSide::Right =>
+            {
+
+                writeln!(f, "Error: failed to upgrade the weak Widget on the right side.")
+
+            }
+
+        }
+
+    }
+
+}
+
+impl Error for WidgetUpgradeLeftRightError
+{
+}
+
+impl Into<WidgetUpgradeError> for WidgetUpgradeLeftRightError
+{
+
+    fn into(self) -> WidgetUpgradeError
+    {
+
+        WidgetUpgradeError::new()
+
+    }
+
+}
+
+pub type WidgetUpgradeLeftRightResult<T = ()> = std::result::Result<T, WidgetUpgradeLeftRightError>;
+*/
 
 pub trait WidgetObject : AsAnyRef
 {

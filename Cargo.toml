@@ -16,7 +16,8 @@ categories = ["gui"]
 corlib = { path="../corlib" } #Do not remove
 #corlib = "0.3.0"
 delegate = "0.13.1"
-gtk4 = "0.9.4"
+#gtk4 = "0.9.4"
+gtk = { package = "gtk4", version = "0.9.5"} #{ package = "gtk4"}
 cfg-if = "1.0.0"
 paste = "1.0.15"
 
@@ -31,26 +32,47 @@ default = ["thread_local_state"]
 
 thread_local_state = []
 
+#GTK 4
+
+gtk4_v4_18 = ["gtk/v4_18"]
+gtk4_v4_16 = ["gtk/v4_16"]
+gtk4_v4_14 = ["gtk/v4_14"]
+gtk4_v4_12 = ["gtk/v4_12"]
+gtk4_v4_10 = ["gtk/v4_10"]
+gtk4_v4_8 = ["gtk/v4_8"]
+gtk4_v4_6 = ["gtk/v4_6"]
+gtk4_v4_4 = ["gtk/v4_4"]
+gtk4_v4_2 = ["gtk/v4_2"]
+gtk4_gnome_47 = ["gtk/gnome_47"]
+gtk4_gnome_46 = ["gtk/gnome_46"]
+gtk4_gnome_45 = ["gtk/gnome_45"]
+gtk4_gnome_44 = ["gtk/gnome_44"]
+gtk4_gnome_43 = ["gtk/gnome_43"]
+gtk4_gnome_42 = ["gtk/gnome_42"]
+gtk4_unsafe-assume-initialized = ["gtk/unsafe-assume-initialized"]
+gtk4_xml_validation = ["gtk/xml_validation"]
+gtk4_blueprint = ["gtk/blueprint"]
+
 #GTK
 
-gtk_v4_18 = ["gtk4/v4_18"]
-gtk_v4_16 = ["gtk4/v4_16"]
-gtk_v4_14 = ["gtk4/v4_14"]
-gtk_v4_12 = ["gtk4/v4_12"]
-gtk_v4_10 = ["gtk4/v4_10"]
-gtk_v4_8 = ["gtk4/v4_8"]
-gtk_v4_6 = ["gtk4/v4_6"]
-gtk_v4_4 = ["gtk4/v4_4"]
-gtk_v4_2 = ["gtk4/v4_2"]
-gtk_gnome_47 = ["gtk4/gnome_47"]
-gtk_gnome_46 = ["gtk4/gnome_46"]
-gtk_gnome_45 = ["gtk4/gnome_45"]
-gtk_gnome_44 = ["gtk4/gnome_44"]
-gtk_gnome_43 = ["gtk4/gnome_43"]
-gtk_gnome_42 = ["gtk4/gnome_42"]
-gtk_unsafe-assume-initialized = ["gtk4/unsafe-assume-initialized"]
-gtk_xml_validation = ["gtk4/xml_validation"]
-gtk_blueprint = ["gtk4/blueprint"]
+#gtk_v4_18 = ["gtk4/v4_18"]
+#gtk_v4_16 = ["gtk4/v4_16"]
+#gtk_v4_14 = ["gtk4/v4_14"]
+#gtk_v4_12 = ["gtk4/v4_12"]
+#gtk_v4_10 = ["gtk4/v4_10"]
+#gtk_v4_8 = ["gtk4/v4_8"]
+#gtk_v4_6 = ["gtk4/v4_6"]
+#gtk_v4_4 = ["gtk4/v4_4"]
+#gtk_v4_2 = ["gtk4/v4_2"]
+#gtk_gnome_47 = ["gtk4/gnome_47"]
+#gtk_gnome_46 = ["gtk4/gnome_46"]
+#gtk_gnome_45 = ["gtk4/gnome_45"]
+#gtk_gnome_44 = ["gtk4/gnome_44"]
+#gtk_gnome_43 = ["gtk4/gnome_43"]
+#gtk_gnome_42 = ["gtk4/gnome_42"]
+#gtk_unsafe-assume-initialized = ["gtk4/unsafe-assume-initialized"]
+#gtk_xml_validation = ["gtk4/xml_validation"]
+#gtk_blueprint = ["gtk4/blueprint"]
 
 #ADW
 

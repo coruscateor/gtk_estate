@@ -7,9 +7,9 @@ use std::cell::{Cell, RefCell, Ref};
 
 //use adw::glib::clone::{self, Downgrade};
 
-use gtk4::glib::{timeout_add_local_full, timeout_add_seconds_local, Priority};
+use gtk::glib::{timeout_add_local_full, timeout_add_seconds_local, Priority};
 
-use gtk4 as gtk;
+//use gtk4 as gtk;
 
 use gtk::{glib::source::{timeout_add_local, SourceId}};
 
@@ -21,7 +21,7 @@ use corlib::{get_some, impl_get_ref, impl_rfc_borrow_get};
 
 use corlib::cell::{RcRefCellStore, RefCellStore};
 
-use gtk4::glib::clone;
+use gtk::glib::clone;
 
 use crate::impl_weak_self_methods;
 

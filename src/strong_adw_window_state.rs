@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{gtk4 as gtk, impl_strong_widget_state_container_traits, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, DynWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter};
+use crate::{impl_strong_widget_state_container_traits, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, DynWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter};
 
 use adw::builders::WindowBuilder;
 use adw::prelude::{AdwWindowExt, AdwApplicationWindowExt};

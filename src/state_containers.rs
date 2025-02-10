@@ -6,7 +6,7 @@ use std::{rc::*, any::Any};
 
 use std::cell::{Ref, RefCell, RefMut, UnsafeCell};
 
-use adw::glib::Type;
+use gtk::glib::Type;
 use corlib::{get_some, impl_rfc_borrow_2, impl_rfc_borrow_and_mut_2, impl_rfc_borrow_call, impl_rfc_borrow_mut_2, impl_rfc_borrow_mut_call};
 
 use corlib::convert::AsAnyRef;
@@ -34,7 +34,7 @@ use corlib::
 
 };
 
-use gtk4 as gtk;
+//use gtk4 as gtk;
 
 use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo, 
 
@@ -699,8 +699,8 @@ impl StateContainers
 
                 nc_internals: RefCell::new(isc),
                 weak_self: weak_self.clone(),
-                widget_state: WidgetStateContainers::new(weak_self),
-                strong_widget_state: StrongWidgetStateContainers::new(weak_self)
+                widget_state: WidgetStateContainers::new(), //(weak_self),
+                strong_widget_state: StrongWidgetStateContainers::new() //(weak_self)
 
                 //widget_state: RefCell::new(WidgetStateContainers::new(weak_self)),
 
@@ -1208,7 +1208,7 @@ macro_rules! scs_add
 
         let scs = StateContainers::get();
 
-        scs.widget_state_ref().add(&$this);
+        let _ = scs.widget_state_ref().add(&$this);
 
     }
 
