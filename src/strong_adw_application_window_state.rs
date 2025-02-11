@@ -4,7 +4,9 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{impl_strong_widget_state_container_traits, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter}; //DynApplicationStateContainer, 
+use crate::{impl_strong_widget_state_container_traits, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter}; //DynApplicationStateContainer, 
+
+//StrongWidgetObject
 
 use adw::builders::{ApplicationWindowBuilder, WindowBuilder};
 //use adw::ffi::AdwApplicationWindow;
@@ -196,7 +198,7 @@ impl StrongAdwApplicationWindowState //<T>
 
     //
 
-    impl_weak_self_methods!(widget_adapter);
+    //impl_weak_self_methods!(widget_adapter);
 
     /*
     pub fn window(&self) -> Rc<WidgetAdapter<ApplicationWindow, AdwApplcationWindowState>> //<T>>>

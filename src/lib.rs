@@ -37,13 +37,23 @@ mod scoped_source_id;
 
 pub use scoped_source_id::*;
 
-mod strong_adapters;
+cfg_if!
+{
 
-pub use strong_adapters::*;
+    if #[cfg(feature = "strong_widget_state")]
+    {
 
-mod strong_widget_state_containers;
+        mod strong_adapters;
 
-pub use strong_widget_state_containers::*;
+        pub use strong_adapters::*;
+
+        mod strong_widget_state_containers;
+
+        pub use strong_widget_state_containers::*;
+
+    }
+
+}
 
 mod gtk_window_state;
 
@@ -71,9 +81,19 @@ mod widget_state_containers;
 
 pub use widget_state_containers::*;
 
-mod strong_gtk_window_state;
+cfg_if!
+{
 
-pub use strong_gtk_window_state::*;
+    if #[cfg(feature = "strong_widget_state")]
+    {
+
+        mod strong_gtk_window_state;
+
+        pub use strong_gtk_window_state::*;
+
+    }
+
+}
 
 
 cfg_if!
@@ -89,6 +109,16 @@ cfg_if!
         mod adw_application_window_state;
         
         pub use adw_application_window_state::*;
+
+    }
+
+}
+
+cfg_if!
+{
+
+    if #[cfg(all(feature = "strong_widget_state", feature = "adw"))]
+    {
 
         mod strong_adw_application_window_state;
 

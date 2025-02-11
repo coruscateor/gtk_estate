@@ -4,7 +4,9 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{impl_strong_widget_state_container_traits, impl_weak_self_methods, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter};
+use crate::{impl_strong_widget_state_container_traits, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter};
+
+//impl_weak_self_methods,
 
 use gtk::Window;
 
@@ -13,6 +15,7 @@ use corlib::convert::AsAnyRef;
 use gtk::glib::object::IsA;
 use gtk::prelude::{GtkWindowExt, WidgetExt};
 use gtk::Widget;
+
 
 #[derive(Clone, Debug)]
 pub struct StrongGtkWindowState
@@ -48,7 +51,7 @@ impl StrongGtkWindowState
 
     }
     
-    impl_weak_self_methods!(widget_adapter);
+    //impl_weak_self_methods!(widget_adapter);
 
     /*
     pub fn window_adapter(&self) -> Rc<WidgetAdapter<Window, GtkWindowState>>
@@ -103,6 +106,7 @@ impl StrongGtkWindowState
 
 }
 
+#[cfg(feature = "strong_widget_state")]
 impl_strong_widget_state_container_traits!(Window, StrongGtkWindowState);
 
 //impl<T> GtkWindowState<T>

@@ -4,7 +4,9 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{impl_weak_self_methods, impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, WidgetAdapter, WidgetObject, WidgetStateContainers, WidgetUpgradeResult};
+use crate::{impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, WidgetAdapter, WidgetObject, WidgetStateContainers, WidgetUpgradeResult};
+
+//impl_weak_self_methods, 
 
 use gtk::Window;
 
@@ -59,7 +61,7 @@ impl GtkWindowState
 
     }
 
-    impl_weak_self_methods!(widget_adapter);
+    //impl_weak_self_methods!(widget_adapter);
 
     /*
     pub fn window_adapter(&self) -> Rc<WidgetAdapter<Window, GtkWindowState>>

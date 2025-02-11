@@ -40,7 +40,10 @@ use gtk::glib::object::{IsA, ObjectExt}; //MayDowncastTo,
 
 use crate::rc_conversions::to_rc_dyn_wsc;
 
-use crate::{strong_adapters::*, RcWidgetStateContainers, StrongWidgetStateContainers, TimeOut, TimeOutRunType, WidgetStateContainers};
+use crate::{RcWidgetStateContainers, TimeOut, TimeOutRunType, WidgetStateContainers};
+
+#[cfg(feature = "strong_widget_state")]
+use crate::{StrongWidgetObject, StrongWidgetStateContainers};
 
 use cfg_if::cfg_if;
 
@@ -286,21 +289,31 @@ macro_rules! impl_application_state_container_traits
 }
 */
 
-///
-/// Indicates that the implementing object stores widget related data.
-/// 
-pub trait DynStrongWidgetStateContainer : AsAnyRef //+ Debug
+cfg_if!
 {
 
-    //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
+    if #[cfg(feature = "strong_widget_state")]
+    {
 
-    //fn dyn_adapted_widget(&self) -> &(dyn Any);
+        ///
+        /// Indicates that the implementing object stores widget related data.
+        /// 
+        pub trait DynStrongWidgetStateContainer : AsAnyRef //+ Debug
+        {
 
-    //fn dyn_adapted_widget(&self) -> Rc<dyn StoredWidgetObject>;
+            //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
 
-    fn dyn_widget_adapter(&self) -> Rc<dyn StrongWidgetObject>;
+            //fn dyn_adapted_widget(&self) -> &(dyn Any);
 
-    fn dyn_widget_adapter_ref(&self) -> &dyn StrongWidgetObject;
+            //fn dyn_adapted_widget(&self) -> Rc<dyn StoredWidgetObject>;
+
+            fn dyn_widget_adapter(&self) -> Rc<dyn StrongWidgetObject>;
+
+            fn dyn_widget_adapter_ref(&self) -> &dyn StrongWidgetObject;
+
+        }
+
+    }
 
 }
 
@@ -319,6 +332,7 @@ pub trait WidgetStateContainer<T, P>
 }
 */
 
+#[cfg(feature = "strong_widget_state")]
 #[macro_export]
 macro_rules! impl_strong_widget_state_container_traits
 {
@@ -664,6 +678,7 @@ pub struct StateContainers
     //widget_state_removal_timeout: TimeOut<Self>,
     weak_self: Weak<StateContainers>,
     widget_state: RcWidgetStateContainers,
+    #[cfg(feature = "strong_widget_state")]
     strong_widget_state: StrongWidgetStateContainers,
 
 }
@@ -700,6 +715,7 @@ impl StateContainers
                 nc_internals: RefCell::new(isc),
                 weak_self: weak_self.clone(),
                 widget_state: WidgetStateContainers::new(), //(weak_self),
+                #[cfg(feature = "strong_widget_state")]
                 strong_widget_state: StrongWidgetStateContainers::new() //(weak_self)
 
                 //widget_state: RefCell::new(WidgetStateContainers::new(weak_self)),
@@ -938,6 +954,7 @@ impl StateContainers
 
     }
 
+    #[cfg(feature = "strong_widget_state")]
     pub fn strong_widget_state_ref(&self) -> &StrongWidgetStateContainers
     {
 

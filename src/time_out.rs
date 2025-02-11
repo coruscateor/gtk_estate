@@ -23,7 +23,7 @@ use corlib::cell::{RcRefCellStore, RefCellStore};
 
 use gtk::glib::clone;
 
-use crate::impl_weak_self_methods;
+//use crate::impl_weak_self_methods;
 
 #[derive(Clone, Copy, Debug)]
 pub enum TimeOutRunType

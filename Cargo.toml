@@ -32,6 +32,8 @@ default = ["thread_local_state"]
 
 thread_local_state = []
 
+strong_widget_state = []
+
 #GTK 4
 
 gtk4_v4_18 = ["gtk/v4_18"]

@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::{DynStrongWidgetStateContainer, DynWidgetStateContainer, StrongWidgetObject}; //StoredApplicationObject,
+use crate::DynWidgetStateContainer; //StoredApplicationObject,
+
+#[cfg(feature = "strong_widget_state")]
+use crate::{DynStrongWidgetStateContainer, StrongWidgetObject};
 
 pub fn to_rc_dyn_wsc<T>(value: Rc<T>) -> Rc<dyn DynWidgetStateContainer>
     where T: DynWidgetStateContainer + 'static
@@ -10,6 +13,7 @@ pub fn to_rc_dyn_wsc<T>(value: Rc<T>) -> Rc<dyn DynWidgetStateContainer>
 
 }
 
+#[cfg(feature = "strong_widget_state")]
 pub fn to_rc_dyn_strong_wsc<T>(value: Rc<T>) -> Rc<dyn DynStrongWidgetStateContainer>
     where T: DynStrongWidgetStateContainer + 'static
 {
@@ -30,6 +34,7 @@ pub fn to_rc_dyn_sao<T>(value: Rc<T>) -> Rc<dyn StoredApplicationObject>
 }
 */
 
+#[cfg(feature = "strong_widget_state")]
 pub fn to_rc_dyn_swo<T>(value: Rc<T>) -> Rc<dyn StrongWidgetObject>
     where T: StrongWidgetObject + 'static
 {
