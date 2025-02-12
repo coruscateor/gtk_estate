@@ -4,7 +4,9 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{impl_strong_widget_state_container_traits, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter}; //DynApplicationStateContainer, 
+use crate::{impl_strong_widget_state_container_traits, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, StrongWidgetStateContainer}; //DynApplicationStateContainer, 
+
+//impl_strong_widget_state_container_traits, 
 
 //StrongWidgetObject
 
@@ -36,8 +38,7 @@ impl StrongAdwApplicationWindowState //<T>
           //P: WidgetStateContainer + Clone
 {
 
-    pub fn new<F>(window_fn: F) -> Rc<Self>
-        where F: FnOnce()-> ApplicationWindow
+    pub fn new(window: &ApplicationWindow) -> Rc<Self>
     {
 
         let this = Rc::new_cyclic(|weak_self|
@@ -47,7 +48,7 @@ impl StrongAdwApplicationWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: StrongWidgetAdapter::new(&window_fn(), weak_self)
+                widget_adapter: StrongWidgetAdapter::new(window, weak_self)
 
             }
 
@@ -70,11 +71,10 @@ impl StrongAdwApplicationWindowState //<T>
 
     }
 
-    pub fn new_visible<F, WSC>(window_fn: F) -> Rc<Self>
-        where F: FnOnce() -> ApplicationWindow
+    pub fn new_visible(window: &ApplicationWindow) -> Rc<Self>
     {
 
-        let sc = Self::new(window_fn);
+        let sc = Self::new(window);
 
         sc.widget_adapter.widget().set_visible(true);
 
@@ -82,12 +82,11 @@ impl StrongAdwApplicationWindowState //<T>
 
     }
 
-    pub fn with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce() -> ApplicationWindow,
-            WSC: DynStrongWidgetStateContainer
+    pub fn with_content<WSC>(window: &ApplicationWindow, content_state: &Rc<WSC>) -> Rc<Self>
+        where WSC: DynStrongWidgetStateContainer
     {
 
-        let sc = Self::new(window_fn);
+        let sc = Self::new(window);
 
         sc.set_content(content_state); //Some(content_state));
 
@@ -95,12 +94,12 @@ impl StrongAdwApplicationWindowState //<T>
 
     }
 
-    pub fn with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
+    pub fn with_content_visible<F, WSC>(window: &ApplicationWindow, content_state: &Rc<WSC>) -> Rc<Self>
         where F: FnOnce() -> ApplicationWindow,
             WSC: DynStrongWidgetStateContainer
     {
 
-        let sc = Self::with_content(window_fn, content_state);
+        let sc = Self::with_content(window, content_state);
 
         sc.widget_adapter.widget().set_visible(true);
 
@@ -109,7 +108,7 @@ impl StrongAdwApplicationWindowState //<T>
     }
 
     pub fn builder<F>(window_fn: F) -> Rc<Self>
-        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow
+        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindowBuilder
     {
 
         let builder = ApplicationWindow::builder();
@@ -120,7 +119,7 @@ impl StrongAdwApplicationWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: StrongWidgetAdapter::new(&window_fn(builder), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
+                widget_adapter: StrongWidgetAdapter::new(&window_fn(builder).build(), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
 
             }
 
@@ -137,7 +136,7 @@ impl StrongAdwApplicationWindowState //<T>
     }
 
     pub fn builder_visible<F>(window_fn: F) -> Rc<Self>
-        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
+        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindowBuilder,
     {
         
         let sc = Self::builder(window_fn);
@@ -149,7 +148,7 @@ impl StrongAdwApplicationWindowState //<T>
     }
 
     pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
+        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindowBuilder,
             WSC: DynStrongWidgetStateContainer
     {
 
@@ -162,7 +161,7 @@ impl StrongAdwApplicationWindowState //<T>
     }
 
     pub fn builder_with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
+        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindowBuilder,
             WSC: DynStrongWidgetStateContainer
     {
 
@@ -190,6 +189,7 @@ impl StrongAdwApplicationWindowState //<T>
 
         });
 
+        #[cfg(feature = "thread_local_state")]
         StateContainers::get().strong_widget_state_ref().add(&aws);
 
         aws
@@ -216,23 +216,19 @@ impl StrongAdwApplicationWindowState //<T>
     }
     */
 
-    //Disabled
-
-    /*
     pub fn content(&self) -> Option<Rc<dyn DynStrongWidgetStateContainer>>
     {
 
         if let Some(widget) = self.widget_adapter.widget().content()
         {
 
-            return StateContainers::get().find_widget_state(&widget);
+            return StateContainers::get().strong_widget_state_ref().find_widget_state(&widget);
             
         }
 
         None
 
     }
-    */
 
     /*
     pub fn dyn_set_content(&self, child_state: Option<&Rc<dyn WidgetStateContainer>>)

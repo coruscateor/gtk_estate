@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{impl_strong_widget_state_container_traits, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, WidgetAdapter};
+use crate::{impl_strong_widget_state_container_traits, impl_widget_state_container_traits, scs_add, scs_strong_add, DynStrongWidgetStateContainer, StateContainers, StrongWidgetAdapter, StrongWidgetObject, StrongWidgetStateContainers, StrongWidgetStateContainer};
 
 //impl_weak_self_methods,
 
@@ -69,6 +69,7 @@ impl StrongGtkWindowState
     }
     */
 
+    #[cfg(feature = "thread_local_state")]
     pub fn child(&self) -> Option<Rc<dyn DynStrongWidgetStateContainer>>
     {
 

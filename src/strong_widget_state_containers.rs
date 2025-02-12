@@ -4,6 +4,7 @@ use std::any::{Any, TypeId};
 
 use std::rc::{Rc, Weak};
 
+use corlib::convert::AsAnyRef;
 use gtk::glib::object::IsA;
 
 use corlib::{RcByPtr, cell::RefCellStore};
@@ -17,7 +18,7 @@ use gtk::Widget;
 use gtk::glib::Type;
 
 use crate::rc_conversions::{to_rc_dyn_strong_wsc, to_rc_dyn_wsc};
-use crate::{StateContainers, StrongWidgetObject, DynStrongWidgetStateContainer}; //LookupWidgetObject,
+use crate::{StateContainers, StrongWidgetAdapter, StrongWidgetObject}; //, DynStrongWidgetStateContainer}; //LookupWidgetObject,
 
 use gtk::glib;
 
@@ -26,6 +27,189 @@ use gtk::glib::clone;
 use gtk::glib::object::Cast;
 
 //use gtk4::glib::glib_macros::clone;
+
+pub trait StrongWidgetStateContainer<T, P>
+    where T: WidgetExt + ObjectExt + Eq + Clone,
+          P: DynStrongWidgetStateContainer
+{
+
+    fn widget_adapter(&self) -> Rc<StrongWidgetAdapter<T, P>>;
+
+    fn widget_adapter_ref(&self) -> &StrongWidgetAdapter<T, P>;
+
+}
+
+///
+/// Indicates that the implementing object stores widget related data.
+/// 
+pub trait DynStrongWidgetStateContainer : AsAnyRef //+ Debug
+{
+
+    //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
+
+    //fn dyn_adapted_widget(&self) -> &(dyn Any);
+
+    //fn dyn_adapted_widget(&self) -> Rc<dyn StoredWidgetObject>;
+
+    fn dyn_widget_adapter(&self) -> Rc<dyn StrongWidgetObject>;
+
+    fn dyn_widget_adapter_ref(&self) -> &dyn StrongWidgetObject;
+
+}
+
+//#[cfg(feature = "strong_widget_state")]
+#[macro_export]
+macro_rules! impl_strong_widget_state_container_traits
+{
+
+    /*
+    ($widget_state_container_type:ty) =>
+    {
+
+        impl WidgetStateContainer for $widget_state_container_type
+        {
+
+            fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>
+            {
+
+                self.widget_adapter.clone()
+
+            }
+
+            fn dyn_adapter_ref(&self) -> &dyn StoredWidgetObject
+            {
+
+                self.widget_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+    */
+    ($widget_type:ty, $widget_state_container_type:ty) =>
+    {
+
+        impl AsAnyRef for $widget_state_container_type
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
+
+        impl DynStrongWidgetStateContainer for $widget_state_container_type
+        {
+
+            fn dyn_widget_adapter(&self) -> Rc<dyn StrongWidgetObject>
+            {
+
+                self.widget_adapter.clone()
+
+            }
+
+            fn dyn_widget_adapter_ref(&self) -> &dyn StrongWidgetObject
+            {
+
+                self.widget_adapter.as_ref()
+
+            }
+
+        }
+
+        impl StrongWidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
+        {
+
+            fn widget_adapter(&self) -> Rc<StrongWidgetAdapter<$widget_type, $widget_state_container_type>>
+            {
+
+                self.widget_adapter.clone()
+
+            }
+
+            fn widget_adapter_ref(&self) -> &StrongWidgetAdapter<$widget_type, $widget_state_container_type>
+            {
+
+                self.widget_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+    ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
+    {
+
+        impl AsAnyRef for $widget_state_container_type
+        {
+
+            fn as_any_ref(&self) -> &dyn Any
+            {
+
+                self
+                
+            }
+
+        }
+
+        impl DynStrongWidgetStateContainer for $widget_state_container_type
+        {
+
+            fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>
+            {
+
+                self.$widget_adapter.clone()
+
+            }
+
+            fn dyn_widget_adapter_ref(&self) -> &dyn StoredWidgetObject
+            {
+
+                self.$widget_adapter.as_ref()
+
+            }
+
+        }
+
+        impl StrongWidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
+        {
+
+            fn widget_adapter(&self) -> Rc<StrongWidgetAdapter<$widget_type, $widget_state_container_type>>
+            {
+
+                self.widget_adapter.clone()
+
+            }
+
+            fn widget_adapter_ref(&self) -> &StrongWidgetAdapter<$widget_type, $widget_state_container_type>
+            {
+
+                self.widget_adapter.as_ref()
+
+            }
+
+        }
+
+    };
+
+}
+
+/*
+cfg_if!
+{
+
+    if #[cfg(feature = "strong_widget_state")]
+    {
+
+
+    }
+
+}
+*/
 
 //#[derive(Debug)]
 pub struct StrongWidgetStateContainers

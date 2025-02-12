@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, WidgetAdapter, WidgetObject, WidgetStateContainers, WidgetUpgradeError, WidgetUpgradeResult};
+use crate::{impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, WidgetAdapter, WidgetObject, WidgetStateContainers, WidgetUpgradeError, WidgetUpgradeResult, WidgetStateContainer};
 
 //impl_weak_self_methods, StrongWidgetObject, 
 
@@ -34,8 +34,7 @@ impl AdwWindowState //<T>
           //P: WidgetStateContainer + Clone
 {
 
-    pub fn new<F>(window_fn: F) -> Rc<Self>
-        where F: FnOnce()-> Window
+    pub fn new(window: &Window) -> Rc<Self>
     {
 
         let this = Rc::new_cyclic(|weak_self|
@@ -45,7 +44,7 @@ impl AdwWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window_fn(), weak_self)
+                widget_adapter: WidgetAdapter::new(window, weak_self)
 
             }
 
@@ -68,24 +67,25 @@ impl AdwWindowState //<T>
 
     }
 
-    pub fn with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce()-> Window,
-            WSC: DynWidgetStateContainer
+    pub fn with_content<WSC>(window: &Window, content_state: &Rc<WSC>) -> WidgetUpgradeResult<Rc<Self>>
+        where WSC: DynWidgetStateContainer
     {
 
-        let sc = Self::new(window_fn);
+        let sc = Self::new(window);
 
-        sc.set_content(content_state);//Some(content_state));
+        let _ = sc.set_content(content_state);//Some(content_state));
 
-        sc
+        Ok(sc)
 
     }
 
-    pub fn builder<F>(window_fn: F) -> Rc<Self>
-        where F: FnOnce(WindowBuilder) -> Window
+    pub fn builder<F>(window_fn: F) -> (Rc<Self>, Window)
+        where F: FnOnce(WindowBuilder) -> WindowBuilder
     {
 
         let builder = Window::builder();
+
+        let window = window_fn(builder).build();
 
         let aws = Rc::new_cyclic(|weak_self|
         {
@@ -93,7 +93,7 @@ impl AdwWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window_fn(builder), weak_self)
+                widget_adapter: WidgetAdapter::new(&window, weak_self)
 
             }
 
@@ -105,22 +105,25 @@ impl AdwWindowState //<T>
 
         //StateContainers::get().add(wsc);
 
-        StateContainers::get().widget_state_ref().add(&aws);
+        #[cfg(feature = "thread_local_state")]
+        let _ = StateContainers::get().widget_state_ref().add(&aws);
 
-        aws
+        (aws, window)
 
     }
 
-    pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce(WindowBuilder) -> Window,
+    pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> WidgetUpgradeResult<(Rc<Self>, Window)>
+        where F: FnOnce(WindowBuilder) -> WindowBuilder,
             WSC: DynWidgetStateContainer
     {
 
-        let sc = Self::builder(window_fn);
+        let widget = content_state.dyn_widget_adapter().widget()?;
 
-        sc.set_content(content_state); //Some(content_state));
+        let sc_window = Self::builder(window_fn);
 
-        sc
+        sc_window.1.set_content(Some(&widget)); //(content_state); //Some(content_state));
+
+        Ok(sc_window)
 
     }
 

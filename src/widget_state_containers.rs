@@ -10,6 +10,17 @@ use crate::{rc_conversions::to_rc_dyn_wsc, StateContainers, WidgetAdapter, Widge
 
 use gtk::glib::object::Cast;
 
+pub trait WidgetStateContainer<T, P>
+    where T: WidgetExt + ObjectExt + Eq + Clone,
+          P: DynWidgetStateContainer
+{
+
+    fn widget_adapter(&self) -> Rc<WidgetAdapter<T, P>>;
+
+    fn widget_adapter_ref(&self) -> &WidgetAdapter<T, P>;
+
+}
+
 pub trait DynWidgetStateContainer : AsAnyRef + Debug
 {
 
@@ -57,9 +68,6 @@ macro_rules! impl_widget_state_container_traits
 
         }
 
-        //Disabled
-
-        /*
         impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
         {
 
@@ -78,7 +86,6 @@ macro_rules! impl_widget_state_container_traits
             }
 
         }
-        */
 
     };
     ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
@@ -115,8 +122,6 @@ macro_rules! impl_widget_state_container_traits
 
         }
 
-        //Disabled
-        /*
         impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
         {
 
@@ -135,7 +140,6 @@ macro_rules! impl_widget_state_container_traits
             }
 
         }
-        */
 
     };
 

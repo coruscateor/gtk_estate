@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use std::rc::{Weak, Rc};
 
-use crate::{impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, WidgetAdapter, WidgetObject, WidgetUpgradeResult}; //DynApplicationStateContainer, 
+use crate::{impl_widget_state_container_traits, scs_add, DynWidgetStateContainer, StateContainers, WidgetAdapter, WidgetObject, WidgetUpgradeResult, WidgetStateContainer}; //DynApplicationStateContainer, 
 
 //impl_weak_self_methods, StrongWidgetObject, StrongWidgetStateContainers,
 
@@ -38,8 +38,7 @@ impl AdwApplicationWindowState //<T>
           //P: WidgetStateContainer + Clone
 {
 
-    pub fn new<F>(window_fn: F) -> Rc<Self>
-        where F: FnOnce()-> ApplicationWindow
+    pub fn new(window: &ApplicationWindow) -> Rc<Self>
     {
 
         let this = Rc::new_cyclic(|weak_self|
@@ -49,7 +48,7 @@ impl AdwApplicationWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window_fn(), weak_self)
+                widget_adapter: WidgetAdapter::new(&window, weak_self)
 
             }
 
@@ -72,49 +71,52 @@ impl AdwApplicationWindowState //<T>
 
     }
 
-    pub fn new_visible<F, WSC>(window_fn: F) -> WidgetUpgradeResult<Rc<Self>>
-        where F: FnOnce() -> ApplicationWindow
+    pub fn new_visible(window: &ApplicationWindow) -> Rc<Self>
     {
 
-        let sc = Self::new(window_fn);
+        let sc = Self::new(window);
 
-        sc.widget_adapter.widget()?.set_visible(true);
+        window.set_visible(true);
+
+        sc
+
+    }
+
+    pub fn with_content<WSC>(window: &ApplicationWindow, content_state: &Rc<WSC>) -> WidgetUpgradeResult<Rc<Self>>
+        where WSC: DynWidgetStateContainer
+    {
+
+        let widget = content_state.dyn_widget_adapter().widget()?;
+
+        let sc = Self::new(window);
+
+        window.set_content(Some(&widget)); //(content_state); //Some(content_state));
 
         Ok(sc)
 
     }
 
-    pub fn with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce() -> ApplicationWindow,
-            WSC: DynWidgetStateContainer
+    pub fn with_content_visible<WSC>(window: &ApplicationWindow, content_state: &Rc<WSC>) -> WidgetUpgradeResult<Rc<Self>>
+        where WSC: DynWidgetStateContainer
     {
 
-        let sc = Self::new(window_fn);
+        let sc = Self::with_content(window, content_state)?;
 
-        sc.set_content(content_state); //Some(content_state));
+        window.set_visible(true);
 
-        sc
+        //sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
+
+        Ok(sc)
 
     }
 
-    pub fn with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce() -> ApplicationWindow,
-            WSC: DynWidgetStateContainer
-    {
-
-        let sc = Self::with_content(window_fn, content_state);
-
-        sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
-
-        sc
-
-    }
-
-    pub fn builder<F>(window_fn: F) -> Rc<Self>
-        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow
+    pub fn builder<F>(window_fn: F) -> (Rc<Self>, ApplicationWindow)
+        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindowBuilder
     {
 
         let builder = ApplicationWindow::builder();
+
+        let window = window_fn(builder).build();
 
         let aws = Rc::new_cyclic(|weak_self|
         {
@@ -122,7 +124,7 @@ impl AdwApplicationWindowState //<T>
             {
 
                 //weak_self: weak_self.clone(),
-                widget_adapter: WidgetAdapter::new(&window_fn(builder), weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
+                widget_adapter: WidgetAdapter::new(&window, weak_self) //wwsc.downcast_ref::<Weak<dyn WidgetStateContainer>>().unwrap()) //weak_self)
 
             }
 
@@ -132,47 +134,54 @@ impl AdwApplicationWindowState //<T>
 
         //let wsc = any_this.downcast_ref::<Rc<dyn WidgetStateContainer>>().expect("Error: No Rc<dyn WidgetStateContainer>");
 
-        StateContainers::get().widget_state_ref().add(&aws);//wsc);
+        #[cfg(feature = "thread_local_state")]
+        let _ = StateContainers::get().widget_state_ref().add(&aws);//wsc);
 
-        aws
+        (aws, window)
 
     }
 
-    pub fn builder_visible<F>(window_fn: F) -> Rc<Self>
-        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
+    pub fn builder_visible<F>(window_fn: F) -> (Rc<Self>, ApplicationWindow)
+        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindowBuilder,
     {
         
-        let sc = Self::builder(window_fn);
+        let sc_window= Self::builder(window_fn);
 
-        sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
+        sc_window.1.set_visible(true);
 
-        sc
+        //sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
 
-    }
-
-    pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
-            WSC: DynWidgetStateContainer
-    {
-
-        let sc = Self::builder(window_fn);
-
-        sc.set_content(content_state); //Some(content_state));
-
-        sc
+        sc_window
 
     }
 
-    pub fn builder_with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> Rc<Self>
-        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindow,
+    pub fn builder_with_content<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> WidgetUpgradeResult<(Rc<Self>, ApplicationWindow)>
+        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindowBuilder,
             WSC: DynWidgetStateContainer
     {
 
-        let sc = Self::builder_with_content(window_fn, content_state);
+        let widget = content_state.dyn_widget_adapter().widget()?;
 
-        sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
+        let sc_window = Self::builder(window_fn);
 
-        sc
+        sc_window.1.set_content(Some(&widget)); //(Some(content_state)); //Some(content_state));
+
+        Ok(sc_window)
+
+    }
+
+    pub fn builder_with_content_visible<F, WSC>(window_fn: F, content_state: &Rc<WSC>) -> WidgetUpgradeResult<(Rc<Self>, ApplicationWindow)>
+        where F: FnOnce(ApplicationWindowBuilder) -> ApplicationWindowBuilder,
+            WSC: DynWidgetStateContainer
+    {
+
+        let sc_window = Self::builder_with_content(window_fn, content_state)?;
+
+        sc_window.1.set_visible(true);
+
+        //sc.widget_adapter.widget().expect(ERROR_APPLICATION_WINDOW_EXPECTED).set_visible(true);
+
+        Ok(sc_window)
 
     }
 
@@ -192,7 +201,8 @@ impl AdwApplicationWindowState //<T>
 
         });
 
-        StateContainers::get().widget_state_ref().add(&aws);
+        #[cfg(feature = "thread_local_state")]
+        let _ = StateContainers::get().widget_state_ref().add(&aws);
 
         aws
 

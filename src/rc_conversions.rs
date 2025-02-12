@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{any::Any, rc::Rc};
 
 use crate::DynWidgetStateContainer; //StoredApplicationObject,
 
@@ -43,3 +43,10 @@ pub fn to_rc_dyn_swo<T>(value: Rc<T>) -> Rc<dyn StrongWidgetObject>
 
 }
 
+pub fn to_rc_dyn_any<T>(value: Rc<T>) -> Rc<dyn Any>
+    where T: 'static
+{
+
+    value
+
+}

@@ -289,198 +289,6 @@ macro_rules! impl_application_state_container_traits
 }
 */
 
-cfg_if!
-{
-
-    if #[cfg(feature = "strong_widget_state")]
-    {
-
-        ///
-        /// Indicates that the implementing object stores widget related data.
-        /// 
-        pub trait DynStrongWidgetStateContainer : AsAnyRef //+ Debug
-        {
-
-            //fn adapted_widget(&self) -> &(dyn StoredWidgetObject); //'a  //Any + WidgetExt
-
-            //fn dyn_adapted_widget(&self) -> &(dyn Any);
-
-            //fn dyn_adapted_widget(&self) -> Rc<dyn StoredWidgetObject>;
-
-            fn dyn_widget_adapter(&self) -> Rc<dyn StrongWidgetObject>;
-
-            fn dyn_widget_adapter_ref(&self) -> &dyn StrongWidgetObject;
-
-        }
-
-    }
-
-}
-
-//Disabled
-
-/*
-pub trait WidgetStateContainer<T, P>
-    where T: Eq + ObjectExt + Clone,
-          P: DynStrongWidgetStateContainer
-{
-
-    fn widget_adapter(&self) -> Rc<WidgetAdapter<T, P>>;
-
-    fn widget_adapter_ref(&self) -> &WidgetAdapter<T, P>;
-
-}
-*/
-
-#[cfg(feature = "strong_widget_state")]
-#[macro_export]
-macro_rules! impl_strong_widget_state_container_traits
-{
-
-    /*
-    ($widget_state_container_type:ty) =>
-    {
-
-        impl WidgetStateContainer for $widget_state_container_type
-        {
-
-            fn dyn_adapter(&self) -> Rc<dyn StoredWidgetObject>
-            {
-
-                self.widget_adapter.clone()
-
-            }
-
-            fn dyn_adapter_ref(&self) -> &dyn StoredWidgetObject
-            {
-
-                self.widget_adapter.as_ref()
-
-            }
-
-        }
-
-    };
-    */
-    ($widget_type:ty, $widget_state_container_type:ty) =>
-    {
-
-        impl AsAnyRef for $widget_state_container_type
-        {
-
-            fn as_any_ref(&self) -> &dyn Any
-            {
-
-                self
-                
-            }
-
-        }
-
-        impl DynStrongWidgetStateContainer for $widget_state_container_type
-        {
-
-            fn dyn_widget_adapter(&self) -> Rc<dyn StrongWidgetObject>
-            {
-
-                self.widget_adapter.clone()
-
-            }
-
-            fn dyn_widget_adapter_ref(&self) -> &dyn StrongWidgetObject
-            {
-
-                self.widget_adapter.as_ref()
-
-            }
-
-        }
-
-        //Disabled
-
-        /* 
-        impl StrongWidgetStateContainers<$widget_type, $widget_state_container_type> for $widget_state_container_type
-        {
-
-            fn widget_adapter(&self) -> Rc<WidgetAdapter<$widget_type, $widget_state_container_type>>
-            {
-
-                self.widget_adapter.clone()
-
-            }
-
-            fn widget_adapter_ref(&self) -> &WidgetAdapter<$widget_type, $widget_state_container_type>
-            {
-
-                self.widget_adapter.as_ref()
-
-            }
-
-        }
-        */
-
-    };
-    ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
-    {
-
-        impl AsAnyRef for $widget_state_container_type
-        {
-
-            fn as_any_ref(&self) -> &dyn Any
-            {
-
-                self
-                
-            }
-
-        }
-
-        impl DynStrongWidgetStateContainer for $widget_state_container_type
-        {
-
-            fn dyn_widget_adapter(&self) -> Rc<dyn StoredWidgetObject>
-            {
-
-                self.$widget_adapter.clone()
-
-            }
-
-            fn dyn_widget_adapter_ref(&self) -> &dyn StoredWidgetObject
-            {
-
-                self.$widget_adapter.as_ref()
-
-            }
-
-        }
-
-        //Disabled
-
-        /*
-        impl WidgetStateContainer<$widget_type, $widget_state_container_type> for $widget_state_container_type
-        {
-
-            fn widget_adapter(&self) -> Rc<WidgetAdapter<$widget_type, $widget_state_container_type>>
-            {
-
-                self.$widget_adapter.clone()
-
-            }
-
-            fn widget_adapter_ref(&self) -> &WidgetAdapter<$widget_type, $widget_state_container_type>
-            {
-
-                self.$widget_adapter.as_ref()
-
-            }
-
-        }
-        */
-
-    };
-
-}
-
 //The StateContainers sigleton static location.
 
 //static mut STATE_CONTAINERS: NonOption<Rc<StateContainers>> = NonOption::invalid(); 
@@ -802,7 +610,8 @@ impl StateContainers
     ///
     /// Set the application state. Returns false if a DynApplicationStateContainer is already present.
     /// 
-    pub fn try_set_application_state(&self, state: &Rc<dyn Any>) -> bool //<T> //state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
+    pub fn try_set_application_state<T>(&self, state: &Rc<T>) -> bool //&Rc<dyn Any> //<T> //state: &Rc<T>) -> bool //&Rc<dyn ApplicationStateContainer>) -> bool
+        where T: 'static
         //where T: DynApplicationStateContainer + 'static
     {
 
@@ -828,7 +637,8 @@ impl StateContainers
     ///
     /// Set the application state or panic.
     /// 
-    pub fn set_application_state(&self, state: &Rc<dyn Any>) //<T> //state: &Rc<T>) //&Rc<dyn ApplicationStateContainer>)
+    pub fn set_application_state<T>(&self, state: &Rc<T>) //&Rc<dyn Any> //<T> //state: &Rc<T>) //&Rc<dyn ApplicationStateContainer>)
+        where T: 'static
         //where T: DynApplicationStateContainer + 'static
     {
 
