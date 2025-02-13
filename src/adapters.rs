@@ -3,7 +3,8 @@ use std::error::Error;
 use std::fmt::Display;
 use std::rc::{Rc, Weak};
 
-use gtk::glib::object::ObjectExt;
+use gtk::glib::object::{ObjectExt, ObjectType};
+use gtk::glib::types::StaticType;
 use gtk::glib::{Type, WeakRef};
 use corlib::convert::AsAnyRef;
 use corlib::impl_as_any_ref_method;
@@ -16,18 +17,33 @@ use std::any::Any;
 
 use gtk::glib::object::Cast;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WidgetUpgradeError
 {
+
+    static_type: Type
+
 }
 
 impl WidgetUpgradeError
 {
 
-    pub fn new() -> Self
+    pub fn new(static_type: Type) -> Self
     {
 
-        Self{}
+        Self
+        {
+
+            static_type
+
+        }
+
+    }
+
+    pub fn static_type_ref(&self) -> &Type
+    {
+
+        &self.static_type
 
     }
 
@@ -246,7 +262,9 @@ impl<T, P> WidgetAdapter<T, P>
             None =>
             {
 
-                Err(WidgetUpgradeError::new())
+                let stype = T::static_type();  //WeakRef::<T>::GlibType; //WeakRef::<T>::static_type(); //WeakRef::<T>::static_type(); //T::StaticType;
+
+                Err(WidgetUpgradeError::new(stype))
 
             }
 

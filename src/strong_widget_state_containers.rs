@@ -140,6 +140,25 @@ macro_rules! impl_strong_widget_state_container_traits
 
         }
 
+        impl WeakSelf for $widget_state_container_type
+        {
+
+            fn weak_self(&self) -> Weak<Self>
+            {
+
+                self.widget_adapter.weak_parent()
+                
+            }
+
+            fn weak_self_ref(&self) -> &Weak<Self>
+            {
+
+                self.widget_adapter.weak_parent_ref()
+                
+            }
+
+        }
+
     };
     ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
     {
@@ -190,6 +209,25 @@ macro_rules! impl_strong_widget_state_container_traits
 
                 self.widget_adapter.as_ref()
 
+            }
+
+        }
+
+        impl WeakSelf for $widget_state_container_type
+        {
+
+            fn weak_self(&self) -> Weak<Self>
+            {
+
+                self.widget_adapter.weak_parent()
+                
+            }
+
+            fn weak_self_ref(&self) -> &Weak<Self>
+            {
+
+                self.widget_adapter.weak_parent_ref()
+                
             }
 
         }

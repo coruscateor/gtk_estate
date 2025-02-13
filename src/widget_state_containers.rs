@@ -87,6 +87,25 @@ macro_rules! impl_widget_state_container_traits
 
         }
 
+        impl WeakSelf for $widget_state_container_type
+        {
+
+            fn weak_self(&self) -> Weak<Self>
+            {
+
+                self.widget_adapter.weak_parent()
+                
+            }
+
+            fn weak_self_ref(&self) -> &Weak<Self>
+            {
+
+                self.widget_adapter.weak_parent_ref()
+                
+            }
+
+        }
+
     };
     ($widget_type:ty, $widget_state_container_type:ty, $widget_adapter:ident) =>
     {
@@ -137,6 +156,25 @@ macro_rules! impl_widget_state_container_traits
 
                 self.$widget_adapter.as_ref()
 
+            }
+
+        }
+
+        impl WeakSelf for $widget_state_container_type
+        {
+
+            fn weak_self(&self) -> Weak<Self>
+            {
+
+                self.widget_adapter.weak_parent()
+                
+            }
+
+            fn weak_self_ref(&self) -> &Weak<Self>
+            {
+
+                self.widget_adapter.weak_parent_ref()
+                
             }
 
         }
@@ -275,7 +313,7 @@ impl WidgetStateContainers
 
         //let weak_parent = self.weak_parent.clone();
 
-        widget.connect_destroy(move |_widget|
+        widget.connect_destroy(move |widget|
         {
 
             //Upgrade the current state container.
@@ -286,7 +324,19 @@ impl WidgetStateContainers
                 if let Some(rbp_sc) = wbp_sc.upgrade()
                 {
 
-                    let _ = this.remove_by_rc_by_ptr(&rbp_sc);
+                    this.widget_state.borrow_mut_with_param(rbp_sc, |mut state, rbp_sc|
+                    {
+
+                        if let Some(wsc_set) = state.get_mut(&widget.type_())
+                        {
+
+                            wsc_set.remove(&rbp_sc);
+
+                        }
+                        
+                    });
+
+                    //let _ = this.remove_by_rc_by_ptr(&rbp_sc);
 
                 }
 
