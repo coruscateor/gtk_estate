@@ -26,7 +26,7 @@ use std::fmt::Debug;
 use corlib::
 {
     NonOption,
-    RcByPtr,
+    rc::RcByPtr,
     collections::UniqueItemList,
     impl_rfc_borrow,
     impl_rfc_borrow_mut,

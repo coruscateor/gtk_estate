@@ -1,6 +1,6 @@
 use gtk::{glib::{object::{IsA, ObjectExt}, Type}, subclass::widget};
 
-use corlib::{convert::AsAnyRef, RcByPtr, cell::RefCellStore};
+use corlib::{convert::AsAnyRef, rc::RcByPtr, cell::RefCellStore};
 
 use gtk::{prelude::WidgetExt, Widget};
 

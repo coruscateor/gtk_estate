@@ -7,7 +7,7 @@ use std::rc::{Rc, Weak};
 use corlib::convert::AsAnyRef;
 use gtk::glib::object::IsA;
 
-use corlib::{RcByPtr, cell::RefCellStore};
+use corlib::{rc::RcByPtr, cell::RefCellStore};
 
 use gtk::glib::object::ObjectExt;
 

@@ -24,7 +24,7 @@ use gtk::glib::object::{Cast, IsA, ObjectExt, ObjectType};
 
 use corlib::convert::AsAnyRef;
 
-use corlib::{impl_as_any_ref, impl_as_any_ref_method, RcByPtr};
+use corlib::{impl_as_any_ref, impl_as_any_ref_method, rc::RcByPtr};
 
 //Disabled
 
