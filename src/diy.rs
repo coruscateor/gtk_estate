@@ -10,6 +10,9 @@ use gtk::glib::source::timeout_add_local;
 
 use super::ScopedSourceId;
 
+///
+/// Converts a ControlFlow instance into a bool.
+/// 
 pub fn should_flow(flow: ControlFlow) -> bool
 {
 
@@ -23,6 +26,9 @@ pub fn should_flow(flow: ControlFlow) -> bool
 
 }
 
+///
+/// Converts a bool instance into a ControlFlow.
+/// 
 pub fn should_continue(should_flow: bool) -> ControlFlow
 {
 

@@ -1,6 +1,6 @@
 [package]
 name = "gtk_estate"
-version = "0.4.0-alpha"
+version = "0.4.0-beta"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A GTK and libadwaita state association library"
@@ -13,11 +13,11 @@ categories = ["gui"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-corlib = { path="../corlib" } #Do not remove
-#corlib = "0.3.0"
+#corlib = { path="../corlib" } #Do not remove
+corlib = "0.4.0"
 delegate = "0.13.1"
-#gtk4 = "0.9.4"
-gtk = { package = "gtk4", version = "0.9.5"} #{ package = "gtk4"}
+
+gtk = { package = "gtk4", version = "0.9.6" }
 cfg-if = "1.0.0"
 paste = "1.0.15"
 

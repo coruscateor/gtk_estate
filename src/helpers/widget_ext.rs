@@ -1,6 +1,6 @@
-//use adw::glib::object::CastNone;
-//use adw::glib::object::ObjectExt;
-//use gtk4 as gtk;
+//!
+//! Helper functions for widgets that implement the gtk4::auto::widget::WidgetExt trait. 
+//!
 
 use gtk::{Widget, Paned, prelude::IsA, prelude::WidgetExt};
 

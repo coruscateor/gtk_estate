@@ -1,4 +1,6 @@
-//use gtk4 as gtk;
+//!
+//! Helper functions for the TextView widget. 
+//!
 
 use gtk::{TextView, prelude::{TextViewExt, TextBufferExt}};
 

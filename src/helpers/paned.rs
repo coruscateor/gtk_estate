@@ -1,4 +1,6 @@
-//use gtk4 as gtk;
+//!
+//! Helper functions for the Paned widget. 
+//!
 
 use gtk::{Widget, Paned, prelude::IsA, prelude::WidgetExt};
 

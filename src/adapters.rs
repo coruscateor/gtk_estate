@@ -17,6 +17,9 @@ use std::any::Any;
 
 use gtk::glib::object::Cast;
 
+///
+/// The error type used when a weakly-referenced widget object upgrade fails.
+///
 #[derive(Debug, Clone)]
 pub struct WidgetUpgradeError
 {
@@ -82,6 +85,9 @@ impl Error for WidgetUpgradeError
 
 }
 
+///
+/// The result of a weakly-referenced widget object being upgraded.
+/// 
 pub type WidgetUpgradeResult<T = ()> = std::result::Result<T, WidgetUpgradeError>;
 
 //Disabled
@@ -196,6 +202,9 @@ impl Into<WidgetUpgradeError> for WidgetUpgradeLeftRightError
 pub type WidgetUpgradeLeftRightResult<T = ()> = std::result::Result<T, WidgetUpgradeLeftRightError>;
 */
 
+///
+/// A trait for the container of a weakly-referenced widget object.
+/// 
 pub trait WidgetObject : AsAnyRef
 {
 
@@ -207,6 +216,9 @@ pub trait WidgetObject : AsAnyRef
 
 }
 
+///
+/// Weakly-references implementers of WidgetExt and enables them to be used in scenarios requiring dyn compatibility.
+/// 
 #[derive(Clone, Debug)]
 pub struct WidgetAdapter<T, P>
     where T: WidgetExt + ObjectExt + Eq + Clone,

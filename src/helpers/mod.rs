@@ -1,3 +1,6 @@
+//!
+//! Helper functions for different widget types. 
+//! 
 
 pub mod paned;
 
