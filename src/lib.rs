@@ -2,7 +2,9 @@
 
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-use cfg_if::cfg_if;
+//It seems that docs.rs feature labelling is incompatible with cfg_if blocks.
+
+//use cfg_if::cfg_if;
 
 mod scoped_signal_handler_id;
 
@@ -37,6 +39,21 @@ mod scoped_source_id;
 
 pub use scoped_source_id::*;
 
+
+#[cfg(feature = "strong_widget_state")]
+mod strong_adapters;
+
+#[cfg(feature = "strong_widget_state")]
+pub use strong_adapters::*;
+
+#[cfg(feature = "strong_widget_state")]
+mod strong_widget_state_containers;
+
+#[cfg(feature = "strong_widget_state")]
+pub use strong_widget_state_containers::*;
+
+
+/*
 cfg_if!
 {
 
@@ -54,6 +71,7 @@ cfg_if!
     }
 
 }
+*/
 
 //mod gtk_window_state;
 

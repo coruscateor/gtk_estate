@@ -14,7 +14,7 @@ categories = ["gui"]
 
 [dependencies]
 #corlib = { path="../corlib" } #Do not remove
-corlib = "0.4.0"
+corlib = "0.4.1"
 delegate = "0.13.1"
 
 gtk = { package = "gtk4", version = "0.9.6" }
@@ -96,5 +96,6 @@ adw_v1_7 = ["adw/v1_7"]
 #docs.rs
 
 [package.metadata.docs.rs]
-all-features = true
+features = ["strong_widget_state"]
+#all-features = true                    #Actually this setting doesn't make sense in this project.
 rustdoc-args = ["--cfg", "docsrs"]
