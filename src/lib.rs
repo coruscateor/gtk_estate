@@ -52,7 +52,6 @@ mod strong_widget_state_containers;
 #[cfg(feature = "strong_widget_state")]
 pub use strong_widget_state_containers::*;
 
-
 /*
 cfg_if!
 {

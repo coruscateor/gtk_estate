@@ -55,7 +55,7 @@ where
 }
 
 ///
-/// Makes using gtk::glib::source::timeout_add_local a bit easier.
+/// Calls glib::source::timeout_add_local and returns a ScopedSourceId.
 /// 
 pub fn timeout_add_local_diy<F>(interval: Duration, mut func: F) -> ScopedSourceId
 where
@@ -67,7 +67,7 @@ where
 }
 
 ///
-/// Makes using gtk::glib::timeout_add_seconds_local a bit easier.
+/// Calls glib::source::timeout_add_seconds_local and returns a ScopedSourceId.
 /// 
 pub fn timeout_add_seconds_local_diy<F>(interval: u32, mut func: F) -> ScopedSourceId
 where

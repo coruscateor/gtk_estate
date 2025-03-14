@@ -421,6 +421,9 @@ cfg_if!
 
         }
 
+        //Disabled
+
+        /*
         fn state_containers_is_set() -> bool
         {
 
@@ -436,6 +439,7 @@ cfg_if!
             })
 
         }
+        */
 
     }
 
@@ -565,33 +569,38 @@ impl StateContainers
 
     }
 
+    /*
     cfg_if!
     {
 
         if #[cfg(feature = "thread_local_state")]
         {
 
-            ///
-            /// Get the StateContainers singleton.
-            /// 
-            pub fn get() -> Rc<StateContainers>
-            {
-
-                get_state_containers()
-
-            }
-
-            ///
-            /// Try to get the StateContainers singleton.
-            /// 
-            pub fn try_get() -> Option<Rc<StateContainers>>
-            {
-
-                try_get_state_containers()
-
-            }
 
         }
+
+    }
+    */
+
+    ///
+    /// Get the StateContainers singleton.
+    /// 
+    #[cfg(feature = "thread_local_state")]
+    pub fn get() -> Rc<StateContainers>
+    {
+
+        get_state_containers()
+
+    }
+
+    ///
+    /// Try to get the StateContainers singleton.
+    /// 
+    #[cfg(feature = "thread_local_state")]
+    pub fn try_get() -> Option<Rc<StateContainers>>
+    {
+
+        try_get_state_containers()
 
     }
 
@@ -1023,7 +1032,7 @@ macro_rules! scs_set_application_state
 }
 
 ///
-/// This macro gets a StateContainers Rc instance and adds the "$this" widget state to it  
+/// This macro gets a StateContainers Rc instance and adds the "$this" widget state to its WidgetStateContainers instance.  
 ///
 #[cfg(feature = "thread_local_state")]
 #[macro_export]
@@ -1041,6 +1050,9 @@ macro_rules! scs_add
 
 }
 
+///
+/// This macro gets a StateContainers Rc instance and adds the "$this" widget state to its StrongWidgetStateContainers instance. 
+/// 
 #[cfg(feature = "thread_local_state")]
 #[macro_export]
 macro_rules! scs_strong_add

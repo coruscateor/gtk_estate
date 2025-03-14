@@ -1,3 +1,7 @@
+//!
+//! This module contains functions which upcast objects stored in std::rc::Rc objects and return the rc’d dynamic object.
+//! 
+
 use std::{any::Any, rc::Rc};
 
 use crate::DynWidgetStateContainer; //StoredApplicationObject,

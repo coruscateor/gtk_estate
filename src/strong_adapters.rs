@@ -314,11 +314,12 @@ pub type RcWidgetAdapter<T, P> = Rc<WidgetAdapter<T, P>>;
 
 */
 
-//WidgetAdapter
-
+///
+/// Strongly-references implementers of WidgetExt and enables them to be used in scenarios requiring dyn compatibility.
+/// 
 #[derive(Clone, Debug)]
 pub struct StrongWidgetAdapter<T, P>
-    where T: Eq + ObjectExt + Clone,
+    where T: WidgetExt + ObjectExt + Eq + Clone,
           P: DynStrongWidgetStateContainer
 
 {
@@ -331,7 +332,7 @@ pub struct StrongWidgetAdapter<T, P>
 }
 
 impl<T, P> StrongWidgetAdapter<T, P>
-    where T: Eq + ObjectExt + Clone,
+    where T: WidgetExt + ObjectExt + Eq + Clone,
           P: DynStrongWidgetStateContainer
 {
 

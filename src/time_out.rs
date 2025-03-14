@@ -25,6 +25,9 @@ use gtk::glib::clone;
 
 //use crate::impl_weak_self_methods;
 
+///
+/// Used by TimeOut to determine the timer resolution and contains the seconds, duration etc depending on what's selected.
+/// 
 #[derive(Clone, Copy, Debug)]
 pub enum TimeOutRunType
 {
@@ -35,8 +38,14 @@ pub enum TimeOutRunType
 
 }
 
+///
+/// The signature of the closure called by TimeOut.
+/// 
 pub type TimeOutFn<P> = dyn Fn(Rc<P>) -> bool;
 
+///
+/// The Rc'd version of TimeOutFn.
+/// 
 pub type RcTimeOutFn<P> = Rc<TimeOutFn<P>>;
 
 //pub type RcTimeOut<P> = Rc<TimeOut<P>>;
@@ -56,9 +65,9 @@ pub type BoxTimeOutFn = Box<TimeOutFn>;
 //pub type RcTimeOutFn<P> = Rc<TimeOutFn<P>>;
 
 ///
-/// Wraps a glib::source::timeout_add_local function and a glib::source::SourceId struct into a single easy to use object.
+/// This object makes setting-up time-outs simple.
 /// 
-/// On timeout it calls a function which returns a value indicating wheher or not the timeout should continue.
+/// On time-out it calls a closure which returns a value indicating whether or not the time-out should continue.
 /// 
 pub struct TimeOut<P>
     where P: 'static
@@ -488,7 +497,6 @@ impl<P> TimeOut<P>
             false
 
         }
-
 
         /*
         let mut fields_mut = self.fields.borrow_mut();

@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.0 (__/04/2024)
+
+
+
 ## Version 0.3.0 (03/06/2024)
 
 - Cleaned up lib.rs

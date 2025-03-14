@@ -28,6 +28,9 @@ use gtk::glib::object::Cast;
 
 //use gtk4::glib::glib_macros::clone;
 
+///
+/// Indicates that the implementing object contains a StrongWidgetAdapter object and makes it accessible.
+/// 
 pub trait StrongWidgetStateContainer<T, P>
     where T: WidgetExt + ObjectExt + Eq + Clone,
           P: DynStrongWidgetStateContainer
@@ -40,7 +43,7 @@ pub trait StrongWidgetStateContainer<T, P>
 }
 
 ///
-/// Indicates that the implementing object stores widget related data.
+/// Like the StrongWidgetStateContainer trait, but dynamic.
 /// 
 pub trait DynStrongWidgetStateContainer : AsAnyRef //+ Debug
 {
@@ -57,7 +60,12 @@ pub trait DynStrongWidgetStateContainer : AsAnyRef //+ Debug
 
 }
 
-//#[cfg(feature = "strong_widget_state")]
+///
+/// Use to setup a state container struct with a strongly referenced widget object.
+/// 
+/// Note: both rules require the implementing struct to have a widget_adapter field, however in the first rule this field is expected to be named "widget_adapter".
+/// 
+#[cfg(feature = "strong_widget_state")]
 #[macro_export]
 macro_rules! impl_strong_widget_state_container_traits
 {
@@ -200,14 +208,14 @@ macro_rules! impl_strong_widget_state_container_traits
             fn widget_adapter(&self) -> Rc<StrongWidgetAdapter<$widget_type, $widget_state_container_type>>
             {
 
-                self.widget_adapter.clone()
+                self.$widget_adapter.clone()
 
             }
 
             fn widget_adapter_ref(&self) -> &StrongWidgetAdapter<$widget_type, $widget_state_container_type>
             {
 
-                self.widget_adapter.as_ref()
+                self.$widget_adapter.as_ref()
 
             }
 
@@ -219,14 +227,14 @@ macro_rules! impl_strong_widget_state_container_traits
             fn weak_self(&self) -> Weak<Self>
             {
 
-                self.widget_adapter.weak_parent()
+                self.$widget_adapter.weak_parent()
                 
             }
 
             fn weak_self_ref(&self) -> &Weak<Self>
             {
 
-                self.widget_adapter.weak_parent_ref()
+                self.$widget_adapter.weak_parent_ref()
                 
             }
 
@@ -249,7 +257,9 @@ cfg_if!
 }
 */
 
-//#[derive(Debug)]
+///
+/// Keeps track of Rc'd DynStrongWidgetStateContainer implementers.
+/// 
 pub struct StrongWidgetStateContainers
 {
 

@@ -10,6 +10,9 @@ use crate::{rc_conversions::to_rc_dyn_wsc, StateContainers, WidgetAdapter, Widge
 
 use gtk::glib::object::Cast;
 
+///
+/// Indicates that the implementing object contains a WidgetAdapter object and makes it accessible. 
+/// 
 pub trait WidgetStateContainer<T, P>
     where T: WidgetExt + ObjectExt + Eq + Clone,
           P: DynWidgetStateContainer
@@ -21,6 +24,9 @@ pub trait WidgetStateContainer<T, P>
 
 }
 
+///
+/// Like the WidgetStateContainer trait, but dynamic.
+/// 
 pub trait DynWidgetStateContainer : AsAnyRef + Debug
 {
 
@@ -30,6 +36,11 @@ pub trait DynWidgetStateContainer : AsAnyRef + Debug
 
 }
 
+///
+/// Use to setup a state container struct with a weakly referenced widget object.
+/// 
+/// Note: both rules require the implementing struct to have a widget_adapter field, however in the first rule this field is expected to be named "widget_adapter".
+/// 
 #[macro_export]
 macro_rules! impl_widget_state_container_traits
 {
@@ -166,14 +177,14 @@ macro_rules! impl_widget_state_container_traits
             fn weak_self(&self) -> Weak<Self>
             {
 
-                self.widget_adapter.weak_parent()
+                self.$widget_adapter.weak_parent()
                 
             }
 
             fn weak_self_ref(&self) -> &Weak<Self>
             {
 
-                self.widget_adapter.weak_parent_ref()
+                self.$widget_adapter.weak_parent_ref()
                 
             }
 
@@ -183,8 +194,14 @@ macro_rules! impl_widget_state_container_traits
 
 }
 
+///
+/// The Rc’d version of WidgetStateContainers.
+/// 
 pub type RcWidgetStateContainers = Rc<WidgetStateContainers>;
 
+///
+/// Keeps track of Rc'd DynWidgetStateContainer implementers, dropping them when their weakly referenced widgets get destroyed.
+///
 pub struct WidgetStateContainers
 {
 
