@@ -364,12 +364,12 @@ impl StrongWidgetStateContainers
         where WSC: DynStrongWidgetStateContainer + 'static
     {
 
-        let wsc = to_rc_dyn_strong_wsc(sc.clone());
+        let wsc = to_rc_dyn_strong_wsc(sc); //sc.clone());
 
         self.dyn_add(&wsc);
         
     }
-
+    
     //Disabled
 
     /*

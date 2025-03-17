@@ -5,7 +5,7 @@
 use gtk::{Widget, Paned, prelude::IsA, prelude::WidgetExt};
 
 ///
-///Center the panes posion using the given value.
+/// Center the panes position using the given value.
 /// 
 pub fn set_paned_position_halved(paned: &Paned, value: i32)
 {

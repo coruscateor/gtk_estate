@@ -313,7 +313,7 @@ impl WidgetStateContainers
         where WSC: DynWidgetStateContainer + 'static
     {
 
-        let wsc = to_rc_dyn_wsc(sc.clone());
+        let wsc = to_rc_dyn_wsc(sc); //sc.clone());
 
         self.dyn_add(&wsc)
         

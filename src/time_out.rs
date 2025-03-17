@@ -65,7 +65,7 @@ pub type BoxTimeOutFn = Box<TimeOutFn>;
 //pub type RcTimeOutFn<P> = Rc<TimeOutFn<P>>;
 
 ///
-/// This object makes setting-up time-outs simple.
+/// This object helps you setup time-outs with associated parent objects.
 /// 
 /// On time-out it calls a closure which returns a value indicating whether or not the time-out should continue.
 /// 
@@ -120,7 +120,7 @@ impl<P> TimeOut<P>
 
     }
 
-    pub fn with_fn<F>(run_type: TimeOutRunType, weak_parent: &Weak<P>, time_out_fn: Rc<F>) -> Self
+    pub fn with_fn<F>(run_type: TimeOutRunType, weak_parent: &Weak<P>, time_out_fn: &Rc<F>) -> Self
         where F: Fn(Rc<P>) -> bool + 'static
     {
 
@@ -128,7 +128,7 @@ impl<P> TimeOut<P>
         {
 
             source_id:  Rc::new(RefCellStore::new(None)),
-            time_out_fn: RefCellStore::new(Some(time_out_fn)),
+            time_out_fn: RefCellStore::new(Some(time_out_fn.clone())),
             run_type: Cell::new(run_type),
             weak_parent: weak_parent.clone()
 
@@ -151,7 +151,7 @@ impl<P> TimeOut<P>
 
     }
 
-    pub fn with_parent_and_fn<F>(run_type: TimeOutRunType, parent: &Rc<P>, time_out_fn: Rc<F>) -> Self
+    pub fn with_parent_and_fn<F>(run_type: TimeOutRunType, parent: &Rc<P>, time_out_fn: &Rc<F>) -> Self
         where F: Fn(Rc<P>) -> bool + 'static
     {
 
@@ -159,7 +159,7 @@ impl<P> TimeOut<P>
         {
 
             source_id:  Rc::new(RefCellStore::new(None)),
-            time_out_fn: RefCellStore::new(Some(time_out_fn)),
+            time_out_fn: RefCellStore::new(Some(time_out_fn.clone())),
             run_type: Cell::new(run_type),
             weak_parent: Rc::downgrade(parent)
 
@@ -274,11 +274,11 @@ impl<P> TimeOut<P>
 
     //impl_get_ref!(state, T);
 
-    pub fn set_time_out_fn<F>(&self, time_out_fn: Rc<F>) -> bool
+    pub fn set_time_out_fn<F>(&self, time_out_fn: &Rc<F>) -> bool
         where F: Fn(Rc<P>) -> bool  + 'static
     {
 
-        self.time_out_fn.set(Some(time_out_fn));
+        self.time_out_fn.set(Some(time_out_fn.clone()));
 
         /*
         self.time_out_fn.borrow_mut_with_param(time_out_fn, |mut state, time_out_fn|
@@ -293,13 +293,13 @@ impl<P> TimeOut<P>
 
     }
 
-    pub fn set_run_type_and_time_out_fn<F>(&self, value: TimeOutRunType, time_out_fn: Rc<F>) -> bool
+    pub fn set_run_type_and_time_out_fn<F>(&self, value: TimeOutRunType, time_out_fn: &Rc<F>) -> bool
         where F: Fn(Rc<P>) -> bool  + 'static
     {
 
         self.run_type.set(value);
 
-        self.time_out_fn.set(Some(time_out_fn));
+        self.time_out_fn.set(Some(time_out_fn.clone()));
 
         //Retart the timer if it was active
 
@@ -384,7 +384,7 @@ impl<P> TimeOut<P>
     ///
     /// Starts the TimeOut.
     /// 
-    /// Moves Rc<Self> into the scope of a glib::source::timeout_add_local call and attepts to upgrade weak_parent
+    /// Moves the weakly referenced parent into the scope of a glib::source::timeout_add_seconds_local, timeout_add_local or timeout_add_local_full call depending on the selected variant of the provided TimeOutRunType.
     /// 
     pub fn start(&self) -> bool
     {

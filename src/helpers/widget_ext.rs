@@ -8,6 +8,9 @@ use gtk::glib::{object::{ObjectExt, Cast}, types::StaticType};
 
 //pub fn set_hvexpand<T: WidgetExt>(widget: &T, expand: bool) // IsA<Widget>>
 
+///
+/// Set the hexpand and vexpand properties of the provided widget implementation to the provided expand value.
+/// 
 pub fn set_hvexpand(widget: &impl WidgetExt, expand: bool)
 {
  
@@ -19,6 +22,9 @@ pub fn set_hvexpand(widget: &impl WidgetExt, expand: bool)
 
 //pub fn set_hvexpand_t<T: WidgetExt>(widget: &T) // IsA<Widget>>
 
+///
+/// Set the hexpand and vexpand properties of the provided widget implementation to true.
+/// 
 pub fn set_hvexpand_t(widget: &impl WidgetExt)
 {
  
@@ -30,6 +36,9 @@ pub fn set_hvexpand_t(widget: &impl WidgetExt)
 
 //pub fn set_hvexpand_f<T: WidgetExt>(widget: &T)
 
+///
+/// Set the hexpand and vexpand properties of the provided widget implementation to false.
+/// 
 pub fn set_hvexpand_f(widget: &impl WidgetExt)
 {
  
@@ -39,6 +48,9 @@ pub fn set_hvexpand_f(widget: &impl WidgetExt)
     
 }
 
+///
+/// Set the margin_start and margin_end properties of the provided widget implementation to the provided value.
+/// 
 pub fn set_margin_start_and_end(widget: &impl WidgetExt, margin: i32)
 {
 
@@ -48,6 +60,9 @@ pub fn set_margin_start_and_end(widget: &impl WidgetExt, margin: i32)
 
 }
 
+///
+/// Set the margin_top and margin_bottom properties of the provided widget implementation to the provided value.
+/// 
 pub fn set_margin_top_and_bottom(widget: &impl WidgetExt, margin: i32)
 {
 
@@ -57,6 +72,9 @@ pub fn set_margin_top_and_bottom(widget: &impl WidgetExt, margin: i32)
 
 }
 
+///
+/// Set the margin_start, margin_end and margin_bottom properties of the provided widget implementation to the provided value.
+/// 
 pub fn set_margin_sides_and_bottom(widget: &impl WidgetExt, margin: i32)
 {
 
@@ -68,6 +86,9 @@ pub fn set_margin_sides_and_bottom(widget: &impl WidgetExt, margin: i32)
 
 }
 
+///
+/// Set the margin_start, margin_end, margin_top and margin_bottom properties of the provided widget implementation to the provided value.
+/// 
 pub fn set_margin_all(widget: &impl WidgetExt, margin: i32)
 {
 

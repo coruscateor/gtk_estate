@@ -4,6 +4,11 @@
 
 use gtk::{TextView, prelude::{TextViewExt, TextBufferExt}};
 
+///
+/// Returns a copy of the entire contents of the TextBuffer of the provided TextView reference.
+/// 
+/// Returned String instance does not include hidden characters. 
+/// 
 pub fn get_text_view_string(tv: &TextView) -> String
 {
 
@@ -17,6 +22,11 @@ pub fn get_text_view_string(tv: &TextView) -> String
 
 }
 
+///
+/// Returns a copy of the entire contents of the TextBuffer of the provided TextView reference.
+/// 
+/// Returned String instance does include hidden characters. 
+///
 pub fn get_all_text_view_string(tv: &TextView) -> String
 {
 
@@ -30,6 +40,9 @@ pub fn get_all_text_view_string(tv: &TextView) -> String
 
 }
 
+///
+/// Returns a copy of the entire contents of the TextBuffer of the provided TextView reference.
+/// 
 pub fn get_text_view_string_hc(tv: &TextView, include_hidden_chars: bool) -> String
 {
 
