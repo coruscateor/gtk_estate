@@ -443,7 +443,7 @@ impl<P> TimeOut<P>
                 if time_out_fn(parent)
                 {
 
-                    control_flow = ControlFlow::Continue
+                    control_flow = ControlFlow::Continue;
 
                 }
                 else

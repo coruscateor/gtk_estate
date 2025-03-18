@@ -79,6 +79,9 @@ gtk4_blueprint = ["gtk/blueprint"]
 #ADW
 
 adw = ["dep:adw"]
+
+#From https://gitlab.gnome.org/World/Rust/libadwaita-rs/-/blob/master/libadwaita/Cargo.toml?ref_type=heads
+
 adw_gtk_v4_2 = ["adw/gtk_v4_2"]
 #adw_gtk_v4_4 = ["adw/gtk_v4_4"]
 adw_gtk_v4_6 = ["adw/gtk_v4_6"]
@@ -86,6 +89,7 @@ adw_gtk_v4_6 = ["adw/gtk_v4_6"]
 #adw_gtk_v4_10 = ["adw/gtk_v4_10"]
 #adw_gtk_v4_12 = ["adw/gtk_v4_12"]
 adw_gio_v2_80 = ["adw/gio_v2_80"]
+adw_v1_1 = ["adw/v1_1"]
 adw_v1_2 = ["adw/v1_2"]
 adw_v1_3 = ["adw/v1_3"]
 adw_v1_4 = ["adw/v1_4"]
