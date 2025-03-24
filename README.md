@@ -25,15 +25,35 @@ The main purpose of GTK Estate is to provide a convenient way to associate user-
 
 The StateContainers struct is a singleton and contains widget state association hashmaps, each type of widget gets its own map instance (bucket).
 
+You should read the [gtk4-rs tutorial](https://gtk-rs.org/gtk4-rs/stable/latest/book/) before proceeding.
+
 </br>
 
 ## An Example:
 
-To give you a clear idea of how a GTK Estate application is put together, here are excerpts from the [Simple Unix Time Outputer](https://github.com/coruscateor/simple_unix_time_outputer) example application code (see below for more [example applications](#example-applications)).
+To give you a clear idea of how a GTK Estate application is put together, here is a version of the [Simple Unix Time Outputer](https://github.com/coruscateor/simple_unix_time_outputer) example application code (with some amendments to its imports, so that it will run as a test) (see below for more [example applications](#example-applications)).
 
-*main.rs*
+<br/>
+
+You can run the following as a test using:
+
+*cargo test --features adw*
+
+<br/>
 
 ```rust
+
+//main.rs
+
+
+
+//mod applicaion_state;
+
+use gtk_estate::adw::{prelude::*, Application};
+
+//use crate::applicaion_state::ApplicationState;
+
+//mod window_state;
 
 fn main()
 {
@@ -54,11 +74,27 @@ fn main()
 
 }
 
-```
 
-*applicaion_state.rs*
 
-```rust
+//applicaion_state.rs
+
+
+
+use gtk_estate::corlib::impl_weak_self_trait;
+
+use gtk_estate::gtk::prelude::ApplicationExt;
+
+//use gtk_estate::adw::Application;
+
+use gtk_estate::scs_set_application_state;
+
+use std::rc::{Rc, Weak};
+
+use gtk_estate::StateContainers;
+
+//use crate::window_state::WindowState;
+
+use gtk_estate::corlib::WeakSelf;
 
 pub struct ApplicationState
 {
@@ -92,7 +128,7 @@ impl ApplicationState
 
             //new window
 
-            WindowContentState::new(app);
+            WindowState::new(app);
             
         });
 
@@ -115,11 +151,33 @@ impl ApplicationState
 
 impl_weak_self_trait!(ApplicationState);
 
-```
 
-*window_state.rs*
 
-```rust
+//window_state.rs
+
+
+
+//use std::rc::{Weak, Rc};
+
+use gtk_estate::{impl_widget_state_container_traits, scs_add, /*StateContainers,*/ WidgetAdapter, WidgetStateContainer};
+
+use gtk_estate::gtk::prelude::{BoxExt, WidgetExt};
+
+use gtk_estate::gtk::{Box, Orientation, Label, Align};
+
+use gtk_estate::adw::{/*Application,*/ ApplicationWindow, HeaderBar, WindowTitle};
+
+use gtk_estate::corlib::convert::AsAnyRef;
+
+use gtk_estate::{TimeOut, TimeOutRunType};
+
+use time::OffsetDateTime;
+
+use std::any::Any;
+
+use gtk_estate::{DynWidgetStateContainer, WidgetObject};
+
+//use gtk_estate::corlib::WeakSelf;
 
 #[derive(Debug)]
 pub struct WindowState
@@ -237,17 +295,13 @@ impl_widget_state_container_traits!(ApplicationWindow, WindowState);
 
 Important details to note about the above example are:
 
-The thread-local application state is set using the scs_set_application_state macro (Calls StateContainers::set_application_state basically) and the thread-local window state is set using the scs_add macro (This calls StateContainers::widget_state_ref).
+The thread-local application state is set using the scs_set_application_state macro (Calls *StateContainers::set_application_state* basically) and the thread-local window state is set using the *scs_add* macro (This calls *StateContainers::widget_state_ref*).
 
-Setting using these macros (and methods) make these objects thread-locally accessible and allows you to keep Rc references around when they would otherwise be dropped.   
+Setting widget state using these macros (and methods) make these objects thread-locally accessible and allows you to keep *Rc* references around when they would otherwise be dropped.   
 
-The impl_weak_self_trait and impl_widget_state_container_trait macros implement the necessary traits on the constituent objects to so that they can work with the StateContainers object (Accessed via scs_set_application_state and scs_add in this case).
+The *impl_weak_self_trait* and *impl_widget_state_container_traits* macros implement the various traits (*AsAnyRef*, *DynWidgetStateContainer*, *WidgetStateContainer* and *WeakSelf*) on the constituent objects for convience and so that they can work with the *StateContainers* object (Accessed via *scs_set_application_state* and *scs_add* in this case).
 
-/*
-In the above example an adw::Application is constructed then ApplicationState is instantiated and passed a reference to the Application (a clone of which will become part of its state). An ApplicationState object must implement ApplicationStateContainer, likewise widget state container objects (including windows) must implement WidgetStateContainer (see [example applications](#example-applications)).
-*/
-
-By default StateContainers is a thread-local singleton which should only contain state which deals with UI and inter-thread-communication related tasks possibly using a crate like [act_rs](https://crates.io/crates/act_rs) for the latter.
+By default *StateContainers* is a thread-local singleton which should only contain state which deals with user-interface and inter-thread-communication related tasks possibly using a crate like [LibSync](https://crates.io/crates/libsync) for the latter.
 
 </br>
 
@@ -256,6 +310,18 @@ By default StateContainers is a thread-local singleton which should only contain
 Requires the GTK4 library binaries on your system (See [The GTK Book](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation.html) for GTK installation instructions).
 
 Search your software repositories to find the libadwaita libraries if you want to use any adw features.
+
+</br>
+
+## Building The Documentation
+
+To build the documentation use:
+
+*cargo doc --features strong_widget_state*
+
+or
+
+*cargo +nightly doc --features strong_widget_state*
 
 </br>
 
@@ -333,6 +399,9 @@ This project uses a coding style which emphasises the use of white space over ke
 So this:
 
 ```rust
+
+fn bar() {} 
+
 fn foo()
 {
 
@@ -345,6 +414,9 @@ fn foo()
 Not this:
 
 ```rust
+
+fn bar() {} 
+
 fn foo()
 {
     bar();

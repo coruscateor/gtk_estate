@@ -23,7 +23,7 @@ paste = "1.0.15"
 
 [dependencies.adw]
 package = "libadwaita"
-version = "0.7.1"
+version = "0.7.2"
 optional = true
 
 [features]
@@ -96,6 +96,9 @@ adw_v1_4 = ["adw/v1_4"]
 adw_v1_5 = ["adw/v1_5"]
 adw_v1_6 = ["adw/v1_6"]
 adw_v1_7 = ["adw/v1_7"]
+
+[dev-dependencies]
+time = { version = "0.3.39", features = ["std"] }
 
 #docs.rs
 

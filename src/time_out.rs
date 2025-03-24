@@ -26,7 +26,7 @@ use gtk::glib::clone;
 //use crate::impl_weak_self_methods;
 
 ///
-/// Used by TimeOut to determine the timer resolution and contains the seconds, duration etc depending on what's selected.
+/// Used by TimeOut to determine which timer resolution to use.
 /// 
 #[derive(Clone, Copy, Debug)]
 pub enum TimeOutRunType
