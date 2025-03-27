@@ -386,15 +386,21 @@ GTK Estate Re-exposes GTK4 (gtk), libadwaita (adw (if selected)) and Corlib (cor
 
 - [Simple Unix Time Outputer](https://github.com/coruscateor/simple_unix_time_outputer)
 
-- [Escape It](https://crates.io/crates/escape_it)
+- [Mapage Types Viewer](https://github.com/coruscateor/mapage_types_viewer)
 
 - [Req It](https://crates.io/crates/req_it)
+
+- [Escape It](https://crates.io/crates/escape_it)
+
+<br/>
+
+Note: Some of these examples may be out of date.
 
 </br>
 
 ## Coding Style
 
-This project uses a coding style which emphasises the use of white space over keeping the line and column counts as low as possible.
+This project has a coding style which emphasises the use of white space over keeping the line and column counts as low as possible.
 
 So this:
 

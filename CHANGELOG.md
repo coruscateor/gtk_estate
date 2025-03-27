@@ -2,6 +2,67 @@
 
 ## Version 0.4.0 (__/04/2025)
 
+Changed
+
+- Static StateContainers objects are now located in thread local storage.
+
+-- Renamed LookupApplicationObject to LookUpApplicationObject. (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700)
+
+
+
+Removed 
+
+-- Removed the corlib::AsAny supertrait from the LookUpApplicationObject (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700), ApplicationStateContainer (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - DynApplicationStateContainer) and WidgetStateContainer (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - DynWidgetStateContainer) traits.
+
+
+
+Added
+
+-- Added dyn_adapter_ref as a required method to the WidgetStateContainer (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - DynWidgetStateContainer) trait.
+
+-- Added the impl_application_state_container (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) and impl_widget_state_container macros.
+
+-- Added a window_ref method to AdwApplcationWindowState (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - AdwApplicationWindowState).
+
+-- Added widget_ref to LookupWidgetObject (disabled?).
+
+-- Added application_ref, weak_parent_ref, weak_self  and weak_self_ref to ApplicationAdapter (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700).
+
+- Added widget_ref methods, weak_parent_ref, weak_self and weak_self_ref to WidgetAdapter.
+
+
+
+Changed
+
+- The provided type parameters for the to_rc_dyn_wsc, to_rc_dyn_sao and to_rc_dyn_swo functions now must be 'static.
+
+-- (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) Renamed the adapter method to window, added a window_ref method and implemented the dyn_adapter_ref method of the WidgetStateContainer trait on both AdwWindowState and GtkWindowState.
+
+- Updated dependencies and dependency related features.
+
+-- In ApplicationAdapter the application method now returns a clone of the contained application object (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700).
+
+- In WidgetAdapter the widget method now returns a clone of the contained widget object.
+
+-- In LookUpWidgetAdapter (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) the widget method now returns a clone of the contained widget object.
+
+-- Added widget_ref methods to LookUpWidgetAdapter (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700).
+
+-- Updated the method names of the WidgetStateContainer implementations of AdwApplcationWindowState (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - AdwApplicationWindowState), AdwWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) and GtkWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) - (Vague).
+
+-- In the ApplicationStateContainer (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) trait dyn_adapter has been renamed to dyn_application_adapter_ref and dyn_adapter_ref has been renamed to dyn_application_adapter_ref. These changes have been reflected elsewhere in the library.
+
+- In the WidgetStateContainer trait dyn_adapter has been renamed to dyn_widget_adapter_ref and dyn_adapter_ref has been renamed to dyn_widget_adapter_ref. These changes have been reflected elsewhere in the library.
+
+/*
+-- AdwApplicationWindowState, AdwWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) and GtkWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) are now now only added to the thread local StateContainers object if the "thread_local_state" feature is enabled.
+*/
+
+
+
+Fixed 
+
+- Fixed an error in the capacity method of WidgetStateContainers. It now calls the capacity method of the widget_state field instead of calling it recursively.
 
 
 
