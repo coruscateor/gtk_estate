@@ -205,7 +205,7 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66 -
 
 
 
-1a6276de2e70b0dacd598c16954b2586841352f8
+1a6276de2e70b0dacd598c16954b2586841352f8 -
 
 
 
@@ -220,11 +220,12 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66 -
 
 
 
-5449238975ef1f356323a9e263abe1ca82a90479
+5449238975ef1f356323a9e263abe1ca82a90479 -
 
 
 
 - DynWidgetStateContainer no longer requires Debug.
+
 - The StateContainers application_state sub-field now requires the provided Rc object contain a dyn Any object instead of a dyn DynApplicationStateContainer object, the relevant methods of StateContainers have been updated.
 
 - Added WidgetUpgradeError, WidgetUpgradeResult, WeakWidgetObject, WeakWidgetAdapter, DynWeakWidgetStateContainer and WeakWidgetStateContainers.
@@ -271,7 +272,7 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66 -
 
 
 
-7d164b83300b7322a65a9d60e53145e578f278d4
+7d164b83300b7322a65a9d60e53145e578f278d4 -
 
 
 
@@ -280,11 +281,12 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66 -
 
 
 
-886be84b1cd10b54c1986aa4fc8aa1cc956fea7d
+886be84b1cd10b54c1986aa4fc8aa1cc956fea7d -
 
 
 
 - Renamed the adapters module to strong_adapters.
+
 - Renamed the weak_adapters module to adapters.
 
 - Adjusted a field of StateContainers.
@@ -295,7 +297,7 @@ WIP
 
 
 
-b8c308f034761c83b210a1b0a94bd6e06cc01700
+b8c308f034761c83b210a1b0a94bd6e06cc01700 -
 
 
 
@@ -351,7 +353,7 @@ b8c308f034761c83b210a1b0a94bd6e06cc01700
 
 
 
-b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
+b1534f5ebbf2aeaeb84b08551b4156bb895f59ce -
 
 
 
@@ -376,18 +378,19 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
 
 
 
-4c9f816c070157e0fb68a1ed541328cfc366a3b7
+4c9f816c070157e0fb68a1ed541328cfc366a3b7 -
 
 
 
 - Added the strong_widget_state feature.
+
 - Commented impl_weak_self_methods usage instances thought the library.
 
 - Everything that begins with “Strong” or includes an object that does is now only included when the strong_widget_state freature is active.
 
 
 
-568c798d517dd53cbdc3e8c48490c9552d1f97a6
+568c798d517dd53cbdc3e8c48490c9552d1f97a6 -
 
 
 

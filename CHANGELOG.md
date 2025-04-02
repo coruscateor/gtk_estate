@@ -68,6 +68,53 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66
 
 - Added remove_by_widget_ref and clear methods to StateContainers.
 
+1a6276de2e70b0dacd598c16954b2586841352f8
+
+-- Added buckets_len, buckets_capacity, bucket_len and bucket_capacity on both StateContainers and WidgetStateContainers. (Disabled for StateContainers)
+
+5449238975ef1f356323a9e263abe1ca82a90479
+
+-- Added WidgetUpgradeError, WidgetUpgradeResult, WeakWidgetObject (Renamed to WidgetObject - 7ece4d5add9a6fe18e4cb44256425fb57bd81937), WeakWidgetAdapter (Renamed to WidgetAdapter - 7ece4d5add9a6fe18e4cb44256425fb57bd81937), DynWeakWidgetStateContainer (Can't find) and WeakWidgetStateContainers (Renamed to WidgetStateContainers - 7ece4d5add9a6fe18e4cb44256425fb57bd81937).
+
+886be84b1cd10b54c1986aa4fc8aa1cc956fea7d
+
+-- Added StrongGtkWindowState (Not present)
+
+b8c308f034761c83b210a1b0a94bd6e06cc01700
+
+-- Added to_rc_dyn_strong_wsc and updated to_rc_dyn_swo to use the StrongWidgetObject trait instead of StoredWidgetObject in its definition. (2 categories)
+
+- Added to_rc_dyn_strong_wsc to the rc_conversions module.
+
+(New)
+
+- Added the impl_strong_widget_state_container_traits macro.
+
+- Added the DynStrongWidgetStateContainer trait.
+
+
+
+- The scs_strong_add macro has been added.
+
+-- Added StrongAdwApplicationWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7)
+
+-- Added StrongAdwWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7)
+
+b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
+
+-- Added a bunch of code only to find I didn’t actually need it. (Yeah ok)
+
+4c9f816c070157e0fb68a1ed541328cfc366a3b7
+
+- Added the strong_widget_state feature.
+
+- Added the to_rc_dyn_any function.
+
+568c798d517dd53cbdc3e8c48490c9552d1f97a6
+
+- Added StrongWidgetStateContainers and added meta-implementations to the rules of the impl_strong_widget_state_container_traits macro.
+
+
 
 Changed
 
@@ -128,7 +175,7 @@ b20f216e08a82263b78495c5d4100935e9f49ec7
 
 -- Made corlib::convert::AsAnyRef a supertrait of LookUpApplicationObject (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700), LookupWidgetObject (Renamed to StrongWidgetObject - b8c308f034761c83b210a1b0a94bd6e06cc01700), DynApplicationStateContainer (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) and DynWidgetStateContainer.
 
--- Implemented corlib::convert::AsAnyRef on ApplicationAdapter (Removed), WidgetAdapter and LookUpWidgetAdapter (Disabled).
+-- Implemented corlib::convert::AsAnyRef on ApplicationAdapter (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700), WidgetAdapter and LookUpWidgetAdapter (ditto).
 
 7ee8915878dab781619193719c0a2d4d67476ec2
 
@@ -161,6 +208,138 @@ b64752aa5c9fc8f51f1591d583379e786d680304
 a6aff03e551abdaed58faaaf1097a6cd611b8f66
 
 - Disabled delayed Widget removal functionality.
+
+1a6276de2e70b0dacd598c16954b2586841352f8
+
+-- Derived Debug on ApplicationAdapter (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700), WidgetAdapter, AdwApplicationWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7), AdwWindowState (ditto), GtkWindowState (ditto), TimeOutRunType and WidgetStateContainers (Irrelevant - 5449238975ef1f356323a9e263abe1ca82a90479).
+
+-- Made the DynApplicationStateContainer (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) and DynWidgetStateContainer traits require that std::fmt::Debug be implemented.
+
+-- Conditionally implemented std::fmt::Debug on TimeOut. (Added in this version.)
+
+5449238975ef1f356323a9e263abe1ca82a90479
+
+-- DynWidgetStateContainer no longer requires Debug. (Incorrect)
+
+- The StateContainers application_state sub-field now requires the provided Rc object contain a dyn Any object instead of a dyn DynApplicationStateContainer object, the relevant methods of StateContainers have been updated.
+
+- WidgetStateContainers no longer derives Debug. (Irrelevant - 1a6276de2e70b0dacd598c16954b2586841352f8)
+
+50abccc9f53d23c8c51805956f97423438e85a6c
+
+-- Renamed the weak_state_containers module to weak_widget_state_containers. (Irrelevant/incorrect)
+
+- Renamed the weak_state_containers module to widget_state_containers. 
+
+886be84b1cd10b54c1986aa4fc8aa1cc956fea7d
+
+-- Renamed the adapters module to strong_adapters.
+
+- Renamed the orignal adapters module to strong_adapters.
+
+-- Renamed the weak_adapters module to adapters. (Irrelevant - added in this version)
+
+-- Adjusted a field of StateContainers. (Not important)
+
+b8c308f034761c83b210a1b0a94bd6e06cc01700
+
+-- Updated AdwApplicationWindowState (Removed), AdwWindowState (Removed) and GtkWindowState (Removed) to work with the new WidgetAdapter and WidgetStateContainers objects.
+
+-- Added to_rc_dyn_strong_wsc and updated to_rc_dyn_swo to use the StrongWidgetObject trait instead of StoredWidgetObject in its definition. (2 categories)
+
+- Updated to_rc_dyn_swo to use the StrongWidgetObject trait instead of StoredWidgetObject in its definition.
+
+- Disabled to_rc_dyn_sao
+
+-- Disabled the DynApplicationStateContainer and ApplicationStateContainer
+ traits and the impl_application_state_container_traits macro. (Disabled)
+
+-- Updated the DynStrongWidgetStateContainer trait, the impl_strong_widget_state_container_traits macro to use StrongWidgetObject instead of StoredWidgetObject in its definition.
+
+-- Updated the DynStrongWidgetStateContainer trait the to use StrongWidgetObject instead of StoredWidgetObject in their definitions. (Added)
+
+-- impl_strong_widget_state_container_traits macro (Added)
+
+- Disabled to_rc_dyn_sao
+
+-- Disabled the DynApplicationStateContainer and ApplicationStateContainer
+ traits and the impl_application_state_container_traits macro.
+
+- Disabled ApplicationStateContainer
+
+-- Updated the DynStrongWidgetStateContainer trait, the impl_strong_widget_state_container_traits macro to use StrongWidgetObject instead of StoredWidgetObject in its definition. (Irrelevant - new)
+
+-- impl_strong_widget_state_container_traits now no longer includes WidgetStateContainer trait implementations in its definition. (Irrelevant - new)
+
+-- impl_strong_widget_state_container_traits now no longer includes WidgetStateContainer trait implementations in its definition. (Irrelevant - new)
+
+-- Disabled StrongWidgetStateContainers and WidgetStateContainer trait implementations in the impl_strong_widget_state_container_traits macro implementaion. (Irrelevant - new)
+
+- In the StateContainers object widget_state now has the type RcWidgetStateContainers and strong_widget_state; StrongWidgetStateContainers.
+
+-- Disabled RcApplicationAdapter (Irrelevant)
+
+- Disabled ApplicationAdapter
+
+-- Disabled LookUpWidgetAdapter (Irrelevant)
+
+- Renamed the old WidgetAdapter object to StrongWidgetAdapter and it now uses DynStrongWidgetStateContainer instead of DynWidgetStateContainer in its struct and impl definitions.
+
+- Disabled StoredApplicationObject
+
+- Renamed LookupWidgetObject to StrongWidgetObject.
+
+-- Disabled StoredApplicationObject (Duplicate)
+
+- Disabled RcApplicationAdapter
+
+-- Finished updating StrongGtkWindowState. (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7)
+
+-- Made StrongWidgetStateContainers internally mutable, renamed the original add method to dyn_add and added find_widget_state and add methods. (Irrelevant - added this version)
+
+- Made WidgetStateContainers internally mutable, a reference type, work within the new weak-widget paradigm and renamed the original add method to dyn_add and added find_widget_state and add methods.
+
+-- The library now complies again. (Yay!)
+
+b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
+
+- The gtk4 dependency is now referred to as gtk and the project has been updated to reflect this change.
+
+- Renamed all features the started with “gtk” so that they now start with “gtk4”.
+
+- Fixed a bunch of adw out of place imports.
+
+- Made the inclusion of StrongAdwApplicationWindowState and StrongAdwWindowState dependant on the adw feature. (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
+)
+
+-- StrongWidgetStateContainers (New in this version) and WidgetStateContainers each no longer require a weak_parent be provided on initialisation.
+
+- Optimised how the dyn_add, dyn_find_state, dyn_has_state methods of WidgetStateContainers obtain widgets internally.
+
+- The on_destroy method of WidgetStateContainers now takes a Widget instead of trying to obtain one internally.
+
+-- Other minor changes. (Etc...)
+
+4c9f816c070157e0fb68a1ed541328cfc366a3b7
+
+-- Commented impl_weak_self_methods usage instances thought the library. (Irrelevant)
+
+- Everything that begins with “Strong” or includes an object that does is now only included when the strong_widget_state freature is active.
+
+568c798d517dd53cbdc3e8c48490c9552d1f97a6
+
+-- Updated AdwApplicationWindowState and AdwWindowState to work with the latest version of WidgetAdapter. (Irrelevant)
+
+-- Moved DynStrongWidgetStateContainer into the strong_widget_state_containers module. (Irrelevant - Added in this version)
+
+- Re-enabled WidgetStateContainer and its usage instances. (Irrelevant)
+
+-- Moved impl_strong_widget_state_container_traits into the strong_widget_state_containers module.  (Irrelevant - new)
+
+- The try_set_application_state and set_application_state methods of StateContainers are now generic.
+
+- Updated StrongAdwApplicationWindowState and StrongAdwWindowState. (Irrelevant - Removed)
+
 
 
 Fixed 
