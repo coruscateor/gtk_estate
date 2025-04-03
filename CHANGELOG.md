@@ -70,7 +70,7 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66
 
 1a6276de2e70b0dacd598c16954b2586841352f8
 
--- Added buckets_len, buckets_capacity, bucket_len and bucket_capacity on both StateContainers and WidgetStateContainers. (Disabled for StateContainers)
+-- Added buckets_len, buckets_capacity, bucket_len and bucket_capacity on both StateContainers (Disabled) and WidgetStateContainers. (Disabled for StateContainers)
 
 5449238975ef1f356323a9e263abe1ca82a90479
 
@@ -78,7 +78,7 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66
 
 886be84b1cd10b54c1986aa4fc8aa1cc956fea7d
 
--- Added StrongGtkWindowState (Not present)
+-- Added StrongGtkWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7)
 
 b8c308f034761c83b210a1b0a94bd6e06cc01700
 
@@ -113,6 +113,69 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
 568c798d517dd53cbdc3e8c48490c9552d1f97a6
 
 - Added StrongWidgetStateContainers and added meta-implementations to the rules of the impl_strong_widget_state_container_traits macro.
+
+0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
+
+- Added a static_type_ref method to WidgetUpgradeError. (Irrelevant - Added in this version)
+
+0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
+
+-- Added corlib::weak_self::WeakSelf meta-implementations to all the rules of both impl_strong_widget_state_container_traits (Irrelevant - Added in this version) and impl_widget_state_container_traits. (Irrelevant - Added in this version)
+
+(fixed)
+
+- Added on_widget_upgrade_error, on_widget_upgrade_error_with_param, widget_upgrade_error_display_println, widget_upgrade_error_debug_println, widget_upgrade_error_display_panic and widget_upgrade_error_debug_panic functions.
+
+
+
+Was missed:
+
+7ece4d5add9a6fe18e4cb44256425fb57bd81937
+
+- Added widget_state_ref and strong_widget_state_ref methods to StateContainers
+
+(From point 10)
+
+- Added WidgetObject
+
+- Replaced the old WidgetAdapter object with a new one.
+
+
+
+- Added a new impl_widget_state_container_traits macro.
+
+
+
+(From point 12)
+
+- Added a new WidgetStateContainers struct.
+
+
+
+787261790a3f2fdb963263887d492d4327b30f96
+
+(From point 4)
+
+-- Added Documentation (Remove)
+
+
+
+482317bd55c6feb4d71e0ab55d51f7ea282fcf3e
+
+- Added and updated a bunch of documentation.
+
+
+cad8a7c7846ae5852bfbe07b33ff339a92f85845
+
+-- Added more documentation (Remove)
+
+8a784dfb45a465b963ece0b6efbfe7ac0b7ea77d
+
+- Added the adw_v1_1 feature.
+
+faa23bb314315563e59cf4da8b588736390716b5
+
+- Added the time crate as a development dependency.
 
 
 
@@ -330,7 +393,7 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
 
 -- Updated AdwApplicationWindowState and AdwWindowState to work with the latest version of WidgetAdapter. (Irrelevant)
 
--- Moved DynStrongWidgetStateContainer into the strong_widget_state_containers module. (Irrelevant - Added in this version)
+-- Moved DynStrongWidgetStateContainer into the strong_widget_state_containers module. (Somewhat relevant - Renamed - 7ece4d5add9a6fe18e4cb44256425fb57bd81937)
 
 - Re-enabled WidgetStateContainer and its usage instances. (Irrelevant)
 
@@ -340,15 +403,92 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
 
 - Updated StrongAdwApplicationWindowState and StrongAdwWindowState. (Irrelevant - Removed)
 
+0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
+
+-- WidgetUpgradeError::new now requires a glib::Type. This change has been reflected elsewhere in the library. (Irrelevant - Added in this version)
+
+Was missed:
+
+7ece4d5add9a6fe18e4cb44256425fb57bd81937
+
+-- Commented the clear_state_containers_on_drop module declaration. (Irrelevant - Removed)
+
+-- Renamed the old DynWidgetStateContainer trait to DynStrongWidgetStateContainer and updated the project accordingly. (Combine with below)
+
+-- Moved DynStrongWidgetStateContainer into the strong_widget_state_containers module. (From 568c798d517dd53cbdc3e8c48490c9552d1f97a6)
+
+-- Disabled WidgetStateContainer (Reenabled - 568c798d517dd53cbdc3e8c48490c9552d1f97a6)
+
+- Adjusted the fields of StateContainers.
+
+-- Disabled the dyn_add,  add, remove_by_rc_by_ptr, WidgetStateContainers RefCell accessor, remove, delayed_removal, remove_by_rc_by_ptr, remove_by_widget_ref, has_widget_state, has_widget_state, find_widget_state, buckets_len, buckets_capacity, bucket_len, bucket_capacity and clear methods. (In the StateContainers implementation.) (The clear method as added at some point) (Rewitten below)
+
+- Disabled the dyn_add,  add, remove_by_rc_by_ptr, WidgetStateContainers RefCell accessor, remove, delayed_removal, remove_by_widget_ref, has_widget_state and the find_widget_state methods of StateContainers. 
+
+- Updated the scs_add macro.
+
+- Renamed the widget_state_containers module to strong_widget_state_containers.
+
+- Renamed the old WidgetStateContainers struct to StrongWidgetStateContainers.
+
+-- Renamed the WeakWidgetObject trait to WidgetObject, the WeakWidgetAdapter struct to WidgetAdapter, WeakWidgetObject to WidgetObject and updated the relevant parts of the project with these changes. (Dealt with in the added section)
+
+-- Renamed WeakWidgetStateContainers struct to WidgetStateContainers. (Dealt with in the added section)
+
+2adc2a9f2cf507e2cf7c6b981c097e5eb8fee201
+
+- Updated RcByPtr import statements throughout the project.
+
+787261790a3f2fdb963263887d492d4327b30f96
+
+-- Changed the library version to be "0.4.0-beta". (Will be changed again)
+
+-- Updated the Corlib dependency to "0.4.0”. (Irrelevant)
+
+- Updated the gtk dependency version to "0.9.6".
+
+-- Wrote some documentation. (Added Documentation?)
+
+4daf6e40712ce3397cfac5a250cc1f301af88639
+
+- Updated the corlib dependency to version 0.4.1.
+
+-- In the package.metadata.docs.rs section of the Cargo.toml the features configuration flag has been set to ["strong_widget_state"]. (Adjusted)
+
+- In the package.metadata.docs.rs section of the Cargo.toml the features configuration flag has been set to [\"strong_widget_state\"].
+
+cad8a7c7846ae5852bfbe07b33ff339a92f85845
+
+-- In the rc_conversions module, the value parameters of the to_rc_dyn_wsc, to_rc_dyn_strong_wsc (New in this version),
+to_rc_dyn_swo and the to_rc_dyn_any (Ditto) functions now take references instead of values and now clone the referenced values internally as well. The project has been updated to reflect these changes.
+
+-- In TimeOut, the time_out_fn parameters are now passed by reference and cloned. (Remove)
+
+8a784dfb45a465b963ece0b6efbfe7ac0b7ea77d
+
+- Updated the readme.
+
+faa23bb314315563e59cf4da8b588736390716b5
+
+- Updated the libadwaita dependency version to 0.7.2.
+
+-- Started work on the changelog notes. (Remove)
+
+-- Further edited the readme and updated other documentation. (Remove)
 
 
-Fixed 
+
+Fixed
 
 - Fixed an error in the capacity method of WidgetStateContainers. It now calls the capacity method of the widget_state field instead of calling it recursively.
 
 a6aff03e551abdaed58faaaf1097a6cd611b8f66
 
 - Corrected a dependency error in the time_out module.
+
+0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
+
+-- Fixed an issue where WidgetStateContainers wasn’t reacting to widget destruction correctly. (Elabborate)
 
 
 
@@ -365,6 +505,22 @@ Removed
 8a3a5ec4b0adae1504be1182edeac4a4361132cd
 
 -- Removed TimeOutWithParent (Added - efd18f92ed92a8d2e89152d1218f4eb9ff3303cf)
+
+0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
+
+-- Removed AdwApplicationWindowState, AdwWindowState, ClearStateContainersOnDrop (Irrelevant - Added in this version), GtkWindowState, StrongAdwApplicationWindowState (ditto), StrongAdwWindowState (ditto) and StrongGtkWindowState. (ditto)
+
+-- Removed some old code. (Ok)
+
+787261790a3f2fdb963263887d492d4327b30f96
+
+- Removed the template directory.
+
+4daf6e40712ce3397cfac5a250cc1f301af88639
+
+-- Started removing cfg_if blocks. (Re-written)
+
+- Removed some cfg_if blocks in the project lib file.
 
 
 

@@ -234,7 +234,7 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66 -
 
 
 
-50abccc9f53d23c8c51805956f97423438e85a6c
+50abccc9f53d23c8c51805956f97423438e85a6c -
 
 
 
@@ -243,11 +243,12 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66 -
 
 
 
-7ece4d5add9a6fe18e4cb44256425fb57bd81937
+7ece4d5add9a6fe18e4cb44256425fb57bd81937 -
 
 
 
 - Commented the clear_state_containers_on_drop module declaration.
+
 - Renamed the old DynWidgetStateContainer trait to DynStrongWidgetStateContainer and updated the project accordingly.
 
 - Disabled WidgetStateContainer
@@ -413,7 +414,7 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce -
 
 
 
-0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
+0f7df212920b051cd8c48da18a1cd39ad1d7d6e7 -
 
 
 
@@ -434,7 +435,7 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce -
 
 
 
-2adc2a9f2cf507e2cf7c6b981c097e5eb8fee201
+2adc2a9f2cf507e2cf7c6b981c097e5eb8fee201 -
 
 
 
@@ -442,11 +443,12 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce -
 
 
 
-787261790a3f2fdb963263887d492d4327b30f96
+787261790a3f2fdb963263887d492d4327b30f96 -
 
 
 
 - Changed the library version to be "0.4.0-beta".
+
 - Updated the Corlib dependency to "0.4.0”.
 
 - Updated the gtk dependency version to "0.9.6".
@@ -457,18 +459,19 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce -
 
 
 
-4daf6e40712ce3397cfac5a250cc1f301af88639
+4daf6e40712ce3397cfac5a250cc1f301af88639 -
 
 
 
 - Updated the corlib dependency to version 0.4.1.
+
 - In the package.metadata.docs.rs section of the Cargo.toml the features configuration flag has been set to ["strong_widget_state"].
 
 - Started removing cfg_if blocks.
 
 
 
-482317bd55c6feb4d71e0ab55d51f7ea282fcf3e
+482317bd55c6feb4d71e0ab55d51f7ea282fcf3e -
 
 
 
@@ -476,11 +479,12 @@ Added and updated a bunch of documentation.
 
 
 
-cad8a7c7846ae5852bfbe07b33ff339a92f85845
+cad8a7c7846ae5852bfbe07b33ff339a92f85845 -
 
 
 
 - Added more documentation
+
 - In the rc_conversions module, the value parameters of the to_rc_dyn_wsc, to_rc_dyn_strong_wsc,
 to_rc_dyn_swo and the to_rc_dyn_any functions now take references instead of values and now clone the referenced values internally as well. The project has been updated to reflect these changes.
 
@@ -488,20 +492,22 @@ to_rc_dyn_swo and the to_rc_dyn_any functions now take references instead of val
 
 
 
-8a784dfb45a465b963ece0b6efbfe7ac0b7ea77d
+8a784dfb45a465b963ece0b6efbfe7ac0b7ea77d -
 
 
 
 - Updated the readme.
+
 - Added the adw_v1_1 feature.
 
 
 
-faa23bb314315563e59cf4da8b588736390716b5
+faa23bb314315563e59cf4da8b588736390716b5 -
 
 
 
 - Updated the libadwaita dependency version to 0.7.2.
+
 - Added the time crate as a development dependency.
 
 - Started work on the changelog notes.
