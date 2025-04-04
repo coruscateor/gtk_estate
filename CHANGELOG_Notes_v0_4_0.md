@@ -149,6 +149,7 @@ b20f216e08a82263b78495c5d4100935e9f49ec7 -
 
 
 - Renamed dyn_application_state_ref to application_state_ref_func.
+
 - Renamed try_get_application_state to try_get_dyn_application_state.
 
 

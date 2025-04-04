@@ -6,55 +6,97 @@ Added
 
 -- Added dyn_adapter_ref as a required method to the WidgetStateContainer (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - DynWidgetStateContainer) trait.
 
--- Added the impl_application_state_container (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) and impl_widget_state_container macros.
+--
+
+-- Added the impl_application_state_container (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) and impl_widget_state_container macros. (Both had "_traits" appended to their names at some point.)
+
+- Added the impl_widget_state_container_traits macro.
+
+
 
 -- Added a window_ref method to AdwApplcationWindowState (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - AdwApplicationWindowState - Removed).
 
--- Added widget_ref to LookupWidgetObject (disabled?).
+--
+
+-- Added widget_ref to LookupWidgetObject (Renamed - b8c308f034761c83b210a1b0a94bd6e06cc01700).
+
+--
 
 -- Added application_ref, weak_parent_ref, weak_self  and weak_self_ref to ApplicationAdapter (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700).
 
-- Added widget_ref methods, weak_parent_ref, weak_self and weak_self_ref to WidgetAdapter.
+--
+
+-- Added widget_ref (Removed at some point) methods, weak_parent_ref, weak_self and weak_self_ref to WidgetAdapter.
+
+- Added weak_parent_ref, weak_self and weak_self_ref methods to WidgetAdapter.
+
+
 
 b832c12ec0041ddba75f9d251423b2c9615bb69d
 
 - Added a thread_local_state default feature and made the inclusion of thread local StateContainers instances and related functionality dependant on this feature.
 
+
+
 -- Added state_containers_is_set (disabled)
 
+--
+
 -- Added try_get_application_state (Renamed 7ee8915878dab781619193719c0a2d4d67476ec2)
+
+- Added the try_application_state_ref_func method to StateContainers.
 
 24340bf5e837862f3079e56563b547a80bbba0bb
 
 -- Added the RcApplicationAdapter and RcWidgetAdapter types. (Both disabled)
 
+--
+
 895ac21b36a07675b7211e03a16a5071677c7887
 
 - Added impl_weak_self_methods
 
--- weak_self_ref has been added to AdwApplcationWindowState (0f7df212920b051cd8c48da18a1cd39ad1d7d6e7 - Removed)), AdwWindowState (ditto), GtkWindowState (ditto), -SimpleTimeOut and TimeOut.
+
+
+-- weak_self_ref has been added to AdwApplcationWindowState (0f7df212920b051cd8c48da18a1cd39ad1d7d6e7 - Removed)), AdwWindowState (ditto), GtkWindowState (ditto), -SimpleTimeOut (Renamed - efd18f92ed92a8d2e89152d1218f4eb9ff3303cf) and TimeOut. (Irrelevant - weak_self_ref isn't part of TimeOut anyway.)
+
+--
 
 /*
 -- Added TimeOutWithParent (Removed - 8a3a5ec4b0adae1504be1182edeac4a4361132cd)
 */
 
+--
+
 6895c140f3df2f411f19a483d5761072762b3a98
 
 -- Added AsAnyRef implementations to all impl_application_state_container_traits (Disabled) rules.
 
-- Added AsAnyRef implementations to both impl_widget_state_container_traits rules.
+--
 
--- Added dyn_application_state_ref (Renamed to try_application_state_ref_func 7ee8915878dab781619193719c -> 3adb0092c6c6cdfd12b31bb450b2395dbc4fb99c) to StateContainers.
+-- Added AsAnyRef implementations to both impl_widget_state_container_traits rules.
+
+- Added AsAnyRef meta-implementations to both impl_widget_state_container_traits rules.
+
+-- Added dyn_application_state_ref (Renamed to try_application_state_ref_func 7ee8915878dab781619193719c0a2d4d67476ec2, see also 3adb0092c6c6cdfd12b31bb450b2395dbc4fb99c) to StateContainers.
+
+--
 
 55a0fe3d24dab3f694fba8bfbfd95c27ddfb06ca
 
 - Added the WidgetContainer trait and the impl_widget_container macro.
 
-431c709cfaefbdf93e127f663a7a594fe886b47d -
+
+
+431c709cfaefbdf93e127f663a7a594fe886b47d
 
 - Added the impl_contents_box_ref macro.
 
+
+
 3adb0092c6c6cdfd12b31bb450b2395dbc4fb99c
+
+-- Added application_state_ref_func to StateContainers. (Origninal renamed application_state_ref_func)
 
 - Added application_state_ref_func to StateContainers.
 
@@ -62,27 +104,39 @@ b832c12ec0041ddba75f9d251423b2c9615bb69d
 
 - Added TimeOutRunType
 
+
+
 a6aff03e551abdaed58faaaf1097a6cd611b8f66
 
 -- Added ClearStateContainersOnDrop (Then removed)
 
-- Added remove_by_widget_ref and clear methods to StateContainers.
+--
+
+-- Added remove_by_widget_ref and clear methods to StateContainers. (Both disabled)
+
+--
 
 1a6276de2e70b0dacd598c16954b2586841352f8
 
 -- Added buckets_len, buckets_capacity, bucket_len and bucket_capacity on both StateContainers (Disabled) and WidgetStateContainers. (Disabled for StateContainers)
 
+--
+
 5449238975ef1f356323a9e263abe1ca82a90479
 
--- Added WidgetUpgradeError, WidgetUpgradeResult, WeakWidgetObject (Renamed to WidgetObject - 7ece4d5add9a6fe18e4cb44256425fb57bd81937), WeakWidgetAdapter (Renamed to WidgetAdapter - 7ece4d5add9a6fe18e4cb44256425fb57bd81937), DynWeakWidgetStateContainer (Can't find) and WeakWidgetStateContainers (Renamed to WidgetStateContainers - 7ece4d5add9a6fe18e4cb44256425fb57bd81937).
+-- Added WidgetUpgradeError, WidgetUpgradeResult, WeakWidgetObject (Renamed to WidgetObject - 7ece4d5add9a6fe18e4cb44256425fb57bd81937), WeakWidgetAdapter (Renamed to WidgetAdapter - 7ece4d5add9a6fe18e4cb44256425fb57bd81937), DynWeakWidgetStateContainer (Can't find) and WeakWidgetStateContainers (Likely renamed temporarily from WidgetStateContainers.).
+
+- Added the WidgetUpgradeError struct, the WidgetUpgradeResult type, the WidgetObject trait and a new WidgetAdapter struct.
 
 886be84b1cd10b54c1986aa4fc8aa1cc956fea7d
 
 -- Added StrongGtkWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7)
 
+--
+
 b8c308f034761c83b210a1b0a94bd6e06cc01700
 
--- Added to_rc_dyn_strong_wsc and updated to_rc_dyn_swo to use the StrongWidgetObject trait instead of StoredWidgetObject in its definition. (2 categories)
+-- Added to_rc_dyn_strong_wsc and updated to_rc_dyn_swo to use the StrongWidgetObject trait instead of StoredWidgetObject in its definition. (2 categories - the latter part is in the changed category.)
 
 - Added to_rc_dyn_strong_wsc to the rc_conversions module.
 
@@ -90,37 +144,57 @@ b8c308f034761c83b210a1b0a94bd6e06cc01700
 
 - Added the impl_strong_widget_state_container_traits macro.
 
+
+
 - Added the DynStrongWidgetStateContainer trait.
 
 
 
 - The scs_strong_add macro has been added.
 
+
+
 -- Added StrongAdwApplicationWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7)
 
+--
+
 -- Added StrongAdwWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7)
+
+--
 
 b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
 
 -- Added a bunch of code only to find I didn’t actually need it. (Yeah ok)
 
+--
+
 4c9f816c070157e0fb68a1ed541328cfc366a3b7
 
 - Added the strong_widget_state feature.
 
-- Added the to_rc_dyn_any function.
+
+
+-- Added the to_rc_dyn_any function.
+
+- Added the to_rc_dyn_any function to the rc_conversions module.
 
 568c798d517dd53cbdc3e8c48490c9552d1f97a6
 
-- Added StrongWidgetStateContainers and added meta-implementations to the rules of the impl_strong_widget_state_container_traits macro.
+-- Added StrongWidgetStateContainers and added meta-implementations to the rules of the impl_strong_widget_state_container_traits macro.
+
+- Added the StrongWidgetStateContainers struct.
 
 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
 
-- Added a static_type_ref method to WidgetUpgradeError. (Irrelevant - Added in this version)
+-- Added a static_type_ref method to WidgetUpgradeError. (Irrelevant - Added in this version)
+
+--
 
 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7
 
 -- Added corlib::weak_self::WeakSelf meta-implementations to all the rules of both impl_strong_widget_state_container_traits (Irrelevant - Added in this version) and impl_widget_state_container_traits. (Irrelevant - Added in this version)
+
+--
 
 (fixed)
 
@@ -132,13 +206,17 @@ Was missed:
 
 7ece4d5add9a6fe18e4cb44256425fb57bd81937
 
-- Added widget_state_ref and strong_widget_state_ref methods to StateContainers
+- Added widget_state_ref and strong_widget_state_ref methods to StateContainers.
+
+
 
 (From point 10)
 
 - Added WidgetObject
 
-- Replaced the old WidgetAdapter object with a new one.
+
+
+-- Replaced the old WidgetAdapter object with a new one. (Moved to the changed section.)
 
 
 
@@ -158,20 +236,25 @@ Was missed:
 
 -- Added Documentation (Remove)
 
-
+--
 
 482317bd55c6feb4d71e0ab55d51f7ea282fcf3e
 
 - Added and updated a bunch of documentation.
 
 
+
 cad8a7c7846ae5852bfbe07b33ff339a92f85845
 
 -- Added more documentation (Remove)
 
+--
+
 8a784dfb45a465b963ece0b6efbfe7ac0b7ea77d
 
 - Added the adw_v1_1 feature.
+
+
 
 faa23bb314315563e59cf4da8b588736390716b5
 
@@ -182,45 +265,80 @@ faa23bb314315563e59cf4da8b588736390716b5
 Changed
 
 
-- Static StateContainers objects are now located in thread local storage.
+
+-- Static StateContainers objects are now located in thread local storage.
+
+- StateContainers objects are now initialised in thread local storage by default.
 
 -- Renamed LookupApplicationObject to LookUpApplicationObject. (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700)
 
-- The provided type parameters for the to_rc_dyn_wsc, to_rc_dyn_sao and to_rc_dyn_swo functions now must be 'static.
+--
+
+-- The provided type parameters for the to_rc_dyn_wsc, to_rc_dyn_sao (Disabled) and to_rc_dyn_swo functions now must be 'static.
+
+- The provided type parameters for the to_rc_dyn_wsc and to_rc_dyn_swo functions now must have 'static lifetimes.
 
 -- (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) Renamed the adapter method to window, added a window_ref method and implemented the dyn_adapter_ref method of the WidgetStateContainer trait on both AdwWindowState and GtkWindowState.
 
+--
+
 - Updated dependencies and dependency related features.
+
+
 
 -- In ApplicationAdapter the application method now returns a clone of the contained application object (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700).
 
-- In WidgetAdapter the widget method now returns a clone of the contained widget object.
+--
+
+-- In WidgetAdapter the widget method now returns a clone of the contained widget object. (Irrelevant)
+
+- In WidgetAdapter the widget method now returns a WidgetUpgradeResult.
 
 -- In LookUpWidgetAdapter (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) the widget method now returns a clone of the contained widget object.
 
 -- Added widget_ref methods to LookUpWidgetAdapter (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700).
 
--- Updated the method names of the WidgetStateContainer implementations of AdwApplcationWindowState (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - AdwApplicationWindowState), AdwWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) and GtkWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) - (Vague).
+--
+
+-- Updated the method names of the WidgetStateContainer implementations of AdwApplcationWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7), AdwWindowState (ditto) and GtkWindowState (ditto) - (Vague).
+
+--
 
 -- In the ApplicationStateContainer (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700) trait dyn_adapter has been renamed to dyn_application_adapter_ref and dyn_adapter_ref has been renamed to dyn_application_adapter_ref. These changes have been reflected elsewhere in the library.
 
-- In the WidgetStateContainer trait dyn_adapter has been renamed to dyn_widget_adapter_ref and dyn_adapter_ref has been renamed to dyn_widget_adapter_ref. These changes have been reflected elsewhere in the library.
+--
+
+-- In the WidgetStateContainer trait dyn_adapter has been renamed to dyn_widget_adapter_ref and dyn_adapter_ref has been renamed to dyn_widget_adapter_ref. These changes have been reflected elsewhere in the library.
+
+-- In the WidgetStateContainer trait dyn_adapter has been renamed to dyn_widget_adapter_ref and dyn_adapter_ref has been renamed to dyn_widget_adapter_ref. These changes have been reflected elsewhere in the library.??
 
 /*
 -- AdwApplicationWindowState, AdwWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) and GtkWindowState (Removed - 0f7df212920b051cd8c48da18a1cd39ad1d7d6e7) are now now only added to the thread local StateContainers object if the "thread_local_state" feature is enabled.
 */
 
+--
+
 - set_state_containers now returns a bool.
 
-- Renamed set_application_state to try_set_application_state.
 
-- Renamed set_application_state_or_panic to set_application_state.
 
-- Renamed scs_set_app to scs_set_application_state.
+-- Renamed set_application_state to try_set_application_state.
+
+- Renamed set_application_state to try_set_application_state in StateContainers.
+
+-- Renamed set_application_state_or_panic to set_application_state.
+
+- Renamed set_application_state_or_panic to set_application_state in StateContainers.
+
+-- Renamed scs_set_app to scs_set_application_state.
+
+- Renamed the scs_set_app macro to scs_set_application_state.
 
 895ac21b36a07675b7211e03a16a5071677c7887
 
--- In -SimpleTimeOut (Renamed - efd18f92ed92a8d2e89152d1218f4eb9ff3303cf) and TimeOut weak_self now returns a clone of Weak<Self>.
+-- In -SimpleTimeOut (Renamed - efd18f92ed92a8d2e89152d1218f4eb9ff3303cf) and TimeOut (Original removed) weak_self now returns a clone of Weak<Self>.
+
+--
 
 b20f216e08a82263b78495c5d4100935e9f49ec7
 
@@ -244,19 +362,27 @@ b20f216e08a82263b78495c5d4100935e9f49ec7
 
 -- Renamed dyn_application_state_ref to application_state_ref_func (Renamed to try_application_state_ref_func - 3adb0092c6c6cdfd12b31bb450b2395dbc4fb99c).
 
-- Renamed try_get_application_state to try_get_dyn_application_state.
+--
+
+-- Renamed try_get_application_state to try_get_dyn_application_state. (Addressed in the added section.)
 
 3adb0092c6c6cdfd12b31bb450b2395dbc4fb99c
 
-- Renamed application_state_ref_func to try_application_state_ref_func in StateContainers.
+-- Renamed application_state_ref_func to try_application_state_ref_func in StateContainers. (Irrelevant - Added in this version.)
 
-- Added a new application_state_ref_func method to StateContainers.
+--
+
+-- Added a new application_state_ref_func method to StateContainers. (Redundant)
+
+--
 
 -- Discovered that the current method of handling automatic dropping of state-containers does not work.
 
+--
+
 efd18f92ed92a8d2e89152d1218f4eb9ff3303cf
 
--- Renamed SimpleTimeOut to TimeOut and mostly completed rewriting it.
+-- Renamed SimpleTimeOut to TimeOut and mostly completed rewriting it. (removed the orignal TimeOut struct)
 
 -- Added TimeOutWithParent (Removed - 8a3a5ec4b0adae1504be1182edeac4a4361132cd)
 
@@ -350,7 +476,7 @@ b8c308f034761c83b210a1b0a94bd6e06cc01700
 
 - Disabled StoredApplicationObject
 
-- Renamed LookupWidgetObject to StrongWidgetObject.
+-- Renamed LookupWidgetObject to StrongWidgetObject. (And added a widget_ref method declartion to it. From 30a2f172dd49d5e7ed9f61964fbfc9972619c0db, point 2)
 
 -- Disabled StoredApplicationObject (Duplicate)
 
@@ -433,7 +559,11 @@ Was missed:
 
 -- Renamed the WeakWidgetObject trait to WidgetObject, the WeakWidgetAdapter struct to WidgetAdapter, WeakWidgetObject to WidgetObject and updated the relevant parts of the project with these changes. (Dealt with in the added section)
 
+--
+
 -- Renamed WeakWidgetStateContainers struct to WidgetStateContainers. (Dealt with in the added section)
+
+--
 
 2adc2a9f2cf507e2cf7c6b981c097e5eb8fee201
 
@@ -475,6 +605,24 @@ faa23bb314315563e59cf4da8b588736390716b5
 -- Started work on the changelog notes. (Remove)
 
 -- Further edited the readme and updated other documentation. (Remove)
+
+/*
+Deduced from 30a2f172dd49d5e7ed9f61964fbfc9972619c0db
+
+- Disabled LookupWidgetObject (Wrong)
+*/
+
+From b8c308f034761c83b210a1b0a94bd6e06cc01700, point 1
+
+- Updated to_rc_dyn_swo to use the StrongWidgetObject trait instead of StoredWidgetObject in its definition.
+
+Was missed:
+
+7ece4d5add9a6fe18e4cb44256425fb57bd81937
+
+(From point 10)
+
+- Replaced the old WidgetAdapter object with a new one.
 
 
 
