@@ -374,14 +374,6 @@ GTK Estate Re-exposes GTK4 (gtk), libadwaita (adw (if selected)) and Corlib (cor
 
 </br>
 
-## Todo
-
-- Add more GTK/adw helper functions and helper objects.
-- Add more documentation
-- Add procedural macros
-
-</br>
-
 ## Example Applications
 
 - [Simple Unix Time Outputer](https://github.com/coruscateor/simple_unix_time_outputer)
@@ -395,6 +387,14 @@ GTK Estate Re-exposes GTK4 (gtk), libadwaita (adw (if selected)) and Corlib (cor
 <br/>
 
 Note: Some of these examples may be out of date.
+
+</br>
+
+## Todo
+
+- Add more GTK/adw helper functions and helper objects.
+- Add more documentation
+- Add procedural macros
 
 </br>
 
