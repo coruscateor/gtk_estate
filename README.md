@@ -23,9 +23,9 @@ GTK Estate is a state association library for GTK widgets using the excellent [G
 
 The main purpose of GTK Estate is to provide a convenient way to associate user-defined state objects with GTK and libadwaita container widgets. Using user-defined objects you control the user-centric state of their associated widgets and react to their signals. GTK Estate also contains objects such as TimeOut and helper functions that can assist you in building dynamic GTK applications programmatically.
 
-The StateContainers struct is a singleton and contains widget state association hashmaps, each type of widget gets its own map instance (bucket).
+The StateContainers struct is a thread-local singleton and contains widget state association hashmaps, each type of widget gets its own map instance (bucket).
 
-You should read the [gtk4-rs tutorial](https://gtk-rs.org/gtk4-rs/stable/latest/book/) before proceeding.
+You should read the [gtk4-rs tutorial](https://gtk-rs.org/gtk4-rs/stable/latest/book/), if you haven't already, before proceeding.
 
 </br>
 
@@ -309,7 +309,7 @@ By default *StateContainers* is a thread-local singleton which should only conta
 
 Requires the GTK4 library binaries on your system (See [The GTK Book](https://gtk-rs.org/gtk4-rs/stable/latest/book/installation.html) for GTK installation instructions).
 
-Search your software repositories to find the libadwaita libraries if you want to use any adw features.
+Search your software repositories to find the relevant libadwaita libraries if you want to use any adw features.
 
 </br>
 
@@ -319,7 +319,7 @@ To build the documentation use:
 
 *cargo doc --features strong_widget_state*
 
-or
+or (If applicable)
 
 *cargo +nightly doc --features strong_widget_state*
 
@@ -370,7 +370,7 @@ or
 
 ## Additionally
 
-GTK Estate Re-exposes GTK4 (gtk), libadwaita (adw (if selected)) and Corlib (corlib).
+GTK Estate Re-exposes [gtk4](https://crates.io/crates/gtk4) (gtk), [libadwaita](https://crates.io/crates/libadwaita) (adw (if selected)) and [Corlib](https://crates.io/crates/corlib) (corlib).
 
 </br>
 
@@ -387,6 +387,12 @@ GTK Estate Re-exposes GTK4 (gtk), libadwaita (adw (if selected)) and Corlib (cor
 <br/>
 
 Note: Some of these examples may be out of date.
+
+</br>
+
+## Compiler:
+
+Use the latest stable compiler.
 
 </br>
 

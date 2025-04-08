@@ -5,6 +5,12 @@ use gtk::Widget;
 /// 
 /// Use with sub-contents objects.
 /// 
+/// Sub-contents objects are objects referenced by contents-state objects or other sub-contents objects.
+///
+/// They are a way to reuse user interface components and state in GTK Estate.
+///
+/// They contain strong widget references as they are only intended to be referenced in contents-state and other sub-contents objects.
+/// 
 pub trait WidgetContainer
 {
 

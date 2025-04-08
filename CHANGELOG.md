@@ -607,15 +607,11 @@ b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
 
 -- The gtk4 dependency is now referred to as gtk and the project has been updated to reflect this change.
 
-- The name of gtk4 dependency has been changed to gtk and the project has been updated to reflect this change.
+- The name of the gtk4 dependency has been changed to gtk and the project has been updated to reflect this change.
 
 -- Renamed all features the started with “gtk” so that they now start with “gtk4”.
 
 - Renamed all the features that started with “gtk” to now start with “gtk4”.
-
-
-
-- Fixed a bunch of adw out of place imports.
 
 
 
@@ -766,7 +762,7 @@ Was missed:
 
 -- In the package.metadata.docs.rs section of the Cargo.toml the features configuration flag has been set to ["strong_widget_state"]. (Adjusted)
 
-- In the package.metadata.docs.rs section of the Cargo.toml file the features configuration flag has been set to [\"strong_widget_state\"].
+- In the package.metadata.docs.rs section of the Cargo.toml file the features configuration flag has been set to ["strong_widget_state"].
 
 cad8a7c7846ae5852bfbe07b33ff339a92f85845
 
@@ -840,6 +836,14 @@ a6aff03e551abdaed58faaaf1097a6cd611b8f66
 
 - Fixed an issue where WidgetStateContainers wasn’t reacting to widget destruction correctly and dropping Rc'd DynWidgetStateContainer objects as expected.
 
+
+b1534f5ebbf2aeaeb84b08551b4156bb895f59ce
+
+
+- Fixed a bunch of adw out of place imports.
+
+
+
 Removed 
 
 -- Removed the corlib::AsAny supertrait from the LookUpApplicationObject (Disabled - b8c308f034761c83b210a1b0a94bd6e06cc01700), ApplicationStateContainer (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - DynApplicationStateContainer) and WidgetStateContainer (Renamed - b20f216e08a82263b78495c5d4100935e9f49ec7 - DynWidgetStateContainer) traits.
@@ -888,7 +892,7 @@ efd18f92ed92a8d2e89152d1218f4eb9ff3303cf
 
 Missing
 
-- Due to the amount of re-naming and moving of objects and functions in the production of this version of the GTK Estate, some changes may have been missed.
+- Due to the amount of re-naming and movement of objects and functions in the production of this version of GTK Estate, some changes may have been missed.
 
 
 
